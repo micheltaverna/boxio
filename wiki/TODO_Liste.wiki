@@ -1,0 +1,5 @@
+﻿#summary Liste des futurs implémentations
+
+= TODO =
+
+  # Valider la Beta 1 avant l'ouverture de la TODO List officiel
