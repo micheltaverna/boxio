@@ -20,4 +20,4 @@
     * [Ajout_Reference Ajouter une référence]
   * [TODO_Liste ToDo]
     * [TODO_Liste Liste]
-  * [http://code.google.com/p/legrand-iobl-server/wiki/ Wiki Liste]
+  * [http://code.google.com/p/boxio/wiki/ Wiki Liste]
