@@ -1,0 +1,151 @@
+#summary Liste des Références/Equipements supportés par le Serveur
+
+= Introduction =
+
+Le tableau ci-dessous représente les références actuellement supportés par la dernière version du serveur.
+
+_Pour ajouter de nouvelle références, merci de poster une "Issues"._
+
+= Table Mysql des Références =
+
+<table border=1>
+<tr>
+<td bgcolor=silver class='medium'>ref_legrand</td>
+<td bgcolor=silver class='medium'>nom</td>
+<td bgcolor=silver class='medium'>family</td>
+<td bgcolor=silver class='medium'>media</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>3604</td>
+<td class='normal' valign='top'>Interface Somfy</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67203</td>
+<td class='normal' valign='top'>Inter Simple �  voyant</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67204</td>
+<td class='normal' valign='top'>Inter Double �  voyant</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67212</td>
+<td class='normal' valign='top'>Inter Variateur 300W</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67214</td>
+<td class='normal' valign='top'>Inter Variateur 600W</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67238</td>
+<td class='normal' valign='top'>Inter Double Radio</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67251</td>
+<td class='normal' valign='top'>Inter Individuel Volet Roulant</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67253</td>
+<td class='normal' valign='top'>Inter Centralisé Volet Roulant</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67254</td>
+<td class='normal' valign='top'>Inter Centralisé Quadruple Volet Roulant</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67256</td>
+<td class='normal' valign='top'>Inter Centralisé Volet Roulant (orientation lamelles)</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67261</td>
+<td class='normal' valign='top'>Inter Individuel Volet Roulant Radio</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67262</td>
+<td class='normal' valign='top'>Inter Centralisé Volet Roulant Radio</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67280</td>
+<td class='normal' valign='top'>Inter Scenario 4 action</td>
+<td class='normal' valign='top'>SCENE</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>67442</td>
+<td class='normal' valign='top'>Thermostat Programmable</td>
+<td class='normal' valign='top'>COMFORT</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>84526</td>
+<td class='normal' valign='top'>Inter Individuel Volet Roulant Sagane</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>84543</td>
+<td class='normal' valign='top'>Inter Individuel Volet Roulant Sagane Radio</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>85544</td>
+<td class='normal' valign='top'>Inter Centralisé Volet Roulant Sagane Radio</td>
+<td class='normal' valign='top'>SHUTTER</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>88202</td>
+<td class='normal' valign='top'>Prisinter 2500W</td>
+<td class='normal' valign='top'>LIGHTING</td>
+<td class='normal' valign='top'>CPL</td>
+</tr>
+
+<tr>
+<td class='normal' valign='top'>88215</td>
+<td class='normal' valign='top'>Inter Telecommande Scenario 4 actions</td>
+<td class='normal' valign='top'>SCENE</td>
+<td class='normal' valign='top'>RF</td>
+</tr>
+</table>
