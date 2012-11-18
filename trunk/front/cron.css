@@ -1,0 +1,299 @@
+/**
+* Css pour la gestion des selection des minutes
+*/
+
+.select_minutes table, .select_minutes td {
+	border: 1px solid #CCC;
+	border-collapse: collapse;
+	font: large "Tahoma", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	background-color: #FFF;
+	text-align:center;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.select_minutes .selected_minutes {
+	background-color: orange;
+}
+
+.select_minutes table {
+	border: none;
+	border: 1px solid #CCC;
+}
+
+.select_minutes thead th, .select_minutes tbody th {
+	background: #FFF url(imgs/th_bck.gif) repeat-x;
+	color: #666;
+	padding: 5px 10px;
+	border-left: 1px solid #CCC;
+}
+
+.select_minutes tbody th {
+	background: #fafafb;
+	border-top: 1px solid #CCC;
+	text-align: left;
+	font-weight: normal;
+}
+
+.select_minutes tbody tr td {
+	padding: 5px 10px;
+	color: #666;
+}
+
+.select_minutes tbody td:hover {
+	background: #FFF url(imgs/tr_bck.gif) repeat;
+	color: #454545;
+}
+
+.select_minutes tfoot td, .select_minutes tfoot th {
+	border-left: none;
+	border-top: 1px solid #CCC;
+	padding: 4px;
+	background: #FFF url(imgs/foot_bck.gif) repeat;
+	color: #666;
+}
+
+/**
+* Css pour la gestion des selection des heures
+*/
+
+.select_hours table, .select_hours td {
+	border: 1px solid #CCC;
+	border-collapse: collapse;
+	font: large "Tahoma", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	background-color: #FFF;
+	text-align:center;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.select_hours .selected_hours {
+	background-color: orange;
+}
+
+.select_hours table {
+	border: none;
+	border: 1px solid #CCC;
+}
+
+.select_hours thead th, .select_hours tbody th {
+	background: #FFF url(imgs/th_bck.gif) repeat-x;
+	color: #666;
+	padding: 5px 10px;
+	border-left: 1px solid #CCC;
+}
+
+.select_hours tbody th {
+	background: #fafafb;
+	border-top: 1px solid #CCC;
+	text-align: left;
+	font-weight: normal;
+}
+
+.select_hours tbody tr td {
+	padding: 5px 10px;
+	color: #666;
+}
+
+.select_hours tbody td:hover {
+	background: #FFF url(imgs/tr_bck.gif) repeat;
+	color: #454545;
+}
+
+.select_hours tfoot td, .select_hours tfoot th {
+	border-left: none;
+	border-top: 1px solid #CCC;
+	padding: 4px;
+	background: #FFF url(imgs/foot_bck.gif) repeat;
+	color: #666;
+}
+
+/**
+* Css pour la gestion des selection des jours du mois
+*/
+
+.select_day_of_month table, .select_day_of_month td {
+	border: 1px solid #CCC;
+	border-collapse: collapse;
+	font: large "Tahoma", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	background-color: #FFF;
+	text-align:center;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.select_day_of_month .selected_day_of_month {
+	background-color: orange;
+}
+
+.select_day_of_month table {
+	border: none;
+	border: 1px solid #CCC;
+}
+
+.select_day_of_month thead th, .select_day_of_month tbody th {
+	background: #FFF url(imgs/th_bck.gif) repeat-x;
+	color: #666;
+	padding: 5px 10px;
+	border-left: 1px solid #CCC;
+}
+
+.select_day_of_month tbody th {
+	background: #fafafb;
+	border-top: 1px solid #CCC;
+	text-align: left;
+	font-weight: normal;
+}
+
+.select_day_of_month tbody tr td {
+	padding: 5px 10px;
+	color: #666;
+}
+
+.select_day_of_month tbody td:hover {
+	background: #FFF url(imgs/tr_bck.gif) repeat;
+	color: #454545;
+}
+
+.select_day_of_month tfoot td, .select_day_of_month tfoot th {
+	border-left: none;
+	border-top: 1px solid #CCC;
+	padding: 4px;
+	background: #FFF url(imgs/foot_bck.gif) repeat;
+	color: #666;
+}
+
+/**
+* Css pour la gestion des selection des jours de la semaine
+*/
+
+.select_day_of_week table, .select_day_of_week td {
+	border: 1px solid #CCC;
+	border-collapse: collapse;
+	font: large "Tahoma", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	background-color: #FFF;
+	text-align:center;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.select_day_of_week .selected_day_of_week {
+	background-color: orange;
+}
+
+.select_day_of_week table {
+	border: none;
+	border: 1px solid #CCC;
+}
+
+.select_day_of_week thead th, .select_day_of_week tbody th {
+	background: #FFF url(imgs/th_bck.gif) repeat-x;
+	color: #666;
+	padding: 5px 10px;
+	border-left: 1px solid #CCC;
+}
+
+.select_day_of_week tbody th {
+	background: #fafafb;
+	border-top: 1px solid #CCC;
+	text-align: left;
+	font-weight: normal;
+}
+
+.select_day_of_week tbody tr td {
+	padding: 5px 10px;
+	color: #666;
+}
+
+.select_day_of_week tbody td:hover {
+	background: #FFF url(imgs/tr_bck.gif) repeat;
+	color: #454545;
+}
+
+.select_day_of_week tfoot td, .select_day_of_week tfoot th {
+	border-left: none;
+	border-top: 1px solid #CCC;
+	padding: 4px;
+	background: #FFF url(imgs/foot_bck.gif) repeat;
+	color: #666;
+}
+
+/**
+* Css pour la gestion des selection des mois
+*/
+
+.select_month table, .select_month td {
+	border: 1px solid #CCC;
+	border-collapse: collapse;
+	font: large "Tahoma", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	background-color: #FFF;
+	text-align:center;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.select_month .selected_month {
+	background-color: orange;
+}
+
+.select_month table {
+	border: none;
+	border: 1px solid #CCC;
+}
+
+.select_month thead th, .select_month tbody th {
+	background: #FFF url(imgs/th_bck.gif) repeat-x;
+	color: #666;
+	padding: 5px 10px;
+	border-left: 1px solid #CCC;
+}
+
+.select_month tbody th {
+	background: #fafafb;
+	border-top: 1px solid #CCC;
+	text-align: left;
+	font-weight: normal;
+}
+
+.select_month tbody tr td {
+	padding: 5px 10px;
+	color: #666;
+}
+
+.select_month tbody td:hover {
+	background: #FFF url(imgs/tr_bck.gif) repeat;
+	color: #454545;
+}
+
+.select_month tfoot td, .select_month tfoot th {
+	border-left: none;
+	border-top: 1px solid #CCC;
+	padding: 4px;
+	background: #FFF url(imgs/foot_bck.gif) repeat;
+	color: #666;
+}
