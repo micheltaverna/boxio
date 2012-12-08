@@ -660,9 +660,6 @@ class legrand_client {
 
 
 
-
-
-
 	/*
 	 // FONCTION : AJOUTE/MET A JOUR UN SCENARIO
 	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int,value_listen=int,family_listen=int,where=string(db|memory)
