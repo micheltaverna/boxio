@@ -31,32 +31,28 @@ class legrand_client {
 	// RETURN : $query
 	*/
 	private function get_to_mysqli() {
-		$query = "";
 		//Gestion des filtres
+		$query = "";
 		if (isset($_GET['filter'])) {
-			$query .= " WHERE";
+			$tab_type = array(
+					"lt" => "<",
+					"gt" => ">",
+					"eq" => "="
+					);
 			$filter = json_decode(urldecode($_GET['filter']));
-			for ($i=0, $coma=''; $filter[$i]; $i++) {
+			for ($i=0,$query_array=array(); $filter[$i]; $i++) {
 				if ($filter[$i]->{'type'} == 'string') {
-					$query .= $coma." ".$filter[$i]->{'field'}." LIKE '%".utf8_decode($filter[$i]->{'value'})."%'";
+					$query_array[] = sprintf("%s LIKE '%%%s%%'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
 				} else if ($filter[$i]->{'type'} == 'numeric') {
-					if ($filter[$i]->{'comparison'} == 'lt') {
-						$comp = "<";
-					} else if ($filter[$i]->{'comparison'} == 'gt') {
-						$comp = ">";
-					} else if ($filter[$i]->{'comparison'} == 'eq') {
-						$comp = "=";
-					}
-					$query .= $coma." ".$filter[$i]->{'field'}.$comp.$filter[$i]->{'value'};
+					$query_array[] = sprintf("%s%s%s", $filter[$i]->{'field'}, $tab_type[$filter[$i]->{'comparison'}], utf8_decode($filter[$i]->{'value'}));
 				} else if ($filter[$i]->{'type'} == 'list') {
-					$query .= $coma;
-					for ($j=0, $sep=''; $filter[$i]->{'value'}[$j]; $j++) {
-						$query .= $sep." ".$filter[$i]->{'field'}."='".utf8_decode($filter[$i]->{'value'}[$j])."'";
-						$sep = ' OR';
+					for ($j=0, $type_array=array(); $filter[$i]->{'value'}[$j]; $j++) {
+						$type_array[] = sprintf("%s='%s'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}[$j]));
 					}
+					$query_array[] = '('.implode(' OR ', $type_array).')';
 				}
-				$coma = ' AND';
 			}
+			$query .= sprintf(" WHERE %s", implode(' AND ', $query_array));
 		}
 		//Gestion du triage
 		if (isset($_GET['sort']) || isset($_GET['group'])) {
@@ -91,7 +87,7 @@ class legrand_client {
 		} else {
 			$limit = 10;
 		}
-		$query .= " LIMIT $start, $limit";
+		$query .= sprintf(" LIMIT %s,%s", $start, $limit);
 		return $query;
 	}
 
@@ -297,7 +293,12 @@ class legrand_client {
 	*/
 	public function view_to_xml($view_name, $where) {
 		//Requetage et preparation des resultats
-		$query = "SELECT COUNT(*) AS total FROM ".$view_name.";";
+		//cas particuler du comptage des trames
+		if ($view_name == 'view_all_trame') {
+			$query = "SELECT COUNT(*) AS total FROM trame_decrypted;";
+		} else {
+			$query = "SELECT COUNT(*) AS total FROM ".$view_name.";";
+		}
 		$res = $this->mysqli->query($query);
 		$trame = $res->fetch_assoc();
 		$total = $trame['total'];
@@ -339,6 +340,8 @@ class legrand_client {
 				$tag_elems->appendChild($tag_module);
 			}
 		}
+		//Nettoyage memoire du bug des STORE PROC MYSQL !
+		$this->free_mysqli($res);
 		$tag_request->appendChild($tag_elems);
 		$this->xml_root->appendChild($tag_request);
 	}
@@ -382,6 +385,8 @@ class legrand_client {
 				$tag_elems->appendChild($tag_module);
 			}
 		}
+		//Nettoyage memoire du bug des STORE PROC MYSQL !
+		$this->free_mysqli($res);
 		$tag_request->appendChild($tag_elems);
 		$this->xml_root->appendChild($tag_request);
 	}
@@ -396,11 +401,21 @@ class legrand_client {
 			$res_status = 'false';
 			$status = "OS Windows, impossible d'identifier le service";
 		} else {
-			$status = exec('sudo /usr/sbin/service boxio '.$action);
-			if (preg_match("/running/i", $status)) {
-				$res_status = 'true';
+			if ($action == 'start') {
+				exec('bash -c "exec nohup setsid sudo /usr/sbin/service boxio start > /dev/null 2>&1 &"'); 
+				sleep(10);
+				$status = exec('sudo /usr/sbin/service boxio status');
+			} else if ($action == 'stop' || $action == 'status') {
+				$status = exec('sudo /usr/sbin/service boxio '.$action);
 			} else {
-				$res_status = 'false';
+				$status = exec('sudo /usr/sbin/service boxio status');
+			}
+			if (preg_match("/running/i", $status)) {
+				$res_status = 'TRUE';
+				$short_status = 'running';
+			} else {
+				$res_status = 'FALSE';
+				$short_status = 'stopping';
 			}
 		}
 		//Creation du neud xml principal
@@ -421,10 +436,22 @@ class legrand_client {
 		$attr_module = $this->xml->createAttribute('num');
 		$attr_module->value = '1';
 		$tag_module->appendChild($attr_module);
-		$tag_item = $this->xml->createElement('status',$status);
+		
+		$tag_item = $this->xml->createElement('status_long',$status);
 		$tag_module->appendChild($tag_item);
 		$tag_elems->appendChild($tag_module);
 		$tag_request->appendChild($tag_elems);
+		
+		$tag_item = $this->xml->createElement('status_short',$short_status);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+
+		$tag_item = $this->xml->createElement('status',$res_status);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+
 		$this->xml_root->appendChild($tag_request);
 	}
 
@@ -486,6 +513,8 @@ class legrand_client {
 				$tag_elems->appendChild($tag_module);
 			}
 		}
+		//Nettoyage memoire du bug des STORE PROC MYSQL !
+		$this->free_mysqli($res);
 		$tag_request->appendChild($tag_elems);
 		$this->xml_root->appendChild($tag_request);
 	}
@@ -503,7 +532,7 @@ class legrand_client {
 			set_time_limit($reponse_time*$max_retry*4);
 			//Creation du neud xml principal
 			$tag_request = $this->xml->createElement('request');
-			//Creation de l'elem function
+			//Creation de l'elem function	
 			$attr_request = $this->xml->createAttribute('function');
 			$attr_request->value = 'check_memory_db';
 			$tag_request->appendChild($attr_request);
@@ -577,7 +606,7 @@ class legrand_client {
 				return($tag_elems);
 			}
 			//Requetage et preparation des resultats des scenarios en DB
-			$query = "SELECT id_legrand_listen,unit_listen,value_listen,family_listen FROM legrand.scenarios WHERE id_legrand='$id' AND unit='$unit';";
+			$query = "SELECT id_legrand_listen,unit_listen,value_listen,family_listen FROM boxio.scenarios WHERE id_legrand='$id' AND unit='$unit';";
 			$res = $this->mysqli->query($query);
 			if ($res) {
 				for ($i=1, $db_depth=0; $trame = $res->fetch_assoc(); $i, $db_depth++) {
@@ -717,134 +746,6 @@ class legrand_client {
 		$this->xml_root->appendChild($tag_request);
 	}
 
-	/*
-	 // FONCTION : AJOUTE/MET A JOUR UN EQUIPEMENT ET UNE ZONE
-	// PARAM : id_legrand=int,ref_legrand=int,nom=url_encode(string),zone=url_encode(string)
-	// RETOURNE : UN FICHIER XML
-	*/
-	public function add_equipement($id_legrand, $ref_legrand, $nom, $zone) {
-		$res = $this->mysqli->query("CALL add_equipement('".$id_legrand."','".$ref_legrand."','".$nom."','".$zone."');");
-		//Creation du neud xml principal
-		$tag_request = $this->xml->createElement('request');
-		//Creation de l'elem function
-		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = 'add_equipement';
-		$tag_request->appendChild($attr_request);
-		//Creation de l'elem return
-		$attr_return = $this->xml->createAttribute('status');
-		if (!$res) {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->error);
-			$attr_return->value = 'false';
-		} else {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->affected_rows);
-			$attr_return->value = 'true';
-		}
-		$tag_return->appendChild($attr_return);
-		$tag_request->appendChild($tag_return);
-		//Creation de l'elem content
-		$tag_elems = $this->xml->createElement('content');
-		if ($res) {
-			for ($i=1; $trame = $res->fetch_assoc(); $i++) {
-				$tag_module = $this->xml->createElement('module');
-				$attr_module = $this->xml->createAttribute('num');
-				$attr_module->value = $i;
-				$tag_module->appendChild($attr_module);
-				foreach ($trame as $key => $value) {
-					$tag_item = $this->xml->createElement($key,$value);
-					$tag_module->appendChild($tag_item);
-				}
-				$tag_elems->appendChild($tag_module);
-			}
-		}
-		$tag_request->appendChild($tag_elems);
-		$this->xml_root->appendChild($tag_request);
-	}
-
-	/*
-	 // FONCTION : SUPPRIME UN EQUIPEMENT
-	// PARAM : id_legrand=int
-	// RETOURNE : UN FICHIER XML
-	*/
-	public function del_equipement($id_legrand) {
-		$res = $this->mysqli->query("CALL del_equipement('".$id_legrand."');");
-		//Creation du neud xml principal
-		$tag_request = $this->xml->createElement('request');
-		//Creation de l'elem function
-		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = 'del_equipement';
-		$tag_request->appendChild($attr_request);
-		//Creation de l'elem return
-		$attr_return = $this->xml->createAttribute('status');
-		if (!$res) {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->error);
-			$attr_return->value = 'false';
-		} else {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->affected_rows);
-			$attr_return->value = 'true';
-		}
-		$tag_return->appendChild($attr_return);
-		$tag_request->appendChild($tag_return);
-		//Creation de l'elem content
-		$tag_elems = $this->xml->createElement('content');
-		if ($res) {
-			for ($i=1; $trame = $res->fetch_assoc(); $i++) {
-				$tag_module = $this->xml->createElement('module');
-				$attr_module = $this->xml->createAttribute('num');
-				$attr_module->value = $i;
-				$tag_module->appendChild($attr_module);
-				foreach ($trame as $key => $value) {
-					$tag_item = $this->xml->createElement($key,$value);
-					$tag_module->appendChild($tag_item);
-				}
-				$tag_elems->appendChild($tag_module);
-			}
-		}
-		$tag_request->appendChild($tag_elems);
-		$this->xml_root->appendChild($tag_request);
-	}
-
-	/*
-	 // FONCTION : SUPPRIME UN FAVORIS
-	// PARAM : nom=string
-	// RETOURNE : UN FICHIER XML
-	*/
-	public function del_favoris($id) {
-		$res = $this->mysqli->query("CALL del_favoris('".$id."');");
-		//Creation du neud xml principal
-		$tag_request = $this->xml->createElement('request');
-		//Creation de l'elem function
-		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = 'del_favoris';
-		$tag_request->appendChild($attr_request);
-		//Creation de l'elem return
-		$attr_return = $this->xml->createAttribute('status');
-		if (!$res) {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->error);
-			$attr_return->value = 'false';
-		} else {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->affected_rows);
-			$attr_return->value = 'true';
-		}
-		$tag_return->appendChild($attr_return);
-		$tag_request->appendChild($tag_return);
-		//Creation de l'elem content
-		$tag_elems = $this->xml->createElement('content');
-		if ($res) {
-			for ($i=1; $trame = $res->fetch_assoc(); $i++) {
-				$tag_module = $this->xml->createElement('module');
-				$attr_module = $this->xml->createAttribute('num');
-				$attr_module->value = $i;
-				$tag_module->appendChild($attr_module);
-				foreach ($trame as $key => $value) {
-					$tag_item = $this->xml->createElement($key,$value);
-					$tag_module->appendChild($tag_item);
-				}
-				$tag_elems->appendChild($tag_module);
-			}
-		}
-		$tag_request->appendChild($tag_elems);
-		$this->xml_root->appendChild($tag_request);
-	}
 
 	/*
 	 // FONCTION : SUPPRIME UN SCENARIO
@@ -921,26 +822,6 @@ class legrand_client {
 
 
 
-		if (isset($_GET['add_favori'])) {
-			$nom = urldecode($_GET['nom']);
-			$trame = $_GET['trame'];
-			$this->add_favori($nom, $trame);
-		}
-		if (isset($_GET['del_favoris'])) {
-			$nom = urldecode($_GET['id']);
-			$this->del_favoris($id);
-		}
-		if (isset($_GET['add_equipement'])) {
-			$id_legrand = $_GET['id_legrand'];
-			$ref_legrand = $_GET['ref_legrand'];
-			$nom = urldecode($_GET['nom']);
-			$zone = urldecode($_GET['zone']);
-			$this->add_equipement($id_legrand, $ref_legrand, $nom, $zone);
-		}
-		if (isset($_GET['del_equipement'])) {
-			$id_legrand = $_GET['id_legrand'];
-			$this->del_equipement($id_legrand);
-		}
 		if (isset($_GET['add_scenario'])) {
 			$id_legrand = $_GET['id_legrand'];
 			$unit = $_GET['unit'];
