@@ -27,7 +27,7 @@ var createCommande = function(action) {
 		items: [{
 			xtype: 'fieldcontainer',
 			combineErrors: true,
-			fieldLabel:'Référence',
+			fieldLabel:'Id',
 			defaults: {
 			},
 			items: [{

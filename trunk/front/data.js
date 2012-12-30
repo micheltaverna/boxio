@@ -36,6 +36,66 @@ new Ext.data.Store({
 	}
 });
 
+//Gestion des références
+new Ext.data.Store({
+	storeId: 'DataReferences',
+	model: 'references',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: true,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_references',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+//Gestion des favoris
+var DataFavoris = new Ext.data.Store({
+	storeId: 'DataFavoris',
+	model: 'favoris',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: true,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_favoris',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+//Gestion des equipements inconnu
+var DataUnknownEquipements = new Ext.data.Store({
+	storeId: 'DataUnknownEquipements',
+	model: 'unknownEquipements',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: true,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_unknown_equipements',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
 //Gestion des equipements
 new Ext.data.Store({
 	storeId: 'DataEquipements',
@@ -68,6 +128,26 @@ new Ext.data.Store({
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_zones',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+//Gestion des cron (jalons)
+new Ext.data.Store({
+	storeId: 'DataCron',
+	model: 'cron',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: true,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_cron',
 		reader: {
 			type: 'xml',
 			record: 'module',

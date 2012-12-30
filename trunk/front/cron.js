@@ -290,7 +290,6 @@ var createCron = function() {
 			id: 'selectDayOfWeek',
 		    title: 'Selection des jours de la semaine',
 		    closeAction: 'hide',
-		    modal: true,
 			listeners: {
 				afterrender: {
 					fn: function() {
@@ -571,37 +570,7 @@ var createCron = function() {
 			}]
 		}]
 	});
-
-	//Affichage du favoris
-	Ext.define('favoris',{
-		extend: 'Ext.data.Model',
-		fields: [
-			{name: 'id', type: 'int'}, 
-			{name: 'nom', type: 'string'}, 
-			{name: 'trame', type: 'string'}
-		]
-	});
-	
-	// Creation des Data
-	var DataFavoris = new Ext.data.Store({
-		storeId: 'DataFavoris',
-		model: 'favoris',
-		pageSize: 20,
-		remoteSort: true,
-		autoLoad: true,
-		proxy: {
-			type: 'ajax',
-			url: '../back/client.php?view=view_favoris',
-			reader: {
-				type: 'xml',
-				record: 'module',
-				root: 'content',
-				totalRecords: 'total'
-			},
-			simpleSortMode: true
-		}
-	});
-	
+		
 	var filter = {
         ftype: 'filters',
         encode: true,
@@ -616,7 +585,7 @@ var createCron = function() {
 	// Creation du tableau
 	var panelFavoris = Ext.create('Ext.grid.Panel', {
 		title : 'Liste des favoris enregistrés', 
-		store: DataFavoris,
+		store: Ext.data.StoreManager.lookup('DataFavoris'),
 		disableSelection: false,
 		loadMask: true,
 		width: '100%',
@@ -739,17 +708,7 @@ var createCron = function() {
 							s += Ext.util.Format.format("{0} = {1}<br />", key, value);
 						}, this);
 						var params = "'"+encode(formValues.nom)+"','"+encode(formValues.trame)+"'";
-						Ext.Ajax.request({
-							url: '../back/client.php',
-							method: 'GET',
-							success: function(response) {
-								Ext.myMsg.msg('Information', 'Ok : Favoris enregistré !<br />'+response.responseText);
-							},
-							failure: function(response) {
-								Ext.myMsg.msg('Information', 'Erreur : Le jalon n\'a pas été envoyé pour enregistrement !');
-							},
-							params: { call: 'add_cron', params: params }
-						});
+						requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'});
 					}
 				}
 			}]
@@ -758,46 +717,7 @@ var createCron = function() {
 	winSendCron.show();
 };
 
-
-
-
 var openCron = function() {
-	Ext.define('cron',{
-		extend: 'Ext.data.Model',
-		fields: [
-			{name: 'id', type: 'int'}, 
-			{name: 'nom', type: 'string'}, 
-			{name: 'minutes', type: 'string'}, 
-			{name: 'heures', type: 'string'}, 
-			{name: 'jour', type: 'string'},
-			{name: 'jourSemaine', type: 'string'},
-			{name: 'mois', type: 'string'} ,
-			{name: 'id_favoris', type: 'int'}, 
-			{name: 'id_macro', type: 'int'}, 
-			{name: 'trame', type: 'string'}, 
-			{name: 'active', type: 'int'}
-		]
-	});
-	
-	// Creation des Data
-	var DataCron = new Ext.data.Store({
-		storeId: 'DataCron',
-		model: 'cron',
-		pageSize: 20,
-		remoteSort: true,
-		autoLoad: true,
-		proxy: {
-			type: 'ajax',
-			url: '../back/client.php?view=view_cron',
-			reader: {
-				type: 'xml',
-				record: 'module',
-				root: 'content',
-				totalRecords: 'total'
-			},
-			simpleSortMode: true
-		}
-	});
 	
 	var filter = {
         ftype: 'filters',
@@ -813,7 +733,7 @@ var openCron = function() {
 	// Creation du tableau
 	var panelCron = new Ext.grid.Panel({
 		title : 'Liste des jalons enregistrés', 
-		store: DataCron,
+		store: Ext.data.StoreManager.lookup('DataCron'),
 		disableSelection: false,
 		loadMask: true,
 		width: '100%',

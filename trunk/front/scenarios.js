@@ -59,23 +59,42 @@ var openScenarios = function() {
 		height: 500,
 		autoScroll: true,
 		closable: true,
-		columns: [
-			{text: "Id Legrand", dataIndex: 'id_legrand', width: 59},
-			{text: "Unite", dataIndex: 'unit', sortable: false, width: 58},
-			{text: "Référence", dataIndex: 'reference', sortable: false, width: 84},
-			{text: "Famille", dataIndex: 'family', sortable: false, width: 84},
-			{text: "Media", dataIndex: 'media', sortable: false, width: 84},
-			{text: "Référence Interne", dataIndex: 'reference_interne', sortable: false, width: 83},
-			{text: "Nom", dataIndex: 'nom', sortable: false, width: 135},
-			{text: "Zone", dataIndex: 'zone', sortable: false, width: 198},
-			{text: "Id Legrand d'écoute", dataIndex: 'id_legrand_listen', sortable: false, width: 123},
-			{text: "Unite d'écoute", dataIndex: 'unit_listen', sortable: false, width: 132},
-			{text: "Scénarios", dataIndex: 'scenario_listen', sortable: false, width: 143},
-			{text: "Famille", dataIndex: 'family_listen', sortable: false, width: 143},
-			{text: "Référence", dataIndex: 'reference_listen', sortable: false, width: 143},
-			{text: "Référence Interne", dataIndex: 'reference_interne_listen', sortable: false, width: 143},
-			{text: "Nom", dataIndex: 'nom_listen', sortable: false, width: 272},
-			{text: "Zone", dataIndex: 'zone_listen', sortable: false, width: 272}
+		features: [{
+				ftype: 'filters',
+				encode: true,
+				local: false,
+				phpMode: true
+	    	},{
+	    		ftype: 'groupingsummary',
+	    		groupHeaderTpl: '{columnName}: {name} ({rows.length} équipement{[values.rows.length > 1 ? "s" : ""]})',
+	    		hideGroupedHeader: false,
+	    		enableGroupingMenu: true
+	    }],
+	    columns: [
+	              {text:'Récepteurs',	
+	            	  columns: [
+	        					{text: "Nom", dataIndex: 'nom', sortable: true, width: 135, filter: {type: 'string'}},
+	        					{text: "Référence", dataIndex: 'reference', sortable: true, width: 175, filter: {type: 'string'}},
+	        					{text: "Référence Interne", dataIndex: 'reference_interne', sortable: true, width: 230, filter: {type: 'string'}},
+	        					{text: "Zone", dataIndex: 'zone', sortable: true, width: 80, filter: {type: 'string'}},
+	        					{text: "Id Legrand", dataIndex: 'id_legrand', width: 60, hidden: true, filter: {type: 'numeric'}},
+	        					{text: "Unite", dataIndex: 'unit', sortable: true, width: 60, hidden: true, filter: {type: 'numeric'}},
+	        					{text: "Famille", dataIndex: 'family', sortable: true, width: 80, hidden: true, filter: {type: 'string'}},
+	        					{text: "Media", dataIndex: 'media', sortable: true, width: 88, hidden: true, filter: {type: 'string'}}
+	            	          ]  
+	              },
+	              {text:'Emetteurs',	
+	            	  columns: [
+								{text: "Nom d'écoute", dataIndex: 'nom_listen', sortable: true, width: 135, filter: {type: 'string'}},
+								{text: "Référence d'écoute", dataIndex: 'reference_listen', sortable: true, width: 175, filter: {type: 'string'}},
+								{text: "Référence Interne d'écoute", dataIndex: 'reference_interne_listen', sortable: true, width: 230, filter: {type: 'string'}},
+								{text: "Zone d'écoute", dataIndex: 'zone_listen', sortable: true, width: 80, filter: {type: 'string'}},
+								{text: "Id Legrand d'écoute", dataIndex: 'id_legrand_listen', sortable: true, width: 60, hidden: true, filter: {type: 'numeric'}},
+								{text: "Unite d'écoute", dataIndex: 'unit_listen', sortable: true, width: 60, hidden: true, filter: {type: 'numeric'}},
+								{text: "Famille d'écoute", dataIndex: 'family_listen', sortable: true, width: 80, hidden: true, filter: {type: 'string'}},
+								{text: "Référence Scénarios d'écoute", dataIndex: 'scenario_listen', sortable: true, width: 80, hidden: true, filter: {type: 'string'}}
+		           	          ]  
+	              },
 		],
 		// Creation de la bar de defilement des pages
 		bbar: Ext.create('Ext.PagingToolbar', {
