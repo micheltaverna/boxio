@@ -22,6 +22,8 @@
 		<!-- LISTE DES FICHIERS INTERNE -->
         <link rel="stylesheet" type="text/css" href="myMsg.css" />
         <link rel="stylesheet" type="text/css" href="cron.css" />
+        <link rel="stylesheet" type="text/css" href="equipements.css" />
+        <link rel="stylesheet" type="text/css" href="server.css" />
         <script type="text/javascript" src="ux/ext-lang-fr.js"></script>
         <script type="text/javascript" src="require.js"></script>
         <script type="text/javascript" src="define.js"></script>
@@ -42,7 +44,8 @@
         <script type="text/javascript" src="scenarios.js"></script>
         <script type="text/javascript" src="author.js"></script>
         <script type="text/javascript" src="version.js"></script>
-    </head>
+        <script type="text/javascript" src="server.js"></script>
+        </head>
     <body>
     </body>
 <script type="text/javascript">

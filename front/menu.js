@@ -24,13 +24,13 @@ new Ext.toolbar.Toolbar({
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openEquipements('send');
+				openEquipements();
 			},
 			menu: [{
 				text: 'Liste des équipements',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openEquipements('send');
+					openEquipements();
 				}
 			}]
 		},{
@@ -212,10 +212,18 @@ new Ext.toolbar.Toolbar({
 			text: 'Serveur',
 			icon: 'imgs/box_32x32.png',
 			arrowAlign:'bottom',
-			menu: [{text: 'Etat du serveur'}]
+			handler: function() {
+				openServer();
+			},
+			menu: [{
+				text: 'Etat du serveur',
+				handler: function() {
+					openServer();
+				}
+			}]
 		},{
 			xtype:'splitbutton',
-			text: 'Mise é jours',
+			text: 'Mise à jours',
 			icon: 'imgs/cloud_download_32x32.png',
 			arrowAlign:'bottom',
 			menu: [{text: 'Vérifier les mises à jours'}]

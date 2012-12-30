@@ -1,0 +1,28 @@
+/**
+* Css pour la gestion des selection des minutes
+*/
+
+.findReference {
+	background-color: #FFF;
+	padding: 5px;
+}
+
+.findReference_information {
+	background-color: infobackground;
+	padding: 5px;
+	font-style: italic;
+	font-size: small; 
+}
+
+.findReference_information span {
+	padding: 5px;
+}
+
+.findReference_content {
+	padding: 5px;
+	font-size: large; 
+}
+
+.findReference_id {
+	font-weight: bold;
+}

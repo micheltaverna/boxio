@@ -74,28 +74,7 @@ var createFavoris = function() {
 	
 };
 
-var openFavoris = function() {
-	
-	// Creation des Data
-	var DataFavoris = new Ext.data.Store({
-		storeId: 'DataFavoris',
-		model: 'favoris',
-		pageSize: 20,
-		remoteSort: true,
-		autoLoad: true,
-		proxy: {
-			type: 'ajax',
-			url: '../back/client.php?view=view_favoris',
-			reader: {
-				type: 'xml',
-				record: 'module',
-				root: 'content',
-				totalRecords: 'total'
-			},
-			simpleSortMode: true
-		}
-	});
-	
+var openFavoris = function() {	
 	var filter = {
         ftype: 'filters',
         encode: true,
@@ -110,7 +89,7 @@ var openFavoris = function() {
 	// Creation du tableau
 	var panelFavoris = new Ext.grid.Panel({
 		title : 'Liste des favoris enregistrés', 
-		store: DataFavoris,
+		store: 'DataFavoris',
 		disableSelection: false,
 		loadMask: true,
 		width: '100%',

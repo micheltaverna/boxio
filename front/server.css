@@ -1,0 +1,28 @@
+/**
+* Css pour la gestion des selection des minutes
+*/
+
+.server {
+	background-color: #FFF;
+	padding: 5px;
+}
+
+.server_information {
+	background-color: infobackground;
+	padding: 5px;
+	font-style: italic;
+	font-size: small; 
+}
+
+.server_information span {
+	padding: 5px;
+}
+
+.server_content {
+	padding: 5px;
+	font-size: large; 
+}
+
+.server_id {
+	font-weight: bold;
+}

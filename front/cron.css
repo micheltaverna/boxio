@@ -20,6 +20,10 @@
 .select_minutes .selected_minutes {
 	background-color: orange;
 }
+.select_minutes .selected_minutes:hover, .select_hours .selected_hours:hover, .select_day_of_month .selected_day_of_month:hover, .select_day_of_week .selected_day_of_week:hover, .select_month .selected_month:hover {
+	background-color: gold;
+	background-image: none;
+}
 
 .select_minutes table {
 	border: none;
