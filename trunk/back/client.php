@@ -588,13 +588,13 @@ class legrand_client {
 						$memory[$param['frame_number']]['id_legrand_listen'] = $id_listen;
 						$memory[$param['frame_number']]['unit_listen'] = $unit_listen;
 						$memory[$param['frame_number']]['value_listen'] = $param['preset_value'];
-						$memory[$param['frame_number']]['family_listen'] = $param['family_type'];
+						$memory[$param['frame_number']]['media_listen'] = $param['family_type'];
 						$memory[$param['frame_number']]['in_memory'] = 'true';
 						$memory[$param['frame_number']]['in_db'] = 'false';
 					}
 				}
 				$res->free();
-				if ($depth != false && ($depth == (count($memory)))) {
+				if ($depth !== false && ($depth == (count($memory)))) {
 					break;
 				}
 			}
@@ -606,20 +606,20 @@ class legrand_client {
 				return($tag_elems);
 			}
 			//Requetage et preparation des resultats des scenarios en DB
-			$query = "SELECT id_legrand_listen,unit_listen,value_listen,family_listen FROM boxio.scenarios WHERE id_legrand='$id' AND unit='$unit';";
+			$query = "SELECT id_legrand_listen,unit_listen,value_listen,media_listen FROM boxio.scenarios WHERE id_legrand='$id' AND unit='$unit';";
 			$res = $this->mysqli->query($query);
 			if ($res) {
 				for ($i=1, $db_depth=0; $trame = $res->fetch_assoc(); $i, $db_depth++) {
 					$id_legrand_listen = $trame['id_legrand_listen'];
 					$unit_listen = $trame['unit_listen'];
 					$value_listen = $trame['value_listen'];
-					$family_listen = $trame['family_listen'];
+					$media_listen = $trame['media_listen'];
 					$find = false;
 					foreach ($memory as $key => $value) {
 						if ($memory[$key]['id_legrand_listen'] == $id_legrand_listen
 								&& $memory[$key]['unit_listen'] == $unit_listen
 								&& $memory[$key]['value_listen'] == $value_listen
-								&& $memory[$key]['family_listen'] == $family_listen) {
+								&& $memory[$key]['media_listen'] == $media_listen) {
 							$memory[$key]['in_db'] = 'true';
 							$find = true;
 							break;
@@ -630,7 +630,7 @@ class legrand_client {
 						$memory['db_'.$i]['id_legrand_listen'] = $id_legrand_listen;
 						$memory['db_'.$i]['unit_listen'] = $unit_listen;
 						$memory['db_'.$i]['value_listen'] = $value_listen;
-						$memory['db_'.$i]['family_listen'] = $family_listen;
+						$memory['db_'.$i]['media_listen'] = $media_listen;
 						$memory['db_'.$i]['in_memory'] = 'false';
 						$memory['db_'.$i]['in_db'] = 'true';
 						$i++;
@@ -666,6 +666,10 @@ class legrand_client {
 				$attr_module = $this->xml->createAttribute('num');
 				$attr_module->value = $num;
 				$tag_module->appendChild($attr_module);
+				$tag_item = $this->xml->createElement('in_memory',$memory[$num]['in_memory']);
+				$tag_module->appendChild($tag_item);
+				$tag_item = $this->xml->createElement('in_db',$memory[$num]['in_db']);
+				$tag_module->appendChild($tag_item);
 				foreach ($memory[$num] as $key => $value) {
 					if ($key != 'in_memory' && $key != 'in_db') {
 						$tag_item = $this->xml->createElement($key,$value);
@@ -691,13 +695,14 @@ class legrand_client {
 
 	/*
 	 // FONCTION : AJOUTE/MET A JOUR UN SCENARIO
-	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int,value_listen=int,family_listen=int,where=string(db|memory)
+	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int,value_listen=int,media_listen=int,where=string(db|memory|both)
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $family_listen, $where) {
-		if ($where == 'db') {
-			$res = $this->mysqli->query("CALL add_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."','".$value_listen."','".$family_listen."');");
-		} else if ($where == 'memory') {
+	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where) {
+		if ($where == 'db' || $where == 'both') {
+			$res = $this->mysqli->query("CALL add_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."','".$value_listen."','".$media_listen."');");
+		}
+		if ($where == 'memory' || $where == 'both') {
 			//On programme le module
 			$media = "";
 			if ($trame['media'] == 'RF') {
@@ -707,7 +712,7 @@ class legrand_client {
 			}
 			$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
 			$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
-			$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$family_listen."*".$own_id_listen."*".$value_listen."##', NOW());");
+			$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$media_listen."*".$own_id_listen."*".$value_listen."##', NOW());");
 		}
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -752,7 +757,7 @@ class legrand_client {
 	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $family_listen, $where) {
+	public function del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where) {
 		if ($where == 'db') {
 			$res = $this->mysqli->query("CALL del_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."');");
 		} else if ($where == 'memory') {
@@ -765,7 +770,7 @@ class legrand_client {
 			}
 			$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
 			$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
-			$res = $this->mysqli->query("CALL send_trame('*1000*63#".$family_listen."#".$own_id_listen."*".$own_id.$media."##', NOW());");
+			$res = $this->mysqli->query("CALL send_trame('*1000*63#".$media_listen."#".$own_id_listen."*".$own_id.$media."##', NOW());");
 		}
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -828,18 +833,18 @@ class legrand_client {
 			$id_legrand_listen = $_GET['id_legrand_listen'];
 			$unit_listen = $_GET['unit_listen'];
 			$value_listen = $_GET['value_listen'];
-			$family_listen = $_GET['family_listen'];
+			$media_listen = $_GET['media_listen'];
 			$where = $_GET['where'];
-			$this->add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $family_listen, $where);
+			$this->add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where);
 		}
 		if (isset($_GET['del_scenario'])) {
 			$id_legrand = $_GET['id_legrand'];
 			$unit = $_GET['unit'];
 			$id_legrand_listen = $_GET['id_legrand_listen'];
 			$unit_listen = $_GET['unit_listen'];
-			$family_listen = $_GET['family_listen'];
+			$media_listen = $_GET['media_listen'];
 			$where = $_GET['where'];
-			$this->del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $family_listen, $where);
+			$this->del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where);
 		}
 
 
