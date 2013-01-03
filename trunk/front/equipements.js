@@ -98,7 +98,7 @@ var addEquipements = function() {
 			});
 		}
 	};
-	
+		
 	var winfindReference = Ext.getCmp('winfindReference');
 	if (!winfindReference) {
 		winfindReference = Ext.create('Ext.window.Window', {
@@ -404,8 +404,121 @@ var addEquipements = function() {
 	});
 };
 
-var openEquipements = function() {
+
+var modEquipementScenar = function() {
+
+	var func_progScenario = function(rec) {
+    	var in_memory = rec.get('in_memory');
+    	var in_db = rec.get('in_db');
+    	if (in_memory === 'true' && in_db === 'true') {
+        	Ext.MessageBox.show({
+				title: 'Information',
+				msg: 'Programmation correcte aucune modification à apporter.',
+				buttons: Ext.MessageBox.OK,
+				icon: Ext.MessageBox.INFO
+			});
+    	} else if (in_memory === 'true' && in_db === 'false') {
+        	Ext.MessageBox.show({
+				title: 'Programmation',
+				msg: 'Voulez-vous vraiment ajouter la programmation du module au serveur ?',
+				buttons: Ext.MessageBox.OKCANCEL,
+				fn: function() {
+					alert('add!!');
+				},
+				icon: Ext.MessageBox.WARNING
+			});
+    	} else if (in_memory === 'false' && in_db === 'true') {
+        	Ext.MessageBox.show({
+				title: 'Inofrmation',
+				msg: 'Voulez-vous vraiment supprimmer du serveur la programmation inexistante du module ?',
+				buttons: Ext.MessageBox.OKCANCEL,
+				fn: function() {
+					alert('delete!!');
+				},
+				icon: Ext.MessageBox.WARNING
+			});
+    	}
+    };
 	
+	var winEquipementScenars = Ext.getCmp('winEquipementScenars');
+	if (!winEquipementScenars) {
+		winEquipementScenars = Ext.create('Ext.window.Window', {
+			id: 'winEquipementScenars',
+		    title: 'Listes des scenarios de l\'équipements (dans le serveur / dans le module)',
+		    closeAction: 'hide',
+		    width: 700,
+		    items: [{
+	        	xtype:'gridpanel',
+				id: 'gridScenario',
+				store: Ext.data.StoreManager.lookup('DataCheckScenarios'),
+		    	title : 'Scénarios enregistrés dans la base de donnée ET/OU la mémoire du module', 
+		    	height: 500,
+		        viewConfig: {
+		            stripeRows: true,
+		            enableTextSelection: true
+		        },
+				disableSelection: false,
+			    columns: [
+					{text: "Id Legrand d'écoute", dataIndex: 'id_legrand_listen', width: 115},
+					{text: "Unité d'écoute", dataIndex: 'unit_listen', width: 85},
+					{text: "Média d'écoute", dataIndex: 'media_listen', width: 85},
+					{text: "Fonction", dataIndex: 'value_listen', width: 80},
+					{text: "En mémoire", dataIndex: 'in_memory', width: 90, renderer: function(val) {
+						if (val == 'true') {
+							return '<span style="color:green;">OK</span>';
+						} else {
+							return '<span style="color:red;">ERREUR</span>';
+						}
+					}},
+					{text: "En base de donnée", dataIndex: 'in_db', width: 90, renderer: function(val) {
+						if (val == 'true') {
+							return '<span style="color:green;">OK</span>';
+						} else {
+							return '<span style="color:red;">ERREUR</span>';
+						}
+					}},
+					{
+					    xtype:'actioncolumn',
+						text: 'Action',
+						align: 'right',
+						width: 80,
+					    items: [{
+					        icon: 'imgs/cog.png',
+					        tooltip: 'Programmer',
+					        handler: function(grid, rowIndex, colIndex) {
+					        	var rec = grid.getStore().getAt(rowIndex);
+					        	func_progScenario(rec);
+					        }
+					    }]
+					}
+				]
+	        }],
+			//Creation des boutons
+			dockedItems: [{
+	            xtype: 'toolbar',
+	            items: [{
+                	icon: 'imgs/table_refresh.png',
+                    text: 'Actualiser',
+                    disabled: false,
+                    handler: function(widget, event) {
+                    	var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+            		    ScenarStore.load();
+            		}
+	            }]
+			}],
+	        buttons: [{
+		        text: 'Fermer',
+		        handler: function() {
+		        	Ext.getCmp('winEquipementScenars').hide();
+		        }
+		    }]
+		});
+	}
+	winEquipementScenars.show();
+};
+
+var openEquipements = function() {
+
 	var func_validateModEquipement = function() {
 		var form = Ext.getCmp('formAddEquipement').getForm(),
 		encode = Ext.String.htmlEncode;
@@ -481,6 +594,16 @@ var openEquipements = function() {
 		}
 	};
 
+	var func_modEquipementScenar = function(rec) {
+		if (rec) {
+		    var id = rec.get('id_legrand');
+		    modEquipementScenar();
+		    var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+		    ScenarStore.getProxy().url = '../back/client.php?check_memory_db='+id;
+		    ScenarStore.load();
+		}
+	};
+
 	var func_createPanel = function() {
 
 		var panelEquipements = new Ext.grid.Panel({
@@ -501,9 +624,11 @@ var openEquipements = function() {
 			            if (selections.length) {
 			                Ext.getCmp('equipementsToolbarBtnDel').enable();
 			                Ext.getCmp('equipementsToolbarBtnMod').enable();
+			                Ext.getCmp('equipementsToolbarBtnScn').enable();
 			            } else {
 			                Ext.getCmp('equipementsToolbarBtnDel').disable();
 			                Ext.getCmp('equipementsToolbarBtnMod').disable();
+			                Ext.getCmp('equipementsToolbarBtnScn').disable();
 			            }
 			        }
 				}
@@ -526,20 +651,27 @@ var openEquipements = function() {
 				{text: 'Id Legrand', dataIndex: 'id_legrand', width: 131, filter: {type: 'numeric'}}, 
 				{
 				    xtype:'actioncolumn',
-					text: 'Action', width: 50,
+					text: 'Action', width: 70,
 				    items: [{
-				        icon: 'imgs/delete.png',
-				        tooltip: 'Effacer',
-				        handler: function(grid, rowIndex, colIndex) {
-				            var rec = grid.getStore().getAt(rowIndex);
-				            func_delEquipement(rec);
-				        }
-				    },{
 				        icon: 'imgs/edit.png',
 				        tooltip: 'Editer',
 				        handler: function(grid, rowIndex, colIndex) {
 				            var rec = grid.getStore().getAt(rowIndex);
 				            func_modEquipement(rec);
+				        }
+				    },{
+				        icon: 'imgs/cog.png',
+				        tooltip: 'Scénarios',
+				        handler: function(grid, rowIndex, colIndex) {
+				            var rec = grid.getStore().getAt(rowIndex);
+				            func_modEquipementScenar(rec);
+				        }
+				    },{
+				        icon: 'imgs/delete.png',
+				        tooltip: 'Effacer',
+				        handler: function(grid, rowIndex, colIndex) {
+				            var rec = grid.getStore().getAt(rowIndex);
+				            func_delEquipement(rec);
 				        }
 				    }]
 				}
@@ -548,6 +680,15 @@ var openEquipements = function() {
 			dockedItems: [{
 	            xtype: 'toolbar',
 	            items: [
+	                    {
+	                    	id:'equipementsToolbarBtnAdd',
+	                    	icon: 'imgs/add.png',
+	                        text: 'Ajouter',
+	                        disabled: false,
+	                        handler: function(widget, event) {
+	                        	addEquipements();
+	                        }
+	                    },
 	                    {
 	                    	id:'equipementsToolbarBtnMod',
 	                    	icon: 'imgs/edit.png',
@@ -559,6 +700,16 @@ var openEquipements = function() {
 	                        }
 	                    },
 	                    {
+	                    	id:'equipementsToolbarBtnScn',
+	                    	icon: 'imgs/cog.png',
+	                        text: 'Scénarios',
+	                        disabled: true,
+	                        handler: function(widget, event) {
+	                        	var rec = Ext.getCmp('panelEquipements').getSelectionModel().getSelection()[0];
+	                        	func_modEquipementScenar(rec);
+	                        }
+	                    },
+	                    {
 	                    	id:'equipementsToolbarBtnDel',
 	                    	icon: 'imgs/delete.png',
 	                        text: 'Effacer',
@@ -566,15 +717,6 @@ var openEquipements = function() {
 	                        handler: function(widget, event) {
 	                        	var rec = Ext.getCmp('panelEquipements').getSelectionModel().getSelection()[0];
 	                        	func_delEquipement(rec);
-	                        }
-	                    },
-	                    {
-	                    	id:'equipementsToolbarBtnAdd',
-	                    	icon: 'imgs/add.png',
-	                        text: 'Ajouter',
-	                        disabled: false,
-	                        handler: function(widget, event) {
-	                        	addEquipements();
 	                        }
 	                    }
 	                    ]
