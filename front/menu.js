@@ -28,9 +28,17 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'Liste des équipements',
+				icon: 'imgs/share_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
 					openEquipements();
+				}
+			},{
+				text: 'Ajouter un équipement',
+				icon: 'imgs/plus_alt_32x32.png',
+				clickEvent: 'mousedown',
+				handler: function() {
+					addEquipements();
 				}
 			}]
 		},{

@@ -28,6 +28,19 @@ Ext.define('trameSaved', {
 	]
 });
 
+//Definition du module de recheche de scenarios
+Ext.define('checkScenarios',{
+	extend: 'Ext.data.Model',
+	fields: [
+ 		{name: 'id_legrand_listen', type: 'int'}, 
+		{name: 'unit_listen', type: 'int'}, 
+		{name: 'value_listen', type: 'string'},
+		{name: 'media_listen', type: 'string'},
+		{name: 'in_memory', type: 'string'},
+		{name: 'in_db', type: 'string'}
+	]
+});
+
 //Definition du module de recherche d'une reference
 Ext.define('findReference',{
 	extend: 'Ext.data.Model',

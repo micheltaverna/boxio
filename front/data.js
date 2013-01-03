@@ -10,13 +10,10 @@ new Ext.data.Store({
 	remoteSort: true,
 	autoLoad: true,
 	proxy: {
-		// load using HTTP
 		type: 'ajax',
 		url: '../back/client.php?view=view_all_trame',
-		// the return will be XML, so lets set up a reader
 		reader: {
 			type: 'xml',
-			// records will have an "Item" tag
 			record: 'module',
 			root: 'content',
 			totalRecords: 'total'
@@ -51,6 +48,24 @@ new Ext.data.Store({
 			record: 'module',
 			root: 'content',
 			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+//Gestion des Scenarios
+new Ext.data.Store({
+	storeId: 'DataCheckScenarios',
+	model: 'checkScenarios',
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?check_memory_db',
+		timeout: 300000,
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
 		},
 		simpleSortMode: true
 	}
