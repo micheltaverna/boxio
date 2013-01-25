@@ -45,6 +45,9 @@
         <script type="text/javascript" src="author.js"></script>
         <script type="text/javascript" src="version.js"></script>
         <script type="text/javascript" src="server.js"></script>
+        <script type="text/javascript" src="trigger.js"></script>
+        <script type="text/javascript" src="user.js"></script>
+        <script type="text/javascript" src="doc.js"></script>
         </head>
     <body>
     </body>

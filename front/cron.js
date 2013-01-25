@@ -1,4 +1,4 @@
-var createCron = function() {
+var addCron = function() {
 	
 	var formRef = Ext.create('Ext.form.FieldSet', {
 		title: 'Référence du Jalon',
@@ -673,12 +673,29 @@ var createCron = function() {
 		}]
 	});
 
+	var func_validateAddCron = function() {
+		var form = Ext.getCmp('formSendCron').getForm(),
+			encode = Ext.String.htmlEncode,
+			s='';
+		if (form.isValid()) {
+			var formValues = form.getValues();
+			Ext.iterate(formValues, function(key, value) {
+				value = encode(value);
+				s += Ext.util.Format.format("{0} = {1}<br />", key, value);
+			}, this);
+			alert(s);
+			//var params = "'"+encode(formValues.nom)+"','"+encode(formValues.trame)+"'";
+			//requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'});
+		}
+	};
+
 	var winSendCron = Ext.getCmp('winSendCron');
 	if (!winSendCron) {
 		winSendCron = Ext.create('Ext.window.Window', {
 			xtype: 'form',
 			id: 'winSendCron',
-		    title: 'Ajout du jalon',
+			icon: 'imgs/clock_alt_fill_32x32.png',
+		    title: 'Ajout/Modification d\'un jalon',
 		    closeAction: 'hide',
 		    items: [{
 		            xtype: 'form',
@@ -687,6 +704,7 @@ var createCron = function() {
 		    }],
 		    buttons: [{
 				text: 'Effacer',
+				id: 'winSendCronBtnClear',
 				handler: function() {
 					Ext.getCmp('formSendCron').getForm().reset();
 				}
@@ -697,78 +715,195 @@ var createCron = function() {
 				}
 			},{
 				text: 'Enregistrer',
+				id: 'winSendCronBtnSave',
 				handler: function() {
-					var form = Ext.getCmp('formSendCron').getForm(),
-						encode = Ext.String.htmlEncode,
-						s='';
-					if (form.isValid()) {
-						var formValues = form.getValues();
-						Ext.iterate(formValues, function(key, value) {
-							value = encode(value);
-							s += Ext.util.Format.format("{0} = {1}<br />", key, value);
-						}, this);
-						var params = "'"+encode(formValues.nom)+"','"+encode(formValues.trame)+"'";
-						requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'});
-					}
+					func_validateAddCron();
 				}
 			}]
 		});
 	}
 	winSendCron.show();
+	Ext.getCmp('formSendCron').getForm().reset();
+	winSendCron.setTitle('Ajout d\'un jalon');
+	Ext.getCmp('winSendCronBtnClear').show();
+	Ext.getCmp('winSendCronBtnSave').setHandler(function() {
+		func_validateAddCron();
+	});
 };
 
 var openCron = function() {
 	
-	var filter = {
-        ftype: 'filters',
-        encode: true,
-        local: false,
-		phpMode: true,
-        filters: [{
-            type: 'boolean',
-            dataIndex: 'visible'
-        }]
-    };
-
-	// Creation du tableau
-	var panelCron = new Ext.grid.Panel({
-		title : 'Liste des jalons enregistrés', 
-		store: Ext.data.StoreManager.lookup('DataCron'),
-		disableSelection: false,
-		loadMask: true,
-		width: '100%',
-		height: 500,
-		autoScroll: true,
-		closable: true,
-		features: [filter],
-		columns: [
-			{text: 'id', dataIndex: 'id', width: 131,
-				filter: {
-					type: 'string'
+	var func_createPanel = function() {
+		// Creation du tableau
+		var panelCron = new Ext.grid.Panel({
+			id: 'panelCron',
+			title : 'Liste des jalons enregistrés', 
+			icon: 'imgs/clock_32x32.png',
+			emptyText: 'Aucun jalon trouvé',
+			store: Ext.data.StoreManager.lookup('DataCron'),
+			disableSelection: false,
+			loadMask: true,
+			width: '100%',
+			height: 500,
+			autoScroll: true,
+			closable: true,
+			selModel: {
+				listeners: {
+			        selectionchange: function(sm, selections) {
+			            if (selections.length) {
+			                Ext.getCmp('cronsToolbarBtnDel').enable();
+			                Ext.getCmp('cronsToolbarBtnMod').enable();
+			            } else {
+			                Ext.getCmp('cronsToolbarBtnDel').disable();
+			                Ext.getCmp('cronsToolbarBtnMod').disable();
+			            }
+			        }
 				}
 			},
-			{text: 'nom', dataIndex: 'nom', width: 131},
-			{text: 'minutes', dataIndex: 'minutes', width: 131}, 
-			{text: 'heures', dataIndex: 'heures', width: 131},
-			{text: 'jour', dataIndex: 'jour', width: 131}, 
-			{text: 'jourSemaine', dataIndex: 'jourSemaine', width: 131},
-			{text: 'mois', dataIndex: 'mois', width: 131},
-			{text: 'id_favoris', dataIndex: 'id_favoris', width: 131}, 
-			{text: 'id_macro', dataIndex: 'id_macro', width: 131},
-			{text: 'trame', dataIndex: 'trame', width: 131}, 
-			{text: 'active', dataIndex: 'active', width: 131}
-		],
-		// Creation de la bar de defilement des pages
-		bbar: Ext.create('Ext.PagingToolbar', {
-			store: Ext.data.StoreManager.lookup('DataCron'),
-			displayInfo: true,
-			displayMsg: 'Liste des jalons {0} - {1} of {2}',
-			emptyMsg: "Aucun jalons"
-		})
-	});
-
-	clearContent();
-	var region = Ext.getCmp('Content');
-	region.add(panelCron);
-	panelCron.show();
+			features: [{
+		        ftype: 'filters',
+		        encode: true,
+		        local: false,
+				phpMode: true
+		    },{
+		        ftype: 'groupingsummary',
+		        groupHeaderTpl: '{columnName}: {name} ({rows.length} équipement{[values.rows.length > 1 ? "s" : ""]})',
+		        hideGroupedHeader: false,
+		        enableGroupingMenu: true
+		    }],
+			columns: [
+				{text: 'Id Cron', dataIndex: 'id_cron', width: 131, hidden: true, filter: {type: 'string'},
+					tooltip:'Identifiant du Jalon'},
+				{text: 'Nom', dataIndex: 'nom', width: 131, filter: {type: 'string'},
+					tooltip:'Nom du Jalon'},
+				{text: 'Horodatage', dataIndex: 'readCron', width: 500,
+						tooltip:'Horodatage complet des executions'},
+				{text: 'Minutes', dataIndex: 'minutes', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Selection des minutes'}, 
+				{text: 'Heures', dataIndex: 'heures', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Selection des heures'},
+				{text: 'Jours du mois', dataIndex: 'jour', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Selection des jours du mois'}, 
+				{text: 'Jours de la Semaine', dataIndex: 'jourSemaine', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Selection des jours de la semaine'},
+				{text: 'Mois', dataIndex: 'mois', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Selection des mois'},
+				{text: 'Id du favoris', dataIndex: 'id_favoris', width: 131, hidden: true, filter: {type: 'string'}, 
+						renderer: function(val) {
+							if (val == 0) {
+								return 'Aucun';
+							}
+							return val;
+						},
+						tooltip:'Identifiant du Favoris'}, 
+				{text: 'Nom du favoris', dataIndex: 'nom_favoris', width: 131, hidden: false, filter: {type: 'string'}, 
+						renderer: function(val) {
+							if (val == 0) {
+								return 'Aucun';
+							}
+							return val;
+						},
+						tooltip:'Nom du Favoris'}, 
+				{text: 'Id de la Macro', dataIndex: 'id_macro', width: 131, hidden: true, filter: {type: 'string'},
+						renderer: function(val) {
+							if (val == 0) {
+								return 'Aucun';
+							}
+							return val;
+						},
+						tooltip:'Identifiant de la Macro'},
+				{text: 'Nom de la Macro', dataIndex: 'nom_macro', width: 131, hidden: false, filter: {type: 'string'},
+					renderer: function(val) {
+						if (val == 0) {
+							return 'Aucun';
+						}
+						return val;
+					},
+					tooltip:'Nom de la Macro'},
+				{text: 'Trame', dataIndex: 'trame', width: 131, hidden: true, filter: {type: 'string'},
+						tooltip:'Trame à éxecuter'}, 
+				{text: 'Actif', dataIndex: 'active', width: 65, filter: {type: 'boolean'}, 
+						renderer: function(val) {
+							if (val == 1) {
+								return '<span style="color:green;"><b>OUI</b></span>';
+							} else {
+								return '<span style="color:red;"><b>NON</b></span>';					
+							}
+						},
+						tooltip:'Si le Jalon est actif ou non'},
+				{
+				    xtype:'actioncolumn', tooltip:'Opération sur le jalon',
+					text: 'Action', width: 70,
+				    items: [{
+				        icon: 'imgs/edit.png',
+				        tooltip: 'Editer',
+				        handler: function(grid, rowIndex, colIndex) {
+				            var rec = grid.getStore().getAt(rowIndex);
+				            func_modJalon(rec);
+				        }
+				    },{
+				        icon: 'imgs/delete.png',
+				        tooltip: 'Effacer',
+				        handler: function(grid, rowIndex, colIndex) {
+				            var rec = grid.getStore().getAt(rowIndex);
+				            func_delJalon(rec);
+				        }
+				    }]
+				}
+			],
+			//Creation des boutons
+			dockedItems: [{
+	            xtype: 'toolbar',
+	            items: [{
+	                    	id:'cronsToolbarBtnAdd',
+	                    	icon: 'imgs/add.png',
+	                        text: 'Ajouter',
+	                        tooltip:'Ajouter un jalon',
+	                        disabled: false,
+	                        handler: function(widget, event) {
+	                        	addCron();
+	                        }
+	                    },{
+	                    	id:'cronsToolbarBtnMod',
+	                    	icon: 'imgs/edit.png',
+	                        text: 'Editer',
+	                        tooltip:'Editer le jalon',
+	                        disabled: true,
+	                        handler: function(widget, event) {
+	                        	var rec = Ext.getCmp('panelCron').getSelectionModel().getSelection()[0];
+	                        	func_modCron(rec);
+	                        }
+	                    },{
+	                    	id:'cronsToolbarBtnDel',
+	                    	icon: 'imgs/delete.png',
+	                        text: 'Effacer',
+	                        tooltip:'Effacer le jalon',
+	                        disabled: true,
+	                        handler: function(widget, event) {
+	                        	var rec = Ext.getCmp('panelCron').getSelectionModel().getSelection()[0];
+	                        	func_delCron(rec);
+	                        }
+	                    }]
+	        }],
+			// Creation de la bar de defilement des pages
+			bbar: Ext.create('Ext.PagingToolbar', {
+				store: Ext.data.StoreManager.lookup('DataCron'),
+				displayInfo: true,
+				displayMsg: 'Liste des jalons {0} - {1} of {2}',
+				emptyMsg: "Aucun jalon"
+			})
+		});
+	
+		clearContent();
+		var region = Ext.getCmp('Content');
+		region.add(panelCron);
+		panelCron.show();
+	};
+	
+	if (Ext.getCmp('panelCron')) {
+		Ext.data.StoreManager.lookup('DataCron').reload();
+	} else {
+		func_createPanel();
+		Ext.data.StoreManager.lookup('DataCron').reload();
+	};
 };

@@ -2,6 +2,11 @@
 * Css pour la gestion des selection des minutes
 */
 
+.result_cell_horodatage {
+	color:blue;
+	font-weight:bold;
+}
+
 .select_minutes table, .select_minutes td {
 	border: 1px solid #CCC;
 	border-collapse: collapse;

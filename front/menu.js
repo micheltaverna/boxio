@@ -115,8 +115,16 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'Voir les jalons',
+				icon: 'imgs/clock_32x32.png',
 				handler: function() {
 					openCron();
+				}
+			},{
+				text: 'Ajouter un jalon',
+				icon: 'imgs/clock_alt_fill_32x32.png',
+				clickEvent: 'mousedown',
+				handler: function() {
+					addCron();
 				}
 			}]
 		}]
@@ -183,24 +191,18 @@ new Ext.toolbar.Toolbar({
 			menu: [{text: 'Créer une macro'}]
 		},{
 			xtype:'splitbutton',
-			text: 'Jalons',
-			icon: 'imgs/clock_alt_fill_32x32.png',
-			arrowAlign:'bottom',
-			handler: function() {
-				createCron();
-			},
-			menu: [{
-				text: 'Ajouter un jalon',
-				handler: function() {
-					createCron();
-				}
-			}]
-		},{
-			xtype:'splitbutton',
 			text: 'Déclencheurs',
 			icon: 'imgs/target_32x32.png',
 			arrowAlign:'bottom',
-			menu: [{text: 'Créer un déclencheur'}]
+			handler: function() {
+				openTrigger();
+			},
+			menu: [{
+				text: 'Créer un déclencheur',
+				handler: function() {
+					openTrigger();
+				}
+			}]
 		}]
 	},{
 		xtype: 'buttongroup',
@@ -214,7 +216,15 @@ new Ext.toolbar.Toolbar({
 			text: 'Utilisateur',
 			icon: 'imgs/user_24x32.png',
 			arrowAlign:'bottom',
-			menu: [{text: 'Modifier l\'utilisateur'}]
+			handler: function() {
+				openUser();
+			},
+			menu: [{
+				text: 'Modifier l\'utilisateur',
+				handler: function() {
+					openUser();
+				}
+			}]
 		},{
 			xtype:'splitbutton',
 			text: 'Serveur',
@@ -279,7 +289,16 @@ new Ext.toolbar.Toolbar({
 			text: 'Documentations',
 			icon: 'imgs/book_alt2_32x28.png',
 			arrowAlign:'bottom',
-			menu: [{text: 'Legrand'}]
+			clickEvent: 'mousedown',
+			handler: function() {
+				openDoc();
+			},
+			menu: [{
+				text: 'Boxio',
+				handler: function() {
+					openDoc();
+				}
+			}]
 		}]
 	},{
 		xtype: 'buttongroup',
@@ -294,13 +313,11 @@ new Ext.toolbar.Toolbar({
 			text: 'Version',
 			icon: 'imgs/ampersand_19x32.png',
 			arrowAlign:'bottom',
-			clickEvent: 'mousedown',
 			handler: function() {
 				openVersion();
 			},
 			menu: [{
 				text: 'Version',
-				clickEvent: 'mousedown',
 				handler: function() {
 					openVersion();
 				}
@@ -311,13 +328,11 @@ new Ext.toolbar.Toolbar({
 			text: 'L\'Auteur',
 			icon: 'imgs/question_mark_16x32.png',
 			arrowAlign:'bottom',
-			clickEvent: 'mousedown',
 			handler: function() {
 				openAuthor();
 			},
 			menu: [{
 				text: 'L\'Auteur',
-				clickEvent: 'mousedown',
 				handler: function() {
 					openAuthor();
 				}

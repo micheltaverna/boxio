@@ -1,73 +1,42 @@
 // Creation du model de Data
 var openMacros = function() {
-
-	Ext.define('macros',{
-		extend: 'Ext.data.Model',
-		fields: [
-			{name: 'id_command', type: 'int'}, 
-			{name: 'id_macro', type: 'int'}, 
-			{name: 'nom', type: 'string'}, 
-			{name: 'id_favoris', type: 'int'}, 
-			{name: 'trame_favoris', type: 'string'},
-			{name: 'trame', type: 'string'},
-			{name: 'timing', type: 'int'} 
-		]
-	});
-	
-	// Creation des Data
-	var DataMacros = new Ext.data.Store({
-		storeId: 'DataMacros',
-		model: 'macros',
-		pageSize: 20,
-		remoteSort: true,
-		autoLoad: true,
-		proxy: {
-			type: 'ajax',
-			url: '../back/client.php?view=view_macros',
-			reader: {
-				type: 'xml',
-				record: 'module',
-				root: 'content',
-				totalRecords: 'total'
-			},
-			simpleSortMode: true
-		}
-	});
-	
-	var filter = {
-        ftype: 'filters',
-        encode: true,
-        local: false,
-		phpMode: true,
-        filters: [{
-            type: 'boolean',
-            dataIndex: 'visible'
-        }]
-    };
-
 	// Creation du tableau
 	var panelMacros = new Ext.grid.Panel({
 		title : 'Liste des macros enregistrées', 
-		store: DataMacros,
+		store: Ext.data.StoreManager.lookup('DataMacros'),
 		disableSelection: false,
 		loadMask: true,
 		width: '100%',
 		height: 500,
 		autoScroll: true,
 		closable: true,
-		features: [filter],
+		features: [{
+	        ftype: 'filters',
+	        encode: true,
+	        local: false,
+			phpMode: true
+	    },{
+	        ftype: 'groupingsummary',
+	        groupHeaderTpl: '{columnName}: {name} ({rows.length} commande{[values.rows.length > 1 ? "s" : ""]})',
+	        hideGroupedHeader: false,
+	        enableGroupingMenu: true
+	    }],
 		columns: [
-			{text: 'id_command', dataIndex: 'id_command', width: 131,
-				filter: {
-					type: 'string'
+			{text: 'Id de la Commande', dataIndex: 'id_command', width: 131, hidden: true, filter: {type: 'string'}},
+			{text: 'Id de la Macro', dataIndex: 'id_macro', width: 131, hidden: true, filter: {type: 'string'}}, 
+			{text: 'Nom de la Macro', dataIndex: 'nom', width: 200, hidden: true, filter: {type: 'string'}},
+			{text: 'Id du Favoris', dataIndex: 'id_favoris', hidden: true, width: 131, filter: {type: 'string'}}, 
+			{text: 'Nom de la Commande', dataIndex: 'nom_command', width: 200, filter: {type: 'string'}},
+			{text: 'Trame executée', dataIndex: 'trame', width: 131, hidden: true, filter: {type: 'string'}}, 
+			{text: 'Temporisation', dataIndex: 'timing', width: 131, filter: {type: 'numeric'}, renderer: function(val) {
+				if (val == 0) {
+					return '<span style="font-style:italic;">Immédiat</span>';
+				} else if (val == 1) {
+					return '<span style="font-style:italic;">'+val+'<sup>ère</sup> seconde</span>';
+				} else {
+					return '<span style="font-style:italic;">'+val+'<sup>ème</sup> secondes</span>';
 				}
-			},
-			{text: 'id_macro', dataIndex: 'id_macro', width: 131}, 
-			{text: 'nom', dataIndex: 'nom', width: 131},
-			{text: 'id_favoris', dataIndex: 'id_favoris', width: 131}, 
-			{text: 'trame_favoris', dataIndex: 'trame_favoris', width: 131},
-			{text: 'trame', dataIndex: 'trame', width: 131}, 
-			{text: 'timing', dataIndex: 'timing', width: 131}
+			}}
 		],
 		// Creation de la bar de defilement des pages
 		bbar: Ext.create('Ext.PagingToolbar', {
@@ -82,4 +51,8 @@ var openMacros = function() {
 	var region = Ext.getCmp('Content');
 	region.add(panelMacros);
 	panelMacros.show();
+};
+
+var addMacros = function() {
+	
 };
