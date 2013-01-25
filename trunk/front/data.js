@@ -65,7 +65,29 @@ new Ext.data.Store({
 		reader: {
 			type: 'xml',
 			record: 'module',
+			root: 'content'
+		},
+		simpleSortMode: true
+	}
+});
+
+// Creation des macros
+new Ext.data.Store({
+	storeId: 'DataMacros',
+	model: 'macros',
+	pageSize: 20,
+	remoteSort: true,
+	remoteGroup: true,
+	autoLoad: true,
+	groupField: 'nom',
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_macros',
+		reader: {
+			type: 'xml',
+			record: 'module',
 			root: 'content',
+			totalRecords: 'total'
 		},
 		simpleSortMode: true
 	}
@@ -160,6 +182,8 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: true,
+	remoteGroup: true,
+	groupField: 'active',
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_cron',

@@ -31,6 +31,7 @@ var openScenarios = function() {
 		model: 'Scenarios',
 		pageSize: 50,
 		remoteSort: true,
+		remoteGroup: true,
 		autoLoad: true,
 		proxy: {
 			// load using HTTP

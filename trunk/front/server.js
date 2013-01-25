@@ -95,7 +95,7 @@ var openServer = function() {
 			defaults: {
 				width: 600,
 				layout: {
-					type: 'vbox',
+					type: 'vbox'
 				}
 			},
 			items: [{
