@@ -99,6 +99,13 @@ class legrand_def {
 			)
 	);
 
+	//Definition des function code
+	public $OWN_FUNCTION_CODE = array(
+			"49" => "LIGHTING",
+			"50" => "SHUTTER",
+			"51" => "CONFORT"
+	);
+	
 	//Definition des differents parametres
 	public $OWN_PARAM_DEFINITION = array(
 			"GO_TO_LEVEL_TIME" => array("level", "time"),

@@ -50,6 +50,12 @@ class legrand_client {
 						$type_array[] = sprintf("%s='%s'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}[$j]));
 					}
 					$query_array[] = '('.implode(' OR ', $type_array).')';
+				} else if ($filter[$i]->{'type'} == 'boolean') {
+					if ($filter[$i]->{'value'} == true) {
+						$query_array[] = sprintf("%s is true", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
+					} else {
+						$query_array[] = sprintf("%s is false", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
+					}
 				}
 			}
 			$query .= sprintf(" WHERE %s", implode(' AND ', $query_array));
@@ -469,8 +475,10 @@ class legrand_client {
 			return;
 		} else if ($type == "favoris") {
 			$res = $this->mysqli->query("CALL send_favoris('".$command."')") ;
+			$function = "CALL send_favoris('".$command."')";
 		} else if ($type == "macros") {
 			$res = $this->mysqli->query("CALL send_macros('".$command."')") ;
+			$function = "CALL send_macros('".$command."')";
 		} else {
 			$res = "Type d'action inconnu :".$type;
 		}
@@ -478,7 +486,7 @@ class legrand_client {
 		$tag_request = $this->xml->createElement('request');
 		//Creation de l'elem function
 		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = 'send_command';
+		$attr_request->value = $function;
 		$tag_request->appendChild($attr_request);
 		//Creation de l'elem return
 		$attr_return = $this->xml->createAttribute('status');
@@ -585,6 +593,8 @@ class legrand_client {
 						}
 						$id_listen = $this->getId($param['address']);
 						$unit_listen = $this->getUnit($param['address']);
+						$memory[$param['frame_number']]['id_legrand'] = $id;
+						$memory[$param['frame_number']]['unit'] = $unit;
 						$memory[$param['frame_number']]['id_legrand_listen'] = $id_listen;
 						$memory[$param['frame_number']]['unit_listen'] = $unit_listen;
 						$memory[$param['frame_number']]['value_listen'] = $param['preset_value'];
@@ -606,6 +616,22 @@ class legrand_client {
 				return($tag_elems);
 			}
 			//Requetage et preparation des resultats des scenarios en DB
+			//@TODO: Faire une requete sur l'id_legrand pour recup nom, zone et family
+			$query = "SELECT equipements.nom As nom, zones.nom AS zone, family AS family FROM equipements
+						LEFT JOIN zones ON equipements.id_legrand = zones.id_legrand
+						LEFT JOIN boxio.references ON equipements.ref_legrand = boxio.references.ref_legrand
+						WHERE equipements.id_legrand = '$id' GROUP BY nom;";
+			$res = $this->mysqli->query($query);
+			if ($res) {
+				$trame = $res->fetch_assoc();
+				$nom = $trame['nom'];
+				$zone = $trame['zone'];
+				$family = $trame['family'];
+			} else {
+				$nom = 'UNKNOWN';
+				$zone = 'UNKNOWN';
+				$family = 'UNKNOWN';
+			}
 			$query = "SELECT id_legrand_listen,unit_listen,value_listen,media_listen FROM boxio.scenarios WHERE id_legrand='$id' AND unit='$unit';";
 			$res = $this->mysqli->query($query);
 			if ($res) {
@@ -622,6 +648,9 @@ class legrand_client {
 								&& $memory[$key]['media_listen'] == $media_listen) {
 							$memory[$key]['in_db'] = 'true';
 							$find = true;
+							$memory[$key]['nom'] = $nom;
+							$memory[$key]['zone'] = $zone;
+							$memory[$key]['family'] = $family;
 							break;
 						}
 					}
@@ -633,6 +662,9 @@ class legrand_client {
 						$memory['db_'.$i]['media_listen'] = $media_listen;
 						$memory['db_'.$i]['in_memory'] = 'false';
 						$memory['db_'.$i]['in_db'] = 'true';
+						$memory['db_'.$i]['nom'] = $nom²;
+						$memory['db_'.$i]['zone'] = $zone;
+						$memory['db_'.$i]['family'] = $family;
 						$i++;
 					}
 				}
@@ -682,23 +714,12 @@ class legrand_client {
 		}
 	}
 
-
-
-
-
-
-
-
-
-
-
-
 	/*
 	 // FONCTION : AJOUTE/MET A JOUR UN SCENARIO
 	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int,value_listen=int,media_listen=int,where=string(db|memory|both)
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where) {
+	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where = 'both') {
 		if ($where == 'db' || $where == 'both') {
 			$res = $this->mysqli->query("CALL add_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."','".$value_listen."','".$media_listen."');");
 		}
@@ -751,16 +772,16 @@ class legrand_client {
 		$this->xml_root->appendChild($tag_request);
 	}
 
-
 	/*
 	 // FONCTION : SUPPRIME UN SCENARIO
 	// PARAM : id_legrand=int,unit=int,id_legrand_listen=int,unit_listen=int
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where) {
-		if ($where == 'db') {
+	public function del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where='both') {
+		if ($where == 'db' || $where == 'both') {
 			$res = $this->mysqli->query("CALL del_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."');");
-		} else if ($where == 'memory') {
+		}
+		if ($where == 'memory' || $where == 'both') {
 			//On programme le module
 			$media = "";
 			if ($trame['media'] == 'RF') {
@@ -808,11 +829,6 @@ class legrand_client {
 		$this->xml_root->appendChild($tag_request);
 	}
 
-
-
-
-
-
 	/*
 	 // FONCTION : FUNCTION PRINCIPALE DU CLIENT POUR TESTER LES PARAMETRES EN GET
 	*/
@@ -823,9 +839,6 @@ class legrand_client {
 		header('Content-type: text/xml; charset=utf-8');
 		$this->xml = new DOMDocument('1.0', 'utf-8');
 		$this->xml_root = $this->xml->createElement('root');
-
-
-
 
 		if (isset($_GET['add_scenario'])) {
 			$id_legrand = $_GET['id_legrand'];
@@ -846,9 +859,6 @@ class legrand_client {
 			$where = $_GET['where'];
 			$this->del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where);
 		}
-
-
-
 
 		if (isset($_GET['send_command'])) {
 			if (!isset($_GET['type'])) {
