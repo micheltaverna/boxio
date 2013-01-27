@@ -484,6 +484,7 @@ var addCron = function() {
 				text: 'Séléction',
 		        icon: 'imgs/accept.png',
 		        iconAlign: 'left',
+				tooltip: 'Selection des minutes',
 				handler: function() {
 			        selectMinutes.show();
 			    }
@@ -504,6 +505,7 @@ var addCron = function() {
 				text: 'Séléction',
 		        icon: 'imgs/accept.png',
 		        iconAlign: 'left',
+				tooltip: 'Selection des heures',
 				handler: function() {
 			        selectHours.show();
 			    }
@@ -524,6 +526,7 @@ var addCron = function() {
 				text: 'Séléction',
 		        icon: 'imgs/accept.png',
 		        iconAlign: 'left',
+				tooltip: 'Selection des jours du mois',
 				handler: function() {
 			        selectDayOfMonth.show();
 			    }
@@ -544,6 +547,7 @@ var addCron = function() {
 				text: 'Séléction',
 		        icon: 'imgs/accept.png',
 		        iconAlign: 'left',
+				tooltip: 'Selection des jours de la semaine',
 				handler: function() {
 			        selectDayOfWeek.show();
 			    }
@@ -564,44 +568,127 @@ var addCron = function() {
 				text: 'Séléction',
 		        icon: 'imgs/accept.png',
 		        iconAlign: 'left',
+				tooltip: 'Selection des mois',
 				handler: function() {
 					selectMonth.show();
 			    }
 			}]
 		}]
 	});
-		
-	var filter = {
-        ftype: 'filters',
-        encode: true,
-        local: false,
-		phpMode: true,
-        filters: [{
-            type: 'boolean',
-            dataIndex: 'visible'
-        }]
-    };
 
-	// Creation du tableau
+	// Creation du tableau Macros
+	var panelMacros = new Ext.grid.Panel({
+		title : 'Liste des macros enregistrées', 
+		store: Ext.data.StoreManager.lookup('DataMacros'),
+		disableSelection: false,
+		loadMask: true,
+		width: '100%',
+		icon: 'imgs/list_32x28.png',
+		autoScroll: true,
+		closable: false,
+		features: [{
+	        ftype: 'filters',
+	        encode: true,
+	        local: false,
+			phpMode: true
+	    },{
+	        ftype: 'groupingsummary',
+	        groupHeaderTpl: [
+	        	'{columnName}: {name} ({rows.length} commande{[values.rows.length > 1 ? "s" : ""]})'+
+        	    '<span> - <a href="#" class="buttonTpl" onclick="{rows:this.formatClick}"><span class="accept">Sélectionner</span></a></span>',
+        	    {
+	        		formatClick: function (rows) {
+	        			var id_macro = rows[0].data.id_macro;
+	        			var nom = rows[0].data.nom;
+	        			return "\
+	        			var form=Ext.getCmp('formSendCron').getForm();\
+	        			var values=form.getValues();\
+	        			var apply=true;\
+	        			if (values.favoris != ''){\
+	        				Ext.MessageBox.confirm('Confirmation','Vous avez déjà inscrit un Favoris, voulez-vous le remplacer par cette Macro ?', function(res) {\
+	        					if (res == 'yes') {\
+			        				form.setValues({macros:"+id_macro+",favoris:'',trame:''});\
+			        				Ext.getCmp('formCronFavorisNom').update('');\
+			        				Ext.getCmp('formCronMacrosNom').update('<span><i>"+nom+"</i></span>');\
+			        			}\
+	        				});\
+	        			} else if (values.trame != ''){\
+	        				Ext.MessageBox.confirm('Confirmation','Vous avez déjà inscrit une Trame, voulez-vous la remplacer par cette Macro ?', function(res) {\
+	        					if (res == 'yes') {\
+			        				form.setValues({macros:"+id_macro+",favoris:'',trame:''});\
+			        				Ext.getCmp('formCronFavorisNom').update('');\
+			        				Ext.getCmp('formCronMacrosNom').update('<span><i>"+nom+"</i></span>');\
+			        			}\
+	        				});\
+	        			} else {\
+	        				form.setValues({macros:"+id_macro+",favoris:'',trame:''});\
+	        				Ext.getCmp('formCronFavorisNom').update('');\
+	        				Ext.getCmp('formCronMacrosNom').update('<span><i>"+nom+"</i></span>');\
+	        			}\
+	        			";
+	        		}
+	        	}
+        	],
+	        hideGroupedHeader: false,
+	        startCollapsed: true,
+	        enableGroupingMenu: true
+	    }],
+		columns: [
+			{text: 'Id de la Commande', dataIndex: 'id_command', width: 131, hidden: true, filter: {type: 'string'}},
+			{text: 'Id de la Macro', dataIndex: 'id_macro', width: 131, hidden: true, filter: {type: 'string'}}, 
+			{text: 'Nom de la Macro', dataIndex: 'nom', width: 350, hidden: true, filter: {type: 'string'}},
+			{text: 'Id du Favoris', dataIndex: 'id_favoris', hidden: true, width: 131, filter: {type: 'string'}}, 
+			{text: 'Nom de la Commande', dataIndex: 'nom_command', width: 200, filter: {type: 'string'}},
+			{text: 'Trame executée', dataIndex: 'trame', width: 131, hidden: true, filter: {type: 'string'}}, 
+			{text: 'Temporisation', dataIndex: 'timing', width: 200, filter: {type: 'numeric'}, renderer: function(val) {
+				if (val == 0) {
+					return '<span style="font-style:italic;">Immédiat</span>';
+				} else if (val == 1) {
+					return '<span style="font-style:italic;">'+val+'<sup>ère</sup> seconde</span>';
+				} else {
+					return '<span style="font-style:italic;">'+val+'<sup>ème</sup> secondes</span>';
+				}
+			}}
+		],
+		// Creation de la bar de defilement des pages
+		bbar: Ext.create('Ext.PagingToolbar', {
+			store: Ext.data.StoreManager.lookup('DataMacros'),
+			displayInfo: true,
+			displayMsg: 'Liste des macros {0} - {1} de {2}',
+			emptyMsg: "Aucune macros"
+		})
+	});
+	
+	// Creation du tableau favoris
 	var panelFavoris = Ext.create('Ext.grid.Panel', {
 		title : 'Liste des favoris enregistrés', 
 		store: Ext.data.StoreManager.lookup('DataFavoris'),
 		disableSelection: false,
 		loadMask: true,
 		width: '100%',
+		icon: 'imgs/heart_stroke_32x28.png',
 		autoScroll: true,
 		closable: false,
-		features: [filter],
+		features: [{
+	        ftype: 'filters',
+	        encode: true,
+	        local: false,
+			phpMode: true,
+	        filters: [{
+	            type: 'boolean',
+	            dataIndex: 'visible'
+	        }]
+	    }],
 		columns: [
 			{
 				text: 'Nom', 
 				dataIndex: 'nom', 
-				width: 320,
+				width: 390,
 				filter: {
 					type: 'string'
 				}
 			},{
-				text: 'Référence', dataIndex: 'id', width: 75,
+				text: 'Référence', dataIndex: 'id', width: 75, hidden: true,
 				filter: {
 					type: 'string'
 				}
@@ -614,9 +701,30 @@ var addCron = function() {
 			        icon: 'imgs/accept.png',
 			        tooltip: 'Séléctionner',
 			        handler: function(grid, rowIndex, colIndex) {
-			            var rec = grid.getStore().getAt(rowIndex);
-			            var form = this.up('form').getForm();
-			            form.setValues({favoris:rec.get('id')});
+			        	var rec = grid.getStore().getAt(rowIndex);
+			        	var form = Ext.getCmp('formSendCron').getForm();
+	        			var values = form.getValues();
+	        			if (values.macros != '') {
+	        				Ext.MessageBox.confirm('Confirmation', 'Vous avez déjà inscrit une Macro, voulez-vous la remplacer par ce Favoris ?', function(res) {
+	        					if (res == 'yes') { 
+	    				            form.setValues({favoris:rec.get('id'),macros:'',trame:''});
+	    				            Ext.getCmp('formCronFavorisNom').update('<span style="font-style:italic;">'+rec.get('nom')+'</span>');
+	    							Ext.getCmp('formCronMacrosNom').update('');
+	        					}
+	        				});
+	        			} else if (values.trame != '') {
+	        				Ext.MessageBox.confirm('Confirmation', 'Vous avez déjà inscrit une Trame, voulez-vous la remplacer par ce Favoris ?', function(res) {
+	        					if (res == 'yes') { 
+	    				            form.setValues({favoris:rec.get('id'),macros:'',trame:''});
+	    				            Ext.getCmp('formCronFavorisNom').update('<span style="font-style:italic;">'+rec.get('nom')+'</span>');
+	    							Ext.getCmp('formCronMacrosNom').update('');
+	    						}
+	        				});
+	        			} else {
+				            form.setValues({favoris:rec.get('id'),macros:'',trame:''});
+				            Ext.getCmp('formCronFavorisNom').update('<span style="font-style:italic;">'+rec.get('nom')+'</span>');
+							Ext.getCmp('formCronMacrosNom').update('');
+	        			}
 			        }
 			    }]
 			},{
@@ -630,7 +738,7 @@ var addCron = function() {
 		bbar: Ext.create('Ext.PagingToolbar', {
 			store: Ext.data.StoreManager.lookup('DataFavoris'),
 			displayInfo: true,
-			displayMsg: 'Liste des favoris {0} - {1} of {2}',
+			displayMsg: 'Liste des favoris {0} - {1} de {2}',
 			emptyMsg: "Aucun favoris"
 		})
 	});
@@ -645,24 +753,111 @@ var addCron = function() {
 	        items: [{
 				title: 'Favoris',
 				items: [{
-					xtype: 'textfield',
-		            padding: 10,
-					name: 'favoris',
-					width:370,
-					labelWidth:120,
-					fieldLabel: 'Référence du Favoris',
-					msgTarget: 'side',
-					allowBlank: true
-				},
-					panelFavoris
+					xtype: 'fieldset',
+					padding: 0,
+					margin: 0,
+					border: 0,
+					defaults: {
+						layout: 'hbox',
+						padding: 0,
+						margin: 0
+					},
+					items: [
+					{
+						xtype: 'fieldcontainer',
+						margin: 5,
+						items: [{
+							xtype: 'textfield',
+							flex: 2,
+							fieldLabel: 'Référence du Favoris',
+							msgTarget: 'side',
+							labelWidth : 120,
+							name: 'favoris',
+							allowBlank: true,
+						},{
+							xtype: 'box',
+							id: 'formCronFavorisNom',
+							flex: 2,
+							border: 0,
+							margin: 2,
+							html: ''
+						},{
+							xtype: 'button',
+							margin: '0 0 0 5',
+							flex: 1,
+					        icon: 'imgs/delete.png',
+					        iconAlign: 'left',
+							text: 'Effacer',
+							tooltip: 'Efface la selection du favoris en cours',
+							handler: function() {
+								Ext.getCmp('formSendCron').getForm().setValues({favoris:null});
+								Ext.getCmp('formCronFavorisNom').update('');
+							}
+						}]
+					},{
+						xtype: 'fieldcontainer',
+						items: [panelFavoris]
+					}
+					]
+				}
 				]
 			},{
 				title: 'Macros',
-				html:'test content'
+				items: [{
+					xtype: 'fieldset',
+					padding: 0,
+					margin: 0,
+					border: 0,
+					defaults: {
+						layout: 'hbox',
+						padding: 0,
+						margin: 0
+					},
+					items: [
+					{
+						xtype: 'fieldcontainer',
+						margin: 5,
+						items: [{
+							xtype: 'textfield',
+							flex: 2,
+							fieldLabel: 'Référence de la Macros',
+							msgTarget: 'side',
+							labelWidth : 140,
+							name: 'macros',
+							allowBlank: true,
+						},{
+							xtype: 'box',
+							id: 'formCronMacrosNom',
+							flex: 2,
+							border: 0,
+							margin: 2,
+							html: ''
+						},{
+							xtype: 'button',
+							margin: '0 0 0 5',
+							flex: 1,
+					        icon: 'imgs/delete.png',
+					        iconAlign: 'left',
+							text: 'Effacer',
+							tooltip: 'Efface la selection de la Macro en cours',
+							handler: function() {
+								Ext.getCmp('formSendCron').getForm().setValues({macros:null});
+								Ext.getCmp('formCronMacrosNom').update('');
+							}
+						}]
+					},{
+						xtype: 'fieldcontainer',
+						items: [panelMacros]
+					}
+					]
+				}
+				]
 			},{
 				title: 'Trame',
 				items: [{
 					xtype: 'textfield',
+					width: 450,
+					labelWidth: 50,
 		            padding: 10,
 					name: 'trame',
 					fieldLabel: 'Trame',
@@ -675,18 +870,37 @@ var addCron = function() {
 
 	var func_validateAddCron = function() {
 		var form = Ext.getCmp('formSendCron').getForm(),
-			encode = Ext.String.htmlEncode,
-			s='';
+		encode = Ext.String.htmlEncode;
 		if (form.isValid()) {
-			var formValues = form.getValues();
-			Ext.iterate(formValues, function(key, value) {
-				value = encode(value);
-				s += Ext.util.Format.format("{0} = {1}<br />", key, value);
-			}, this);
-			alert(s);
-			//var params = "'"+encode(formValues.nom)+"','"+encode(formValues.trame)+"'";
-			//requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'});
+			//Creation de l'envoie
+			var params = "'"+encode(formValues.nom)+"','"+
+							encode(formValues.reference)+"','"+
+							encode(formValues.nom)+"','"+
+							encode(formValues.zone)+"'";
+			requestCall('add_equipement', params, {ok:'équipement modifié !', error:'impossible de modifier l\'équipement !'}, {
+				onsuccess:function(response){
+					Ext.getCmp('formSendCron').getForm().reset();
+					Ext.getCmp('winSendCron').hide();
+					Ext.data.StoreManager.lookup('DataCron').reload();
+            	},
+            	onfailure:function(response){
+					Ext.MessageBox.show({
+						title: 'Erreur',
+						msg: 'Le jalon "'+formValues.nom+'" na pas pu être ajouté ! Erreur de communication, réessayez plus tard.',
+						buttons: Ext.MessageBox.OK,
+						icon: Ext.MessageBox.ERROR
+					});
+            	}
+            });
+		} else {
+        	Ext.MessageBox.show({
+				title: 'Erreur',
+				msg: 'Les champs ne sont pas valides !',
+				buttons: Ext.MessageBox.OK,
+				icon: Ext.MessageBox.ERROR
+			});
 		}
+
 	};
 
 	var winSendCron = Ext.getCmp('winSendCron');
@@ -767,7 +981,7 @@ var openCron = function() {
 				phpMode: true
 		    },{
 		        ftype: 'groupingsummary',
-		        groupHeaderTpl: '{columnName}: {name} ({rows.length} équipement{[values.rows.length > 1 ? "s" : ""]})',
+		        groupHeaderTpl: '{columnName}: {name} ({rows.length} jalon{[values.rows.length > 1 ? "s" : ""]})',
 		        hideGroupedHeader: false,
 		        enableGroupingMenu: true
 		    }],
@@ -889,7 +1103,7 @@ var openCron = function() {
 			bbar: Ext.create('Ext.PagingToolbar', {
 				store: Ext.data.StoreManager.lookup('DataCron'),
 				displayInfo: true,
-				displayMsg: 'Liste des jalons {0} - {1} of {2}',
+				displayMsg: 'Liste des jalons {0} - {1} de {2}',
 				emptyMsg: "Aucun jalon"
 			})
 		});

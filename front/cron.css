@@ -306,3 +306,47 @@
 	background: #FFF url(imgs/foot_bck.gif) repeat;
 	color: #666;
 }
+
+/*
+* CSS des Buttons Group
+*/
+
+a.buttonTpl{
+	background-color: white;
+    background-image: -moz-linear-gradient(center top , #FFFFFF, #F9F9F9 48%, #E2E2E2 52%, #E7E7E7);
+    border-radius: 3px 3px 3px 3px;
+    border-style: solid;
+    border-width: 1px;
+    padding: 2px;
+
+	color:#555555;
+	text-decoration:none;
+ 
+	background-repeat: no-repeat;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    white-space: nowrap;
+    
+}
+a:hover.buttonTpl{
+	color:#0066CC;
+}
+
+.add{
+	background:url(imgs/add.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
+.accept{
+	background:url(imgs/accept.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
+.delete{
+	background:url(imgs/delete.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
+ 
