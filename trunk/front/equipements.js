@@ -804,7 +804,7 @@ var openEquipements = function() {
 			bbar: Ext.create('Ext.PagingToolbar', {
 				store: Ext.data.StoreManager.lookup('DataEquipements'),
 				displayInfo: true,
-				displayMsg: 'Liste des équipements {0} - {1} of {2}',
+				displayMsg: 'Liste des équipements {0} - {1} de {2}',
 				emptyMsg: "Aucun équipement"
 			})
 		});
