@@ -41,7 +41,10 @@ class legrand_client {
 					);
 			$filter = json_decode(urldecode($_GET['filter']));
 			for ($i=0,$query_array=array(); $filter[$i]; $i++) {
-				if ($filter[$i]->{'type'} == 'string') {
+				if (!isset($filter[$i]->{'type'})) {
+					$query_array[] = sprintf("%s='%s'", $filter[$i]->{'property'}, utf8_decode($filter[$i]->{'value'}));
+				}
+				else if ($filter[$i]->{'type'} == 'string') {
 					$query_array[] = sprintf("%s LIKE '%%%s%%'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
 				} else if ($filter[$i]->{'type'} == 'numeric') {
 					$query_array[] = sprintf("%s%s%s", $filter[$i]->{'field'}, $tab_type[$filter[$i]->{'comparison'}], utf8_decode($filter[$i]->{'value'}));
@@ -52,11 +55,11 @@ class legrand_client {
 					$query_array[] = '('.implode(' OR ', $type_array).')';
 				} else if ($filter[$i]->{'type'} == 'boolean') {
 					if ($filter[$i]->{'value'} == true) {
-						$query_array[] = sprintf("%s is true", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
+						$query_array[] = sprintf("%s is true", $filter[$i]->{'field'});
 					} else {
-						$query_array[] = sprintf("%s is false", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
+						$query_array[] = sprintf("%s is false", $filter[$i]->{'field'});
 					}
-				}
+				} 
 			}
 			$query .= sprintf(" WHERE %s", implode(' AND ', $query_array));
 		}
@@ -301,15 +304,17 @@ class legrand_client {
 		//Requetage et preparation des resultats
 		//cas particuler du comptage des trames
 		if ($view_name == 'view_all_trame') {
-			$query = "SELECT COUNT(*) AS total FROM trame_decrypted;";
+			$query = "SELECT COUNT(*) AS total FROM trame_decrypted";
 		} else {
-			$query = "SELECT COUNT(*) AS total FROM ".$view_name.";";
+			$query = "SELECT COUNT(*) AS total FROM ".$view_name;
+		}
+		if (preg_match('/WHERE/i', $where)) {
+			$query .= $where;
 		}
 		$res = $this->mysqli->query($query);
 		$trame = $res->fetch_assoc();
 		$total = $trame['total'];
-		$query = "SELECT * FROM ".$view_name;
-		$query .= $where;
+		$query = "SELECT * FROM ".$view_name.$where;
 		$res = $this->mysqli->query($query);
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -323,10 +328,10 @@ class legrand_client {
 		//Creation de l'elem return
 		$attr_return = $this->xml->createAttribute('status');
 		if (!$res) {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->error.'. Request='.$query);
+			$tag_return = $this->xml->createElement('return', 'Error='.$this->mysqli->error.'; Request='.$query);
 			$attr_return->value = 'false';
 		} else {
-			$tag_return = $this->xml->createElement('return', $this->mysqli->affected_rows.' Request='.$query);
+			$tag_return = $this->xml->createElement('return', 'Request='.$query);
 			$attr_return->value = 'true';
 		}
 		$tag_return->appendChild($attr_return);
