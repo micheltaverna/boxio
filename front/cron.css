@@ -349,4 +349,9 @@ a:hover.buttonTpl{
 	text-indent:20px;
 	display:block;
 }
- 
+.edit{
+	background:url(imgs/edit.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
+

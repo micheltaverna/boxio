@@ -54,6 +54,7 @@
 <script type="text/javascript">
 var version = "Beta 1.0";
 var auteur = "Michel Taverna";
+layout.func.init();
 </script>
 
 </html> 
