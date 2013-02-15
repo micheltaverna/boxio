@@ -8,7 +8,7 @@ new Ext.data.Store({
 	model: 'Trame',
 	pageSize: 50,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_all_trame',
@@ -26,7 +26,7 @@ new Ext.data.Store({
 new Ext.data.Store({
 	storeId: 'savedTrame',
 	model: 'trameSaved',
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'localstorage',
 	    id: 'cookiesTrameExt'
@@ -39,7 +39,7 @@ new Ext.data.Store({
 	model: 'references',
 	pageSize: 20,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_references',
@@ -78,7 +78,29 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	remoteGroup: true,
-	autoLoad: true,
+	autoLoad: false,
+	groupField: 'nom',
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_macros',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+//Creation des commande de macros
+new Ext.data.Store({
+	storeId: 'DataMacrosCommands',
+	model: 'macros',
+	pageSize: 20,
+	remoteSort: true,
+	remoteGroup: true,
+	autoLoad: false,
 	groupField: 'nom',
 	proxy: {
 		type: 'ajax',
@@ -99,7 +121,7 @@ var DataFavoris = new Ext.data.Store({
 	model: 'favoris',
 	pageSize: 20,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_favoris',
@@ -119,7 +141,7 @@ var DataUnknownEquipements = new Ext.data.Store({
 	model: 'unknownEquipements',
 	pageSize: 20,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_unknown_equipements',
@@ -140,7 +162,7 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	remoteGroup: true,
-	autoLoad: true,
+	autoLoad: false,
 	groupField: 'zone',
 	proxy: {
 		type: 'ajax',
@@ -161,7 +183,7 @@ new Ext.data.Store({
 	model: 'zones',
 	pageSize: 20,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_zones',
@@ -181,7 +203,7 @@ new Ext.data.Store({
 	model: 'cron',
 	pageSize: 20,
 	remoteSort: true,
-	autoLoad: true,
+	autoLoad: false,
 	remoteGroup: true,
 	groupField: 'active',
 	proxy: {

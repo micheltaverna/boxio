@@ -80,13 +80,21 @@ new Ext.toolbar.Toolbar({
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openFavoris();
+				favoris.func.panelList();
 			},
 			menu: [{
-				text: 'Liste des favoris',
+				text: 'Voir les favoris',
+				icon: 'imgs/heart_stroke_32x28.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openFavoris();
+					favoris.func.panelList();
+				}
+			},{
+				text: 'Ajouter un favoris',
+				icon: 'imgs/heart_fill_32x28.png',
+				clickEvent: 'mousedown',
+				handler: function() {
+					favoris.win.add();
 				}
 			}]
 		},{
@@ -96,13 +104,21 @@ new Ext.toolbar.Toolbar({
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openMacros();
+				macros.func.panelList();
 			},
 			menu: [{
 				text: 'Voir les macros',
+				icon: 'imgs/list_32x28.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openMacros();
+					macros.func.panelList();
+				}
+			},{
+				text: 'Ajouter une macro',
+				icon: 'imgs/calendar_alt_fill_32x32.png',
+				clickEvent: 'mousedown',
+				handler: function() {
+					macros.win.add();
 				}
 			}]
 		},{
@@ -111,20 +127,20 @@ new Ext.toolbar.Toolbar({
 			icon: 'imgs/clock_32x32.png',
 			arrowAlign:'bottom',
 			handler: function() {
-				openCron();
+				cron.func.panelList();
 			},
 			menu: [{
 				text: 'Voir les jalons',
 				icon: 'imgs/clock_32x32.png',
 				handler: function() {
-					openCron();
+					cron.func.panelList();
 				}
 			},{
 				text: 'Ajouter un jalon',
 				icon: 'imgs/clock_alt_fill_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					addCron();
+					cron.win.add();
 				}
 			}]
 		}]
@@ -167,28 +183,6 @@ new Ext.toolbar.Toolbar({
 					openScenarios();
 				}
 			}]
-		},{
-			xtype:'splitbutton',
-			text: 'Favoris',
-			icon: 'imgs/heart_fill_32x28.png',
-			arrowAlign:'bottom',
-			clickEvent: 'mousedown',
-			handler: function() {
-				createFavoris();
-			},
-			menu: [{
-				text: 'Créer un favoris',
-					clickEvent: 'mousedown',
-					handler: function() {
-						createFavoris();
-					}
-			}]
-		},{
-			xtype:'splitbutton',
-			text: 'Macros',
-			icon: 'imgs/calendar_alt_fill_32x32.png',
-			arrowAlign:'bottom',
-			menu: [{text: 'Créer une macro'}]
 		},{
 			xtype:'splitbutton',
 			text: 'Déclencheurs',

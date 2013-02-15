@@ -171,8 +171,8 @@ Ext.define('cron',{
 						minutes = 'La <span class="result_cell_horodatage">'+minutes+'<sup>ème</sup></span> minute';
 					}
 				} else {
-					minutes = minutes.replace('-', ' à ');
-					minutes = minutes.replace(',', ' et ');
+					minutes = minutes.replace(/-/g, ' à ');
+					minutes = minutes.replace(/,/g, ' et ');
 					minutes = 'Les minutes <span class="result_cell_horodatage">'+minutes+'</span>';
 				}
 			}
@@ -187,8 +187,8 @@ Ext.define('cron',{
 						heures = ' de la <span class="result_cell_horodatage">'+heures+'<sup>ème</sup></span> heure';
 					}
 				} else {
-					heures = heures.replace('-', ' à ');
-					heures = heures.replace(',', ' et ');
+					heures = heures.replace(/-/g, ' à ');
+					heures = heures.replace(/,/g, ' et ');
 					heures = ' des heures <span class="result_cell_horodatage">'+heures+'</span>';
 				}
 			}
@@ -203,8 +203,8 @@ Ext.define('cron',{
 						jour = ', du <span class="result_cell_horodatage">'+jour+'<sup>ème</sup></span> jour du mois';
 					}
 				} else {
-					jour = jour.replace('-', ' à ');
-					jour = jour.replace(',', ' et ');
+					jour = jour.replace(/-/g, ' à ');
+					jour = jour.replace(/,/g, ' et ');
 					jour = ', des jours <span class="result_cell_horodatage">'+jour +'</span> du mois';
 				}
 			}
@@ -215,8 +215,8 @@ Ext.define('cron',{
 				if (jourSemaine.match(/[-,]/) == -1 || jourSemaine.match(/[-,]/) == null) {
 					jourSemaine = ' mais uniquement <span class="result_cell_horodatage">le '+jourSemaine+'</span>';
 				} else {
-					jourSemaine = jourSemaine.replace('-', ' au ');
-					jourSemaine = jourSemaine.replace(',', ' et du ');
+					jourSemaine = jourSemaine.replace(/-/g, ' au ');
+					jourSemaine = jourSemaine.replace(/,/g, ' et du ');
 					jourSemaine = ' mais uniquement les jours <span class="result_cell_horodatage">du '+jourSemaine+'</span>';
 				}
 				jourSemaine = jourSemaine.replace('1', ' lundi');
