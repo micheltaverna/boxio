@@ -96,6 +96,7 @@ function macros() {
 						phpMode: true
 				    },{
 				        ftype: 'groupingsummary',
+				        collapsible: false,
 				        groupHeaderTpl: [
 				        	'{columnName}: {name} ({rows.length} commande{[values.rows.length > 1 ? "s" : ""]})'+
 			        	    '<span> - <a href="#" class="buttonTpl" onclick="{rows:this.formatClickEdit}"><span class="edit">Editer</span></a></span>\
@@ -110,8 +111,9 @@ function macros() {
 				        		},
 				        		formatClickDelete: function (rows) {
 				        			var id_macro = rows[0].data.id_macro;
+				        			var nom = rows[0].data.nom;
 				        			return "\
-				        			macros.func.delMacro('"+id_macro+"');\
+				        			macros.func.delMacro('"+id_macro+"', '"+nom+"');\
 				        			";
 				        			return;
 				        		}
@@ -234,7 +236,7 @@ function macros() {
 		                        disabled: true,
 		                        handler: function(widget, event) {
 		                        	var rec = Ext.getCmp('panelCommand').getSelectionModel().getSelection()[0];
-		                        	macros.func.delMacro(rec);
+		                        	macros.win.updCommand(rec);
 		                        }
 		                    },{
 		                    	id:'commandsToolbarBtnDel',
@@ -309,7 +311,7 @@ function macros() {
 				Ext.getCmp('winMacroBtnClear').hide();
 				Ext.getCmp('formRefBtnAddMacro').hide();
 				Ext.getCmp('formPanelCommandMacro').show();
-		        form.setValues({nom:nom});
+		        form.setValues({nom:nom, id_macro:id_macro});
 		        var store = Ext.data.StoreManager.lookup('DataMacrosCommands');
 				store.clearFilter(true);
 				store.load();
@@ -326,7 +328,7 @@ function macros() {
 					    items: [{
 					            xtype: 'form',
 					            id: 'formAddCommand',
-							    items: [macros.form.refCommand, macros.form.actionCommand()]
+							    items: [macros.form.refMacro, macros.form.refCommand, macros.form.actionCommand()]
 					    }],
 					    buttons: [{
 							text: 'Effacer',
@@ -350,12 +352,31 @@ function macros() {
 					});
 				}
 				winCommand.show();
-				Ext.getCmp('formAddCommand').getForm().reset();
+				Ext.getCmp('formRefNomMacro').enable();
+				var formMacro = Ext.getCmp('formAddMacro').getForm().getValues();
+				Ext.getCmp('formRefNomMacro').disable();
+				var formCommand = Ext.getCmp('formAddCommand').getForm();
+				formCommand.reset();
+				formCommand.setValues({nom_macro:formMacro.nom,id_macro:formMacro.id_macro});
 				winCommand.setTitle('Ajout d\'une commande');
 				Ext.getCmp('winCommandBtnClear').show();
 				store: Ext.data.StoreManager.lookup('DataFavoris').reload();
 		        Ext.getCmp('formRefNomCommand').enable(true);
+			},
+			
+			updCommand: function(rec) {
+				macros.win.addCommand();
+				var winCommand = Ext.getCmp('winCommand');
+				winCommand.setTitle('Modification d\'une commande');
+		    	Ext.getCmp('formCommandFavorisNom').update('&nbsp;');
+		        var formCommand = Ext.getCmp('formAddCommand').getForm();
+		        var id_favoris = rec.get('id_favoris')||null;
+		        var trame = rec.get('trame');
+		        trame = id_favoris?null:trame;
+				Ext.getCmp('winCommandBtnClear').hide();
+				formCommand.setValues({nom:rec.get('nom_command'), id_command:rec.get('id_command'), timing:rec.get('timing'), favoris:id_favoris, trame:trame});
 			}
+
 	};
 	
 	this.form = {
@@ -383,7 +404,7 @@ function macros() {
 				},{
 					xtype: 'textfield',
 					id: 'formRefIdMacro',
-					hidden: false,
+					hidden: true,
 					name: 'id_macro',
 					allowBlank: true
 				},{
@@ -397,6 +418,38 @@ function macros() {
 					handler: function() {
 						macros.func.addMacro();
 				    }
+				}]
+			}]
+		},
+
+		refMacro: {
+			xtype: 'fieldset',
+			title: 'Référence de la Macro',
+			collapsible: true,
+			defaults: {
+				width: 500,
+				layout: {
+					type: 'hbox',
+					defaultMargins: {top: 0, right: 5, bottom: 0, left: 0}
+				}
+			},
+			items: [{
+				xtype: 'fieldcontainer',
+				items: [{
+					xtype: 'textfield',
+					id: 'formRefMacroNomMacro',
+					flex: 4,
+					fieldLabel: 'Nom',
+					name: 'nom_macro',
+					msgTarget: 'side',
+					disabled: true,
+					allowBlank: false
+				},{
+					xtype: 'textfield',
+					id: 'formReMacrofIdMacro',
+					hidden: true,
+					name: 'id_macro',
+					allowBlank: true
 				}]
 			}]
 		},
@@ -420,9 +473,16 @@ function macros() {
 				xtype: 'numberfield',
 				id: 'formRefTimingCommand',
 				name: 'timing',
-				fieldLabel: 'Timing',
+				value: 0,
+				fieldLabel: 'Timing (secondes)',
 				msgTarget: 'side',
 				allowBlank: false
+			},{
+				xtype: 'textfield',
+				id: 'formRefIdCommand',
+				hidden: true,
+				name: 'id_command',
+				allowBlank: true
 			}]
 		},
 
@@ -540,14 +600,68 @@ function macros() {
 	};
 
 	this.func = {
+		addCommand: function() {
+			var form = Ext.getCmp('formAddCommand').getForm(),
+			encode = Ext.String.htmlEncode;
+			var error = false;
+			if (form.isValid()) {
+				Ext.getCmp('formRefMacroNomMacro').enable();
+				var formValues = form.getValues();
+				Ext.getCmp('formRefMacroNomMacro').disable();
+				var id_command = formValues.id_command||'null';
+				var id_macro = formValues.id_macro||'null';
+				var nom = encode(formValues.nom_macro);
+				var timing = formValues.timing||'null';
+				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
+				var id_favoris = formValues.favoris||'null';
+				var nom_command = encode(formValues.nom);
+				if (id_favoris == 'null' && trame == 'null') {
+					error = true;
+				} else {
+					var params = id_command+","+id_macro+",'"+nom+"',"+id_favoris+",'"+nom_command+"',"+trame+","+timing;
+					requestCall('add_macro', params, {ok:'commande ajouté !', error:'impossible d\'ajouter la commande !'}, {
+						onsuccess:function(response){
+							var res = Ext.DomQuery.selectNode('id_macro', response.responseXML).textContent;
+							Ext.getCmp('formAddCommand').getForm().reset();
+							Ext.getCmp('winCommand').close();
+					        var form = Ext.getCmp('formAddMacro').getForm();
+					        form.setValues({nom:nom, id_macro:res});
+					        var store = Ext.data.StoreManager.lookup('DataMacrosCommands');
+							store.clearFilter(true);
+							store.load();
+							store.filter([{ property: "id_macro", value: res }]);
+							Ext.data.StoreManager.lookup('DataMacros').reload();
+		            	},
+		            	onfailure:function(response){
+							Ext.MessageBox.show({
+								title: 'Erreur',
+								msg: 'La commande "'+formValues.nom+'" na pas pu être ajouté ! Erreur de communication, réessayez plus tard.',
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.ERROR
+							});
+		            	}
+		            });
+				}
+			} else {
+				error = true;
+			}
+			if (error) {
+	        	Ext.MessageBox.show({
+					title: 'Erreur',
+					msg: 'Les champs ne sont pas valides ou vous n\'avez pas choisi d\'action !',
+					buttons: Ext.MessageBox.OK,
+					icon: Ext.MessageBox.ERROR
+				});
+			}
+		},
+		
 		addMacro: function() {
 			var form = Ext.getCmp('formAddMacro').getForm();
 			if (form.isValid()) {
 				Ext.getCmp('formRefBtnAddMacro').hide();
 				Ext.getCmp('formPanelCommandMacro').show();
 				Ext.getCmp('winMacroBtnClear').hide();
-		        Ext.getCmp('formRefNomMacro').disable(true);
-		        
+		        Ext.getCmp('formRefNomMacro').disable(true);		        
 			} else {
 	        	Ext.MessageBox.show({
 					title: 'Erreur',
@@ -558,12 +672,11 @@ function macros() {
 			}
 		},
 		
-		delMacro: function(rec) {
-			if (rec) {
-			    var id_macro = rec.get('id_macro');
-			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment supprimer la macro <b>"'+rec.get('nom')+'"</b> ?', function(btn) {
+		delMacro: function(id_macro, nom) {
+			if (id_macro) {
+			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment supprimer la macro <b>"'+nom+'"</b> ?', function(btn) {
 			    	if (btn == 'yes') {
-			            requestCall('del_macro', id_macro+", 'NULL'", {ok:'macro éffacé !', error:'impossible d\'éffacer la macro !'}, {
+			            requestCall('del_macro', id_macro+", NULL", {ok:'macro éffacé !', error:'impossible d\'éffacer la macro !'}, {
 			            	onsuccess:function(response){
 		    					Ext.data.StoreManager.lookup('DataMacros').reload();		            			
 		            		},
@@ -583,13 +696,13 @@ function macros() {
 		
 		delCommand: function(rec) {
 			if (rec) {
-			    var id_macro = rec.get('id_macro');
 			    var id_command = rec.get('id_command');
-			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment supprimer la macro <b>"'+rec.get('nom')+'"</b> ?', function(btn) {
+			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment supprimer la commande <b>"'+rec.get('nom_command')+'"</b> ?', function(btn) {
 			    	if (btn == 'yes') {
-			            requestCall('del_macro', id_macro+', '+id_command, {ok:'commande éffacé !', error:'impossible d\'éffacer la commande !'}, {
+			            requestCall('del_macro', "NULL, "+id_command, {ok:'commande éffacé !', error:'impossible d\'éffacer la commande !'}, {
 			            	onsuccess:function(response){
-		    					Ext.data.StoreManager.lookup('DataMacros').reload();		            			
+		    					Ext.data.StoreManager.lookup('DataMacrosCommands').reload();
+		    					Ext.data.StoreManager.lookup('DataMacros').reload();
 		            		},
 			            	onfailure:function(response){
 								Ext.MessageBox.show({

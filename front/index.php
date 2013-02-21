@@ -48,7 +48,8 @@
         <script type="text/javascript" src="trigger.js"></script>
         <script type="text/javascript" src="user.js"></script>
         <script type="text/javascript" src="doc.js"></script>
-        </head>
+        <script type="text/javascript" src="update.js"></script>
+    </head>
     <body>
     </body>
 <script type="text/javascript">

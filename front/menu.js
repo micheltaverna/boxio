@@ -225,12 +225,13 @@ new Ext.toolbar.Toolbar({
 			icon: 'imgs/box_32x32.png',
 			arrowAlign:'bottom',
 			handler: function() {
-				openServer();
+				server.func.panelList();
 			},
 			menu: [{
 				text: 'Etat du serveur',
+				icon: 'imgs/box_32x32.png',
 				handler: function() {
-					openServer();
+					server.func.panelList();
 				}
 			}]
 		},{

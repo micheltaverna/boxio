@@ -1,4 +1,4 @@
-function server() {
+function update() {
 	this.html = {
 			serverSearch: "<img src='imgs/orange-led.gif'>&nbsp;Recherche en cours...",
 			serverRunning: "<img src='imgs/green-led.gif'>&nbsp;Démarré !",
@@ -147,13 +147,13 @@ function server() {
 		},
 			
 		panelList: function() {
-			if (Ext.getCmp('panelServer')) {
-				this.serverStatus('status');
+			if (Ext.getCmp('panelUpdate')) {
+				this.updateStatus('status');
 			} else {
 				layout.func.clear();
-				layout.func.add(server.panel.server());
+				layout.func.add(update.panel.update());
 			};
 		}
 	};
 };
-var server = new server();
+var update = new update();
