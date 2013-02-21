@@ -1182,6 +1182,7 @@ function cron() {
 		validateAdd: function() {
 			var form = Ext.getCmp('formAddCron').getForm(),
 			encode = Ext.String.htmlEncode;
+			var error = false;
 			if (form.isValid()) {
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
@@ -1194,36 +1195,43 @@ function cron() {
 				var macros = formValues.macros||'null';
 				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
 				var active = formValues.active=='oui'?'true':'false';
-				var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
-				requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'}, {
-					onsuccess:function(response){
-						Ext.getCmp('formAddCron').getForm().reset();
-						Ext.getCmp('winCron').close();
-						Ext.data.StoreManager.lookup('DataCron').reload();
-	            	},
-	            	onfailure:function(response){
-						Ext.MessageBox.show({
-							title: 'Erreur',
-							msg: 'Le jalon "'+formValues.nom+'" na pas pu être ajouté ! Erreur de communication, réessayez plus tard.',
-							buttons: Ext.MessageBox.OK,
-							icon: Ext.MessageBox.ERROR
-						});
-	            	}
-	            });
+				if (favoris == 'null' && macros == 'null' && trame == 'null') {
+					error = true;
+				} else {
+					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
+					requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'}, {
+						onsuccess:function(response){
+							Ext.getCmp('formAddCron').getForm().reset();
+							Ext.getCmp('winCron').close();
+							Ext.data.StoreManager.lookup('DataCron').reload();
+		            	},
+		            	onfailure:function(response){
+							Ext.MessageBox.show({
+								title: 'Erreur',
+								msg: 'Le jalon "'+formValues.nom+'" na pas pu être ajouté ! Erreur de communication, réessayez plus tard.',
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.ERROR
+							});
+		            	}
+		            });
+				}
 			} else {
+				error = true;
+			}
+			if (error) {
 	        	Ext.MessageBox.show({
 					title: 'Erreur',
-					msg: 'Les champs ne sont pas valides !',
+					msg: 'Les champs ne sont pas valides ou vous n\'avez pas choisi d\'action !',
 					buttons: Ext.MessageBox.OK,
 					icon: Ext.MessageBox.ERROR
 				});
 			}
-
 		},
 
 		validateUpd: function() {
 			var form = Ext.getCmp('formAddCron').getForm(),
 			encode = Ext.String.htmlEncode;
+			var error = false;
 			if (form.isValid()) {
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
@@ -1236,26 +1244,33 @@ function cron() {
 				var macros = formValues.macros||'null';
 				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
 				var active = formValues.active=='oui'?'true':'false';
-				var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
-				requestCall('add_cron', params, {ok:'jalon modifié !', error:'impossible de modifier le jalon !'}, {
-					onsuccess:function(response){
-						Ext.getCmp('formAddCron').getForm().reset();
-						Ext.getCmp('winCron').close();
-						Ext.data.StoreManager.lookup('DataCron').reload();
-	            	},
-	            	onfailure:function(response){
-						Ext.MessageBox.show({
-							title: 'Erreur',
-							msg: 'Le jalon "'+formValues.nom+'" na pas pu être modifié ! Erreur de communication, réessayez plus tard.',
-							buttons: Ext.MessageBox.OK,
-							icon: Ext.MessageBox.ERROR
-						});
-	            	}
-	            });
+				if (favoris == 'null' && macros == 'null' && trame == 'null') {
+					error = true;
+				} else {
+					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
+					requestCall('add_cron', params, {ok:'jalon modifié !', error:'impossible de modifier le jalon !'}, {
+						onsuccess:function(response){
+							Ext.getCmp('formAddCron').getForm().reset();
+							Ext.getCmp('winCron').close();
+							Ext.data.StoreManager.lookup('DataCron').reload();
+		            	},
+		            	onfailure:function(response){
+							Ext.MessageBox.show({
+								title: 'Erreur',
+								msg: 'Le jalon "'+formValues.nom+'" na pas pu être modifié ! Erreur de communication, réessayez plus tard.',
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.ERROR
+							});
+		            	}
+		            });
+				}
 			} else {
+				error = true;
+			}
+			if (error) {
 	        	Ext.MessageBox.show({
 					title: 'Erreur',
-					msg: 'Les champs ne sont pas valides !',
+					msg: 'Les champs ne sont pas valides ou vous n\'avez pas choisi d\'action !',
 					buttons: Ext.MessageBox.OK,
 					icon: Ext.MessageBox.ERROR
 				});
