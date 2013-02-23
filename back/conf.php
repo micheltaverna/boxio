@@ -18,7 +18,9 @@ class legrand_conf {
 	//public $PHP_HOST = '192.168.1.30'; //DETECTION AUTOMATIQUE SINON INSCRIRE L'IP DISTANTE EVITER 127.0.0.1 ou localhost
 	public $PHP_PORT = '80';
 	public $PHP_PATH = '/back/';
-
+	public $UPDATE_CHECK_PATH = 'http://boxio.googlecode.com/svn/trunk/dev/update.xml';
+	public $UPDATE_PATH = '/update/';
+	
 }
 
 ?>
