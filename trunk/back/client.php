@@ -13,6 +13,40 @@ class legrand_client {
 	}
 
 	/*
+	 // FONCTION : INITIALISATION DU MODE DE SORTIE
+	*/
+	private function init_output($type='XML') {
+		$this->output_type = $type;
+		if ($this->output_type == 'XML') {
+			header('Content-type: text/xml; charset=utf-8');
+		} else if ($this->output_type == 'JSON') {
+			header('Content-type: application/json; charset=utf-8');
+		}
+		$this->xml = new DOMDocument('1.0', 'utf-8');
+		$this->xml_root = $this->xml->createElement('root');
+	}
+	
+	/*
+	 // FONCTION : AFFICHAGE DE LA SORTIE
+	*/
+	private function flush_output() {
+		//on finalise le xml
+		$this->xml->appendChild($this->xml_root);
+		$xml = utf8_encode($this->xml->saveXML());
+		
+		//Affichage en XML
+		if ($this->output_type == 'XML') {
+			print $xml;
+		//Transformation et affichage en JSON
+		} else if ($this->output_type == 'JSON') {
+			$xml = str_replace(array("\n", "\r", "\t"), '', $xml);
+			$xml = trim(str_replace('"', "'", $xml));
+			print json_encode(simplexml_load_string($xml));
+		}
+	}
+	
+	
+	/*
 	 // FONCTION : NETTOYAGE MYSQLI
 	// PARAMS : $res=object mysqli::result
 	*/
@@ -144,8 +178,8 @@ class legrand_client {
 	/*
 	 // FONCTION : DECRYPTAGE DES PARAMETRES
 	// PARAMS : $function=string => fonction a analyser
-	$param=string => liste params séparés par des * ou #
-	$ret_type=string => type du format retourné 'string' ou 'array'
+	$param=string => liste params separes par des * ou #
+	$ret_type=string => type du format retourne 'string' ou 'array'
 	// RETURN : $decrypted_array=array|$decrypted_string=string
 	*/
 	private function get_params($function, $param, $ret_type='string') {
@@ -166,7 +200,7 @@ class legrand_client {
 					$coma = ';';
 				}
 			}
-			//Le parametre est decrypté normalement
+			//Le parametre est decrypte normalement
 		} else {
 			for ($i = 0; $i < count($this->def->OWN_PARAM_DEFINITION[$function]); $i++) {
 				if (isset($params[$i])) {
@@ -533,6 +567,91 @@ class legrand_client {
 	}
 
 	/*
+	 // FONCTION : GERE LES MISES A JOUR
+	// PARAM : $action=string, $release=NULL, $string
+	// RETOURNE : UN FICHIER XML
+	*/
+	public function manage_version($action, $release=NULL) {
+		if ($action == 'status') {
+			$this->view_to_xml('view_version', ' ORDER BY `update` DESC LIMIT 0,1');
+			return;
+		}
+		if ($action == 'check') {
+			//On recupere la derniere version locale
+			$ret_status = true;
+			$res_status = '';
+			$query = "SELECT * FROM version ORDER BY `update` DESC LIMIT 0,1";
+			$res = $this->mysqli->query($query);
+			if (!$res) {
+				$ret_status = false;
+				$res_status = $this->mysqli->error;
+			}
+			$trame = $res->fetch_assoc();
+			$local_version = $trame;
+			//On recupere la version superieur � la local ou la meme
+			$distant_version = simplexml_load_file($this->conf->UPDATE_CHECK_PATH);
+			if (!$distant_version) {
+				$ret_status = false;
+				$res_status = 'Impossible de recuperer le fichier '.$this->conf->UPDATE_CHECK_PATH;
+			}
+			if ($ret_status) {
+				$res_status = 'Boxio est a jour, version : '.$local_version['name'];
+				$new_release = false;
+				foreach ($distant_version as $version) {
+					if (strtotime($version->release) > strtotime($local_version['release'])) {
+						$new_release = true;
+						$res_status = 'Nouvelle mise a jour disponible, version : '.$version->name;
+						$ret_status = false;
+						break;
+					}
+				}
+			}
+			//Creation du neud xml principal
+			$tag_request = $this->xml->createElement('request');
+			//Creation de l'elem function
+			$attr_request = $this->xml->createAttribute('function');
+			$attr_request->value = 'check_version';
+			$tag_request->appendChild($attr_request);
+			//Creation de l'elem return
+			$attr_return = $this->xml->createAttribute('status');
+			$ret_status=($ret_status)?"TRUE":"FALSE";
+			$tag_return = $this->xml->createElement('return', $ret_status);
+			$attr_return->value = $res_status;
+			$tag_return->appendChild($attr_return);
+			$tag_request->appendChild($tag_return);
+			//Creation de l'elem content
+			$tag_elems = $this->xml->createElement('content');
+			$tag_module = $this->xml->createElement('module');
+			$attr_module = $this->xml->createAttribute('num');
+			$attr_module->value = '1';
+			$tag_module->appendChild($attr_module);
+			
+			$tag_item = $this->xml->createElement('current_version', $local_version['name']);
+			$tag_module->appendChild($tag_item);
+			$attr_module = $this->xml->createAttribute('release');
+			$attr_module->value = $local_version['release'];
+			$tag_item->appendChild($attr_module);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+
+			$tag_item = $this->xml->createElement('next_version', $version->name);
+			$tag_module->appendChild($tag_item);
+			$attr_module = $this->xml->createAttribute('release');
+			$attr_module->value = $version->release;
+			$tag_item->appendChild($attr_module);
+			$attr_module = $this->xml->createAttribute('path');
+			$attr_module->value = $version->path;
+			$tag_item->appendChild($attr_module);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+
+			$this->xml_root->appendChild($tag_request);
+		} else if ($action == 'update' && $path != NULL) {
+			exec('update_boxio '.$path);
+		}
+	}
+	
+	/*
 	 // FONCTION : VERIFIE LES SCENARIOS D'UN EQUIPEMENT SUR LA DB ET LE MODULE
 	// PARAM : $id=string|int, $unit=NULL, $string
 	// RETOURNE : UN FICHIER XML
@@ -841,10 +960,27 @@ class legrand_client {
 		$this->conf = new legrand_conf();
 		$this->def = new legrand_def();
 		$this->init_mysql();
-		header('Content-type: text/xml; charset=utf-8');
-		$this->xml = new DOMDocument('1.0', 'utf-8');
-		$this->xml_root = $this->xml->createElement('root');
 
+		if (!isset($_GET['output'])) {
+			$output = 'XML';
+		} else if ($_GET['output'] == 'XML' || $_GET['output'] == 'JSON') {
+			$output = $_GET['output'];
+		}
+		$this->init_output($output);
+
+		if (isset($_GET['version'])) {
+			if (!isset($_GET['action'])) {
+				$action = 'status';
+			} else {
+				$action = $_GET['action'];
+			}
+			if (!isset($_GET['release'])) {
+				$release = NULL;
+			} else {
+				$release = $_GET['release'];
+			}
+			$this->manage_version($action, $release);
+		}
 		if (isset($_GET['add_scenario'])) {
 			$id_legrand = $_GET['id_legrand'];
 			$unit = $_GET['unit'];
@@ -891,8 +1027,8 @@ class legrand_client {
 		if (isset($_GET['view'])) {
 			$this->view_to_xml($_GET['view'], $this->get_to_mysqli());
 		}
-		$this->xml->appendChild($this->xml_root);
-		print utf8_encode($this->xml->saveXML());
+		
+		$this->flush_output();
 	}
 }
 
