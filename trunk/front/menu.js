@@ -239,7 +239,16 @@ new Ext.toolbar.Toolbar({
 			text: 'Mise à jours',
 			icon: 'imgs/cloud_download_32x32.png',
 			arrowAlign:'bottom',
-			menu: [{text: 'Vérifier les mises à jours'}]
+			handler: function() {
+				update.func.panelList();
+			},
+			menu: [{
+				text: 'Vérifier les mises à jours',
+				icon: 'imgs/box_32x32.png',
+				handler: function() {
+					update.func.panelList();
+				}
+			}]
 		}]
 	},{
 		xtype: 'buttongroup',

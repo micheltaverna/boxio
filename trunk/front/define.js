@@ -1,8 +1,11 @@
 /**
+ * @author michel.taverna
  * Liste des definitions des datas models partagés
  */
 
-//Definition des media d'ecoute
+/**
+ * Definition des media d'ecoute
+ */
 var defineMedia = {
 		'CPL' : '96',
 		'RF' : '64',
@@ -12,7 +15,9 @@ var defineMedia = {
 		'128' : 'IR'
 };
 
-//Definition du vtype listInteger
+/**
+ * Definition du vtype listInteger
+ */
 Ext.apply(Ext.form.field.VTypes, {
 	listInteger:  function(v) {
         return /^\d+.*$/.test(v);
@@ -21,7 +26,9 @@ Ext.apply(Ext.form.field.VTypes, {
     listIntegerMask: /[\d]/i
 });
 
-//Definition des trames temporaires
+/**
+ * Definition des trames temporaires
+ */
 Ext.define('trameSaved', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -38,7 +45,9 @@ Ext.define('trameSaved', {
 	]
 });
 
-//Definition du module de recheche de scenarios
+/**
+ * Definition du module de recheche de scenarios
+ */
 Ext.define('checkScenarios',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -56,7 +65,9 @@ Ext.define('checkScenarios',{
 	]
 });
 
-//Definition du module de recherche d'une reference
+/**
+ * Definition du module de recherche d'une reference
+ */
 Ext.define('findReference',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -68,7 +79,9 @@ Ext.define('findReference',{
 	]
 });
 
-//Definition du module de recherche du statut serveur
+/**
+ * Definition du module de recherche du statut serveur
+ */
 Ext.define('findStatus',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -78,7 +91,25 @@ Ext.define('findStatus',{
 	]
 });
 
-//Definition du module des macros
+/**
+ * Definition du module de recherche d'une nouvelle version
+ */
+Ext.define('checkVersion',{
+	extend: 'Ext.data.Model',
+	fields: [
+  		{name: 'current_version_name', type: 'string'},
+ 		{name: 'current_version_update', type: 'timestamp'},
+		{name: 'current_version_release', type: 'timestamp'},
+  		{name: 'next_version_name', type: 'string'},
+ 		{name: 'next_version_release', type: 'timestamp'},
+		{name: 'next_version_path', type: 'string'},
+		{name: 'status', type: 'string'}
+	]
+});
+
+/**
+ * Definition du module des macros
+ */
 Ext.define('macros',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -92,7 +123,9 @@ Ext.define('macros',{
 	]
 });
 
-//Definition des references
+/**
+ * Definition des references
+ */
 Ext.define('references',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -110,7 +143,9 @@ Ext.define('references',{
 	]
 });
 
-//Definition des favoris
+/**
+ * Definition des favoris
+ */
 Ext.define('favoris',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -120,7 +155,9 @@ Ext.define('favoris',{
 	]
 });
 
-//Definition des zones
+/**
+ * Definition des zones
+ */
 Ext.define('zones',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -129,7 +166,9 @@ Ext.define('zones',{
 	]
 });
 
-//Definition des equipements
+/**
+ * Definition des equipements
+ */
 Ext.define('equipements',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -143,7 +182,9 @@ Ext.define('equipements',{
 	]
 });
 
-//Definition des equipements inconnu
+/**
+ * Definition des equipements inconnu
+ */
 Ext.define('unknownEquipements',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -153,7 +194,9 @@ Ext.define('unknownEquipements',{
 	]
 });
 
-//Definition des equipements cron (jalons)
+/**
+ * Definition des equipements cron (jalons)
+ */
 Ext.define('cron',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -267,7 +310,9 @@ Ext.define('cron',{
 	]
 });
 
-//Definition des trames
+/**
+ * Definition des trames
+ */
 Ext.define('Trame',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -287,7 +332,9 @@ Ext.define('Trame',{
 	]
 });
 
-//Definition des Actions dans une trame
+/**
+ * Definition des Actions dans une trame
+ */
 Ext.define('TrameAction', {
 	extend: 'Ext.data.Model',
 	fields: [

@@ -1,0 +1,28 @@
+/**
+* Css pour la gestion des selection des minutes
+*/
+
+.update {
+	background-color: #FFF;
+	padding: 5px;
+}
+
+.update_information {
+	background-color: infobackground;
+	padding: 5px;
+	font-style: italic;
+	font-size: small; 
+}
+
+.update_information span {
+	padding: 5px;
+}
+
+.update_content {
+	padding: 5px;
+	font-size: large; 
+}
+
+.update_id {
+	font-weight: bold;
+}
