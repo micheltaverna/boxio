@@ -13,12 +13,10 @@ UPDATE_NAME=${UPDATE_NAME%.*}
 UPDATE_LOCAL_DIR=$UPDATEPATH/$UPDATE_NAME
 UPDATE_LOCAL_INSTALL=$UPDATE_LOCAL_DIR/install.sh
 
-echo $UPDATE_LOCAL_DIR
-
 WGET_TRIES=3
 
 #Récupération du fichier sur le server
-wget --quiet --tries=$WGET_TRIES --directory-prefix=$UPDATEPATH $UPDATE_DISTANT_FILE
+wget --tries=$WGET_TRIES --directory-prefix=$UPDATEPATH $UPDATE_DISTANT_FILE
 if [ $? -ne 0 ]; then
 	echo "Impossible de télécharger la mise à jour : $UPDATE_DISTANT_FILE, erreur : $?"
 	exit 0
