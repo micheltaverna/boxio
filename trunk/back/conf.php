@@ -19,7 +19,7 @@ class legrand_conf {
 	public $PHP_PORT = '80';
 	public $PHP_PATH = '/back/';
 	public $UPDATE_CHECK_PATH = 'http://boxio.googlecode.com/svn/trunk/dev/update.xml';
-	public $UPDATE_PATH = '/update/';
+	public $UPDATE_SCRIPT = '/var/www/scripts/upgrade.sh';
 	
 }
 
