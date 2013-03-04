@@ -1,10 +1,13 @@
 <?php
+/**
+ * @author michel.taverna
+ * Gestion du client pour le backoffice
+ */
 
 include("./conf.php");
 include("./definitions.php");
 
 class legrand_client {
-
 	/*
 	 // FONCTION : INITIALISATION DE LA DB MYSQL
 	*/
@@ -568,14 +571,10 @@ class legrand_client {
 
 	/*
 	 // FONCTION : GERE LES MISES A JOUR
-	// PARAM : $action=string, $release=NULL, $string
+	// PARAM : $action=string, $path=NULL, $string
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function manage_version($action, $release=NULL) {
-		if ($action == 'status') {
-			$this->view_to_xml('view_version', ' ORDER BY `update` DESC LIMIT 0,1');
-			return;
-		}
+	public function manage_version($action='check', $path=NULL) {
 		if ($action == 'check') {
 			//On recupere la derniere version locale
 			$ret_status = true;
@@ -626,28 +625,67 @@ class legrand_client {
 			$attr_module->value = '1';
 			$tag_module->appendChild($attr_module);
 			
-			$tag_item = $this->xml->createElement('current_version', $local_version['name']);
+			$tag_item = $this->xml->createElement('current_version_name', $local_version['name']);
 			$tag_module->appendChild($tag_item);
-			$attr_module = $this->xml->createAttribute('release');
-			$attr_module->value = $local_version['release'];
-			$tag_item->appendChild($attr_module);
 			$tag_elems->appendChild($tag_module);
 			$tag_request->appendChild($tag_elems);
-
-			$tag_item = $this->xml->createElement('next_version', $version->name);
+			$tag_item = $this->xml->createElement('current_version_release', $local_version['release']);
 			$tag_module->appendChild($tag_item);
-			$attr_module = $this->xml->createAttribute('release');
-			$attr_module->value = $version->release;
-			$tag_item->appendChild($attr_module);
-			$attr_module = $this->xml->createAttribute('path');
-			$attr_module->value = $version->path;
-			$tag_item->appendChild($attr_module);
 			$tag_elems->appendChild($tag_module);
 			$tag_request->appendChild($tag_elems);
-
+			$tag_item = $this->xml->createElement('current_version_update', $local_version['update']);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+			
+			$tag_item = $this->xml->createElement('next_version_name', $version->name);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+			$tag_item = $this->xml->createElement('next_version_release', $version->release);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+			$tag_item = $this->xml->createElement('next_version_path', $version->path);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+			
+			$tag_item = $this->xml->createElement('status', $ret_status);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
+				
 			$this->xml_root->appendChild($tag_request);
 		} else if ($action == 'update' && $path != NULL) {
-			exec('update_boxio '.$path);
+			set_time_limit(200);
+			$exec = 'sudo '.$this->conf->UPDATE_SCRIPT.' \''.$path.'\'';
+			exec($exec, $res_status, $ret_status);
+				
+			//Creation du neud xml principal
+			$tag_request = $this->xml->createElement('request');
+			//Creation de l'elem function
+			$attr_request = $this->xml->createAttribute('function');
+			$attr_request->value = 'upgrade_version';
+			$tag_request->appendChild($attr_request);
+			//Creation de l'elem return
+			$attr_return = $this->xml->createAttribute('status');
+			$tag_return = $this->xml->createElement('return', $ret_status);
+			$attr_return->value = $res_status;
+			$tag_return->appendChild($attr_return);
+			$tag_request->appendChild($tag_return);
+			//Creation de l'elem content
+			$tag_elems = $this->xml->createElement('content');
+			$tag_module = $this->xml->createElement('module');
+			$attr_module = $this->xml->createAttribute('num');
+			$attr_module->value = '1';
+			$tag_module->appendChild($attr_module);
+			$tag_request->appendChild($tag_elems);
+
+			$tag_item = $this->xml->createElement('log', $log);
+			$tag_module->appendChild($tag_item);
+			$tag_elems->appendChild($tag_module);
+			$tag_request->appendChild($tag_elems);
 		}
 	}
 	
@@ -969,17 +1007,13 @@ class legrand_client {
 		$this->init_output($output);
 
 		if (isset($_GET['version'])) {
-			if (!isset($_GET['action'])) {
-				$action = 'status';
-			} else {
+			if (isset($_GET['action'])) {
 				$action = $_GET['action'];
 			}
-			if (!isset($_GET['release'])) {
-				$release = NULL;
-			} else {
-				$release = $_GET['release'];
+			if (isset($_GET['release'])) {
+				$path = $_GET['release'];
 			}
-			$this->manage_version($action, $release);
+			$this->manage_version($action, $path);
 		}
 		if (isset($_GET['add_scenario'])) {
 			$id_legrand = $_GET['id_legrand'];
