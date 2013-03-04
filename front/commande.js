@@ -248,7 +248,8 @@ var createCommande = function(action) {
 							value = encode(value);
 							s += Ext.util.Format.format("{0} = {1}<br />", key, value);
 						}, this);
-						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, formValues.param, formValues.media);
+						var params = formValues.param.split(',');
+						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
 						trame = InOne.ownManager_starsharp_to_YZ(trame);
 						var dateFormat=Ext.util.Format.date(formValues.date, 'Y-m-d');
 						dateFormat=dateFormat+' '+formValues.hours+':'+formValues.minutes+':'+formValues.secondes;
@@ -303,7 +304,8 @@ var createCommande = function(action) {
 					var form = Ext.getCmp('formGenerateCommande').getForm();
 					if (form.isValid()) {
 						var formValues = form.getValues();
-						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, formValues.param, formValues.media);
+						var params = formValues.param.split(',');
+						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
 						Ext.myMsg.msg('Information', 'Ok : Trame enregistrée !<br />'+trame);
 						var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
 						currentTrame.add({

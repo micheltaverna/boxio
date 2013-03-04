@@ -518,7 +518,7 @@ function macros() {
 									msgTarget: 'side',
 									labelWidth : 120,
 									name: 'favoris',
-									allowBlank: true,
+									allowBlank: true
 								},{
 									xtype: 'box',
 									id: 'formCommandFavorisNom',

@@ -1042,7 +1042,7 @@ function cron() {
 									msgTarget: 'side',
 									labelWidth : 120,
 									name: 'favoris',
-									allowBlank: true,
+									allowBlank: true
 								},{
 									xtype: 'box',
 									id: 'formCronFavorisNom',
@@ -1096,7 +1096,7 @@ function cron() {
 									msgTarget: 'side',
 									labelWidth : 140,
 									name: 'macros',
-									allowBlank: true,
+									allowBlank: true
 								},{
 									xtype: 'box',
 									id: 'formCronMacrosNom',

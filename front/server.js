@@ -25,10 +25,9 @@ function server() {
 				},
 				items: [{				    	
 					xtype: 'fieldset',
-					title: 'Status',
+					title: 'Statut',
 					collapsible: true,
 					defaults: {
-						width: 600,
 						layout: {
 							type: 'vbox',
 							defaultMargins: {top: 0, right: 5, bottom: 0, left: 0}
@@ -52,7 +51,6 @@ function server() {
 					title: 'Opérations',
 					collapsible: true,
 					defaults: {
-						width: 600,
 						layout: {
 							type: 'vbox'
 						}
@@ -133,6 +131,7 @@ function server() {
 						Ext.get(Ext.query('.server_status')).update(server.html.serverStopping);
 					}
 					waiting.hide();
+					Ext.getCmp('panelServer').updateLayout();
 				},
 				onfailure:function(response) {
 					Ext.MessageBox.show({

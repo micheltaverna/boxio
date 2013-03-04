@@ -1,8 +1,11 @@
 /**
+ * @author michel.taverna
  * Gestion des datas store
  */
 
-//Gestion d'une Trame
+/**
+ * Gestion d'une Trame
+ */
 new Ext.data.Store({
 	storeId: 'dataTrame',
 	model: 'Trame',
@@ -22,7 +25,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion d'une trame local
+/**
+ * Gestion d'une trame local
+ */
 new Ext.data.Store({
 	storeId: 'savedTrame',
 	model: 'trameSaved',
@@ -33,7 +38,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion des références
+/**
+ * Gestion des références
+ */
 new Ext.data.Store({
 	storeId: 'DataReferences',
 	model: 'references',
@@ -53,7 +60,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion des Scenarios
+/**
+ * Gestion des Scenarios
+ */
 new Ext.data.Store({
 	storeId: 'DataCheckScenarios',
 	model: 'checkScenarios',
@@ -71,7 +80,9 @@ new Ext.data.Store({
 	}
 });
 
-// Creation des macros
+/**
+ * Creation des macros
+ */
 new Ext.data.Store({
 	storeId: 'DataMacros',
 	model: 'macros',
@@ -93,7 +104,9 @@ new Ext.data.Store({
 	}
 });
 
-//Creation des commande de macros
+/**
+ * Creation des commande de macros
+ */
 new Ext.data.Store({
 	storeId: 'DataMacrosCommands',
 	model: 'macros',
@@ -115,7 +128,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion des favoris
+/**
+ * Gestion des favoris
+ */
 var DataFavoris = new Ext.data.Store({
 	storeId: 'DataFavoris',
 	model: 'favoris',
@@ -135,7 +150,9 @@ var DataFavoris = new Ext.data.Store({
 	}
 });
 
-//Gestion des equipements inconnu
+/**
+ * Gestion des equipements inconnu
+ */
 var DataUnknownEquipements = new Ext.data.Store({
 	storeId: 'DataUnknownEquipements',
 	model: 'unknownEquipements',
@@ -155,7 +172,9 @@ var DataUnknownEquipements = new Ext.data.Store({
 	}
 });
 
-//Gestion des equipements
+/**
+ * Gestion des equipements
+ */
 new Ext.data.Store({
 	storeId: 'DataEquipements',
 	model: 'equipements',
@@ -177,7 +196,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion des zones
+/**
+ * Gestion des zones
+ */
 new Ext.data.Store({
 	storeId: 'DataZones',
 	model: 'zones',
@@ -197,7 +218,9 @@ new Ext.data.Store({
 	}
 });
 
-//Gestion des cron (jalons)
+/**
+ * Gestion des cron (jalons)
+ */
 new Ext.data.Store({
 	storeId: 'DataCron',
 	model: 'cron',
@@ -219,7 +242,9 @@ new Ext.data.Store({
 	}
 });
 
-//Liste des action d'une Trame
+/**
+ * Liste des action d'une Trame
+ */
 new Ext.data.Store({
 	storeId: 'DataTrameAction',
     model: 'TrameAction',
