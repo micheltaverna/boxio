@@ -18,10 +18,6 @@ USE `boxio`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping events for database 'boxio'
---
-
---
 -- Dumping routines for database 'boxio'
 --
 /*!50003 DROP PROCEDURE IF EXISTS `add_cron` */;
@@ -99,7 +95,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50020 DEFINER=`legrand`@`%`*/ /*!50003 PROCEDURE `add_equipement`(IN id_legrand_p INT, IN ref_legrand_p INT, IN nom_p VARCHAR(64), IN zone_p VARCHAR(64))
+/*!50003 CREATE*/ /*!50020 DEFINER=`boxio`@`%`*/ /*!50003 PROCEDURE `add_equipement`(IN id_legrand_p INT, IN ref_legrand_p INT, IN nom_p VARCHAR(64), IN zone_p VARCHAR(64))
 add_equipement: BEGIN
     #Variables
     DECLARE i INT DEFAULT 1;
@@ -107,7 +103,7 @@ add_equipement: BEGIN
     DECLARE ref_exist INT DEFAULT NULL;
 
     #Test si la reference exist
-    SELECT DISTINCT ref_legrand INTO ref_exist FROM legrand.references WHERE ref_legrand=ref_legrand_p;
+    SELECT DISTINCT ref_legrand INTO ref_exist FROM boxio.references WHERE ref_legrand=ref_legrand_p;
     IF ref_exist IS NULL THEN
         SELECT 'Erreur Référence' AS Erreur, ref_legrand_p AS ref_legrand;
         LEAVE add_equipement;
@@ -122,16 +118,16 @@ add_equipement: BEGIN
     ON DUPLICATE KEY UPDATE nom=zone_p;
     
     #On recupere le nombre de unit
-    SELECT COUNT(*) INTO res FROM legrand.references WHERE ref_legrand=ref_legrand_p;
+    SELECT COUNT(*) INTO res FROM boxio.references WHERE ref_legrand=ref_legrand_p;
  
     WHILE i <= res DO
         #On insert dans equipements_status
-        INSERT IGNORE INTO legrand.equipements_status SET id_legrand=id_legrand_p,unit=i,ref_unit_legrand=CONCAT(ref_legrand_p,i);
+        INSERT IGNORE INTO boxio.equipements_status SET id_legrand=id_legrand_p,unit=i,ref_unit_legrand=CONCAT(ref_legrand_p,i);
         SET i = i + 1;
     END WHILE;
     
     #On affiche les elements ajoutes
-    SELECT * FROM legrand.view_equipements_status WHERE id_legrand=id_legrand_p;
+    SELECT * FROM boxio.view_equipements_status WHERE id_legrand=id_legrand_p;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -177,6 +173,7 @@ IN id_command_p INT,
 IN id_macro_p INT, 
 IN nom_p VARCHAR(64), 
 IN id_favoris_p INT, 
+IN nom_command_p VARCHAR(64), 
 IN trame_p TEXT, 
 IN timing_p INT)
 add_macro: BEGIN
@@ -187,10 +184,11 @@ add_macro: BEGIN
     DECLARE id_macro_new INT DEFAULT id_macro_p;
     DECLARE nom_new VARCHAR(64) DEFAULT nom_p;
     DECLARE id_favoris_new INT DEFAULT id_favoris_p;
+    DECLARE nom_command_new VARCHAR(64) DEFAULT nom_command_p;
     DECLARE trame_new TEXT DEFAULT trame_p;
     DECLARE timing_new INT DEFAULT timing_p;
     
-    #TEST D'INTEGRITE DE LA DEMANDE
+    #TEST D'INTEGRITE DE LA DEMANDE (LES MODIFICATIONS NE SONT OPEREE QUE PAR LES IDS PAS LES NOMS)
     
     #Test si l'id existe
     IF id_macro_p IS NOT NULL AND id_command_p IS NOT NULL THEN
@@ -243,7 +241,7 @@ add_macro: BEGIN
         END IF;
         
         #Mise a jour de la commande
-        UPDATE boxio.macros SET id_favoris=id_favoris_new, trame=trame_new, timing=timing_new WHERE id=id_command_new;
+        UPDATE boxio.macros SET id_favoris=id_favoris_new, nom_command=nom_command_new, trame=trame_new, timing=timing_new WHERE id=id_command_new;
         
         #Mise a jour du nom sur la macro complete (toute les commandes associees)
         IF nom_p IS NOT NULL THEN
@@ -268,7 +266,7 @@ add_macro: BEGIN
         END IF;
         
         #Creation de la macro
-        INSERT INTO macros SET id_macro=id_macro_new, nom=nom_new, id_favoris=id_favoris_new, trame=trame_new, timing=timing_new;
+        INSERT INTO macros SET id_macro=id_macro_new, nom=nom_new, id_favoris=id_favoris_new, nom_command=nom_command_new, trame=trame_new, timing=timing_new;
         
         #Mise a jour du nom sur la macro complete
         UPDATE macros SET nom=nom_new WHERE id_macro=id_macro_new;
@@ -294,12 +292,12 @@ add_macro: BEGIN
         END IF;
 
         #Creation de la macro
-        INSERT INTO boxio.macros SET id_macro=id_macro_new, nom=nom_new, id_favoris=id_favoris_new, trame=trame_new, timing=timing_new;
+        INSERT INTO boxio.macros SET id_macro=id_macro_new, nom=nom_new, id_favoris=id_favoris_new, nom_command=nom_command_new, trame=trame_new, timing=timing_new;
 
     END IF;
     
     #On retourne la macro complete
-    SELECT action, id_command, id_macro, nom, id_favoris, trame, timing FROM view_macros WHERE id_macro=id_macro_new;
+    SELECT action, id_command, id_macro, nom, id_favoris, nom_command, trame, timing FROM view_macros WHERE id_macro=id_macro_new;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -317,7 +315,7 @@ DELIMITER ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`boxio`@`%`*/ /*!50003 PROCEDURE `add_scenario`(IN id_legrand_p INT, IN unit_p TINYINT, 
-IN id_legrand_listen_p INT, IN unit_listen_p TINYINT, IN value_listen_p INT, IN family_listen_p INT)
+IN id_legrand_listen_p INT, IN unit_listen_p TINYINT, IN value_listen_p INT, IN media_listen_p INT)
 add_scenario: BEGIN
     #Variables
     DECLARE ref_exist INT DEFAULT NULL;
@@ -346,8 +344,8 @@ add_scenario: BEGIN
     #On ajoute le scenario
     INSERT INTO boxio.scenarios SET 
         id_legrand=id_legrand_p,unit=unit_p,
-        id_legrand_listen=id_legrand_listen_p,unit_listen=unit_listen_p,value_listen=value_listen_p,family_listen=family_listen_p
-    ON DUPLICATE KEY UPDATE value_listen=value_listen_p,family_listen=family_listen_p;
+        id_legrand_listen=id_legrand_listen_p,unit_listen=unit_listen_p,value_listen=value_listen_p,media_listen=media_listen_p
+    ON DUPLICATE KEY UPDATE value_listen=value_listen_p,media_listen=media_listen_p;
     
     #On retourne le scenario enregistré
     SELECT * FROM boxio.view_scenarios WHERE id_legrand=id_legrand_p AND unit=unit_p 
@@ -497,7 +495,7 @@ del_macro: BEGIN
     IF id_command_p IS NOT NULL THEN
         SELECT COUNT(*) INTO res FROM macros WHERE id=id_command_p;
         IF res = 0 THEN
-            SELECT 'Erreur Commande Inconnu' AS Erreur, id_command_p AS 'Commande';
+            SELECT 'Erreur id_command Inconnu' AS Erreur, id_command_p AS 'Commande';
             LEAVE del_macro;
         END IF;
         IF id_macro_p IS NULL THEN
@@ -507,8 +505,8 @@ del_macro: BEGIN
     
     #supression de la commmande uniquement
     IF id_command_p IS NOT NULL THEN
-        SELECT * FROM view_macros WHERE id_macro=id_macro_new AND id_command=id_command_p;
-        DELETE FROM boxio.macros WHERE id_macro=id_macro_new AND id=id_command_p;
+        SELECT * FROM view_macros WHERE id_command=id_command_p;
+        DELETE FROM boxio.macros WHERE id=id_command_p;
     #supression de la macro complete
     ELSEIF id_macro_p IS NOT NULL AND id_command_p IS NULL THEN
         SELECT * FROM view_macros WHERE id_macro=id_macro_new;
@@ -564,17 +562,20 @@ find_reference: BEGIN
     DECLARE res INT DEFAULT NULL;
     DECLARE reference INT DEFAULT NULL;
     DECLARE reference_geree VARCHAR(5) DEFAULT NULL;
+    DECLARE reference_nom VARCHAR(64) DEFAULT NULL;
+    DECLARE reference_family VARCHAR(64) DEFAULT NULL;
     
+    #Convertion id legrand en iobl
     SELECT id_legrand_p*16+0 INTO id_iobl;
 
     #Envoie de la requete pour interroger le status
-    CALL send_trame(CONCAT('*#1000*',id_iobl,'*51##'), NOW());
-    SELECT SLEEP(2);
+    INSERT INTO trame_standby (trame, date) VALUES (CONCAT('*#1000*',id_iobl,'*51##'), NOW());
+    SELECT SLEEP(2) INTO res;
     SELECT HEX(CAST(SUBSTRING_INDEX(param, '*', 1) AS SIGNED)) INTO reference FROM boxio.view_all_trame WHERE id_legrand=id_legrand_p AND unit='0' AND dimension='DEVICE_DESCRIPTION_STATUS' LIMIT 1;
  
     IF reference IS NULL THEN
-        CALL send_trame(CONCAT('*#1000*',id_iobl,'*51##'), NOW());
-        SELECT SLEEP(2);
+        INSERT INTO trame_standby (trame, date) VALUES (CONCAT('*#1000*',id_iobl,'*51##'), NOW());
+        SELECT SLEEP(2) INTO res;
         SELECT HEX(CAST(SUBSTRING_INDEX(param, '*', 1) AS SIGNED)) INTO reference FROM boxio.view_all_trame WHERE id_legrand=id_legrand_p AND unit='0' AND dimension='DEVICE_DESCRIPTION_STATUS' LIMIT 1;
     END IF;
     
@@ -583,8 +584,8 @@ find_reference: BEGIN
         LEAVE find_reference;
     END IF;
     
-    SELECT IF(COUNT(ref_legrand)=1, 'TRUE', 'FALSE') INTO reference_geree FROM view_references WHERE ref_legrand=reference;
-    SELECT reference AS reference, id_legrand_p AS id_legrand, reference_geree AS reference_geree;
+    SELECT IF(COUNT(ref_legrand)=1, 'TRUE', 'FALSE'), nom, family INTO reference_geree, reference_nom, reference_family FROM view_references WHERE ref_legrand=reference;
+    SELECT reference AS reference, id_legrand_p AS id_legrand, reference_geree AS reference_geree, reference_nom AS reference_nom, reference_family AS reference_family;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -693,4 +694,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-12-08 10:43:36
+-- Dump completed on 2013-03-03 13:22:40

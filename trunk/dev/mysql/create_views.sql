@@ -71,35 +71,35 @@ SET character_set_client = utf8;
   `id_macro` int(11),
   `nom` varchar(64),
   `id_favoris` int(11),
-  `trame_favoris` text,
+  `nom_command` varchar(64),
   `trame` text,
   `timing` int(11)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
 --
--- Temporary table structure for view `view_unknown_equipement`
+-- Temporary table structure for view `view_all_references`
 --
 
-DROP TABLE IF EXISTS `view_unknown_equipement`;
-/*!50001 DROP VIEW IF EXISTS `view_unknown_equipement`*/;
+DROP TABLE IF EXISTS `view_all_references`;
+/*!50001 DROP VIEW IF EXISTS `view_all_references`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `view_unknown_equipement` (
+/*!50001 CREATE TABLE `view_all_references` (
   `id` int(11),
-  `trame` text,
-  `direction` enum('GET','SET'),
-  `mode` enum('UNKNOWN','MULTICAST','UNICAST','BROADCAST','UNICAST_DIRECT'),
-  `media` enum('UNKNOWN','CPL','RF','IR'),
-  `format` enum('UNKNOWN','ACK','NACK','BUS_COMMAND','STATUS_REQUEST','DIMENSION_REQUEST','DIMENSION_SET'),
-  `type` enum('UNKNOWN','LIGHTING','SHUTTER','THERMOREGULATION','ALARM','SCENE','MANAGEMENT','SPECIAL_COMMAND','CONFIGURATION'),
-  `value` enum('UNKNOWN','ON','OFF','DIM_STOP','MOVE_STOP','MOVE_UP','MOVE_DOWN','CONSIGNE','DEROGATION_CONSIGNE','FIN_DEROGATION','GO_TO_TEMPERATURE','ARRET','FIN_ARRET','STOP_FAN_SPEED','LOW_FAN_SPEED','HIGH_FAN_SPEED','CONFORT_JOUR_ROUGE','CONCIERGE_CALL','LOCKER_CONTROL','ACTION','STOP_ACTION','ACTION_FOR_TIME','ACTION_IN_TIME','INFO_SCENE_OFF','CLOCK_SYNCHRONISATION','LOW_BATTERY','OVERRIDE_FOR_TIME','END_OF_OVERRIDE','OPEN_LEARNING','CLOSE_LEARNING','ADDRESS_ERASE','MEMORY_RESET','MEMORY_FULL','MEMORY_READ','VALID_ACTION','INVALID_ACTION','CANCEL_ID','MANAGEMENT_CLOCK_SYNCHRONISATION','OCCUPIED','UNOCCUPIED'),
-  `dimension` enum('UNKNOWN','DIM_STEP','GO_TO_LEVEL_TIME','COMMANDE_ECS','INFORMATION_TARIF','QUEL_INDEX','INDEX_BASE','INDEX_HC','INDEX_BLEU','INDEX_BLANC','INDEX_ROUGE','SET_TEMP_CONFORT','READ_TEMP_CONFORT','INDICATION_TEMP_CONFORT','SET_TEMP_ECO','READ_TEMP_ECO','INDICATION_TEMP_ECO','SET_V3V_CONSIGNE','CONSIGN_V3V_REQUEST','READ_CLOCK_TIME_PARAMETER','INDICATION_CLOCK_TIME_PARAMETER','SET_CLOCK_TIME_PARAMETER','ANNOUNCE_ID','DEVICE_DESCRIPTION_REQUEST','DEVICE_DESCRIPTION_STATUS','REQUEST_ID','EXTENDED_MEMORY_DATA','MEMORY_DEPTH_INDICATION','MEMORY_DATA','UNIT_DESCRIPTION_REQUEST','UNIT_DESCRIPTION_STATUS','MEMORY_WRITE','SET_COMMUNICATION_PARAMETER'),
-  `param` varchar(128),
-  `id_legrand` int(10) unsigned,
-  `unit` tinyint(3) unsigned,
-  `Date` timestamp,
-  `nom_equipement` varchar(64)
+  `ref_legrand` int(11),
+  `ref_unit_legrand` int(11),
+  `nom` varchar(64),
+  `family` enum('LIGHTING','SHUTTER','SCENE','COMFORT','ENERGY','ALARM'),
+  `media` enum('CPL','RF','IR'),
+  `nom_interne` varchar(64),
+  `btn` varchar(64),
+  `unit` int(11),
+  `unit_status` tinyint(4),
+  `possibility` set('ACTION','STATUS','MEMORY','COMMAND'),
+  `function_code` smallint(6),
+  `unit_code` smallint(6),
+  `Commentaires` text
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -123,7 +123,7 @@ SET character_set_client = utf8;
   `id_legrand_listen` int(11),
   `unit_listen` tinyint(4),
   `scenario_listen` int(11),
-  `family_listen` int(11),
+  `media_listen` int(11),
   `reference_listen` varchar(64),
   `reference_interne_listen` varchar(64),
   `nom_listen` varchar(64),
@@ -186,6 +186,22 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary table structure for view `view_version`
+--
+
+DROP TABLE IF EXISTS `view_version`;
+/*!50001 DROP VIEW IF EXISTS `view_version`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `view_version` (
+  `id` int(11),
+  `name` varchar(45),
+  `release` timestamp,
+  `update` timestamp
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `view_references`
 --
 
@@ -198,6 +214,21 @@ SET character_set_client = utf8;
   `nom` varchar(64),
   `family` enum('LIGHTING','SHUTTER','SCENE','COMFORT','ENERGY','ALARM'),
   `media` enum('CPL','RF','IR')
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `view_unknown_equipements`
+--
+
+DROP TABLE IF EXISTS `view_unknown_equipements`;
+/*!50001 DROP VIEW IF EXISTS `view_unknown_equipements`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `view_unknown_equipements` (
+  `id_legrand` int(10) unsigned,
+  `media` enum('UNKNOWN','CPL','RF','IR'),
+  `Date` timestamp
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -218,7 +249,9 @@ SET character_set_client = utf8;
   `jourSemaine` varchar(64),
   `mois` varchar(128),
   `id_favoris` int(11),
+  `nom_favoris` varchar(64),
   `id_macro` int(11),
+  `nom_macro` varchar(64),
   `trame` text,
   `active` bit(1)
 ) ENGINE=MyISAM */;
@@ -257,7 +290,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`boxio`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_all_trame` AS select `trame_decrypted`.`id` AS `id`,`trame`.`trame` AS `trame`,`trame_decrypted`.`direction` AS `direction`,`trame_decrypted`.`mode` AS `mode`,`trame_decrypted`.`media` AS `media`,`trame_decrypted`.`format` AS `format`,`trame_decrypted`.`type` AS `type`,`trame_decrypted`.`value` AS `value`,`trame_decrypted`.`dimension` AS `dimension`,`trame_decrypted`.`param` AS `param`,`trame_decrypted`.`id_legrand` AS `id_legrand`,`trame_decrypted`.`unit` AS `unit`,`trame_decrypted`.`date` AS `Date` from (`trame` left join `trame_decrypted` on((`trame`.`id` = `trame_decrypted`.`id_trame`))) order by `trame`.`id` desc */;
+/*!50001 VIEW `view_all_trame` AS select `trame_decrypted`.`id` AS `id`,`trame`.`trame` AS `trame`,`trame_decrypted`.`direction` AS `direction`,`trame_decrypted`.`mode` AS `mode`,`trame_decrypted`.`media` AS `media`,`trame_decrypted`.`format` AS `format`,`trame_decrypted`.`type` AS `type`,`trame_decrypted`.`value` AS `value`,`trame_decrypted`.`dimension` AS `dimension`,`trame_decrypted`.`param` AS `param`,`trame_decrypted`.`id_legrand` AS `id_legrand`,`trame_decrypted`.`unit` AS `unit`,`trame_decrypted`.`date` AS `Date` from (`trame_decrypted` left join `trame` on((`trame`.`id` = `trame_decrypted`.`id_trame`))) order by `trame_decrypted`.`id` desc */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -276,17 +309,17 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`boxio`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_macros` AS select `macros`.`id` AS `id_command`,`macros`.`id_macro` AS `id_macro`,`macros`.`nom` AS `nom`,`macros`.`id_favoris` AS `id_favoris`,`favoris`.`trame` AS `trame_favoris`,`macros`.`trame` AS `trame`,`macros`.`timing` AS `timing` from (`macros` left join `favoris` on((`favoris`.`id` = `macros`.`id_favoris`))) order by `macros`.`nom`,`macros`.`id_macro`,`macros`.`timing` */;
+/*!50001 VIEW `view_macros` AS select `macros`.`id` AS `id_command`,`macros`.`id_macro` AS `id_macro`,`macros`.`nom` AS `nom`,`macros`.`id_favoris` AS `id_favoris`,if(isnull(`macros`.`nom_command`),`favoris`.`nom`,`macros`.`nom_command`) AS `nom_command`,if(isnull(`favoris`.`trame`),`macros`.`trame`,`favoris`.`trame`) AS `trame`,`macros`.`timing` AS `timing` from (`macros` left join `favoris` on((`favoris`.`id` = `macros`.`id_favoris`))) order by `macros`.`nom`,`macros`.`id_macro`,`macros`.`timing` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
--- Final view structure for view `view_unknown_equipement`
+-- Final view structure for view `view_all_references`
 --
 
-/*!50001 DROP TABLE IF EXISTS `view_unknown_equipement`*/;
-/*!50001 DROP VIEW IF EXISTS `view_unknown_equipement`*/;
+/*!50001 DROP TABLE IF EXISTS `view_all_references`*/;
+/*!50001 DROP VIEW IF EXISTS `view_all_references`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
@@ -295,7 +328,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_unknown_equipement` AS select `trame_decrypted`.`id` AS `id`,`trame`.`trame` AS `trame`,`trame_decrypted`.`direction` AS `direction`,`trame_decrypted`.`mode` AS `mode`,`trame_decrypted`.`media` AS `media`,`trame_decrypted`.`format` AS `format`,`trame_decrypted`.`type` AS `type`,`trame_decrypted`.`value` AS `value`,`trame_decrypted`.`dimension` AS `dimension`,`trame_decrypted`.`param` AS `param`,`trame_decrypted`.`id_legrand` AS `id_legrand`,`trame_decrypted`.`unit` AS `unit`,`trame_decrypted`.`date` AS `Date`,`equipements`.`nom` AS `nom_equipement` from ((`trame_decrypted` left join `trame` on((`trame`.`id` = `trame_decrypted`.`id_trame`))) left join `equipements` on((`trame_decrypted`.`id_legrand` = `equipements`.`id_legrand`))) where ((`trame_decrypted`.`date` > (now() - interval 1 day)) and isnull(`equipements`.`nom`) and (`trame_decrypted`.`id_legrand` is not null)) group by `trame_decrypted`.`id_legrand` order by `trame_decrypted`.`date` desc */;
+/*!50001 VIEW `view_all_references` AS select `references`.`id` AS `id`,`references`.`ref_legrand` AS `ref_legrand`,`references`.`ref_unit_legrand` AS `ref_unit_legrand`,`references`.`nom` AS `nom`,`references`.`family` AS `family`,`references`.`media` AS `media`,`references`.`nom_interne` AS `nom_interne`,`references`.`btn` AS `btn`,`references`.`unit` AS `unit`,`references`.`unit_status` AS `unit_status`,`references`.`possibility` AS `possibility`,`references`.`function_code` AS `function_code`,`references`.`unit_code` AS `unit_code`,`references`.`Commentaires` AS `Commentaires` from `references` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -313,8 +346,8 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`boxio`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_scenarios` AS select `scenarios`.`id_legrand` AS `id_legrand`,`scenarios`.`unit` AS `unit`,`references`.`nom` AS `reference`,`references`.`family` AS `family`,`references`.`media` AS `media`,`references`.`nom_interne` AS `reference_interne`,`equipements`.`nom` AS `nom`,`zones`.`nom` AS `zone`,`scenarios`.`id_legrand_listen` AS `id_legrand_listen`,`scenarios`.`unit_listen` AS `unit_listen`,`scenarios`.`value_listen` AS `scenario_listen`,`scenarios`.`family_listen` AS `family_listen`,`references_listen`.`nom` AS `reference_listen`,`references_listen`.`nom_interne` AS `reference_interne_listen`,`equipements_listen`.`nom` AS `nom_listen`,`zones_listen`.`nom` AS `zone_listen` from ((((((`scenarios` left join `equipements_status` on(((`scenarios`.`id_legrand` = `equipements_status`.`id_legrand`) and (`scenarios`.`unit` = `equipements_status`.`unit`)))) left join `equipements` on((`equipements_status`.`id_legrand` = `equipements`.`id_legrand`))) left join (`equipements_status` `equipements_status_listen` left join (`equipements` `equipements_listen` left join `zones` `zones_listen` on((`equipements_listen`.`id_legrand` = `zones_listen`.`id_legrand`))) on((`equipements_status_listen`.`id_legrand` = `equipements_listen`.`id_legrand`))) on(((`scenarios`.`id_legrand_listen` = `equipements_status_listen`.`id_legrand`) and (`scenarios`.`unit_listen` = `equipements_status_listen`.`unit`)))) left join `zones` on((`equipements`.`id_legrand` = `zones`.`id_legrand`))) left join `references` on((`equipements_status`.`ref_unit_legrand` = `references`.`ref_unit_legrand`))) left join `references` `references_listen` on((`equipements_status_listen`.`ref_unit_legrand` = `references_listen`.`ref_unit_legrand`))) */;
+/*!50013 DEFINER=`root`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `view_scenarios` AS select `scenarios`.`id_legrand` AS `id_legrand`,`scenarios`.`unit` AS `unit`,`references`.`nom` AS `reference`,`references`.`family` AS `family`,`references`.`media` AS `media`,`references`.`nom_interne` AS `reference_interne`,`equipements`.`nom` AS `nom`,`zones`.`nom` AS `zone`,`scenarios`.`id_legrand_listen` AS `id_legrand_listen`,`scenarios`.`unit_listen` AS `unit_listen`,`scenarios`.`value_listen` AS `scenario_listen`,`scenarios`.`media_listen` AS `media_listen`,`references_listen`.`nom` AS `reference_listen`,`references_listen`.`nom_interne` AS `reference_interne_listen`,`equipements_listen`.`nom` AS `nom_listen`,`zones_listen`.`nom` AS `zone_listen` from ((((((`scenarios` left join `equipements_status` on(((`scenarios`.`id_legrand` = `equipements_status`.`id_legrand`) and (`scenarios`.`unit` = `equipements_status`.`unit`)))) left join `equipements` on((`equipements_status`.`id_legrand` = `equipements`.`id_legrand`))) left join (`equipements_status` `equipements_status_listen` left join (`equipements` `equipements_listen` left join `zones` `zones_listen` on((`equipements_listen`.`id_legrand` = `zones_listen`.`id_legrand`))) on((`equipements_status_listen`.`id_legrand` = `equipements_listen`.`id_legrand`))) on(((`scenarios`.`id_legrand_listen` = `equipements_status_listen`.`id_legrand`) and (`scenarios`.`unit_listen` = `equipements_status_listen`.`unit`)))) left join `zones` on((`equipements`.`id_legrand` = `zones`.`id_legrand`))) left join `references` on((`equipements_status`.`ref_unit_legrand` = `references`.`ref_unit_legrand`))) left join `references` `references_listen` on((`equipements_status_listen`.`ref_unit_legrand` = `references_listen`.`ref_unit_legrand`))) order by `equipements_listen`.`nom`,`references_listen`.`nom_interne`,`equipements`.`nom` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -377,6 +410,25 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `view_version`
+--
+
+/*!50001 DROP TABLE IF EXISTS `view_version`*/;
+/*!50001 DROP VIEW IF EXISTS `view_version`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `view_version` AS select `version`.`id` AS `id`,`version`.`name` AS `name`,`version`.`release` AS `release`,`version`.`update` AS `update` from `version` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `view_references`
 --
 
@@ -396,6 +448,25 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `view_unknown_equipements`
+--
+
+/*!50001 DROP TABLE IF EXISTS `view_unknown_equipements`*/;
+/*!50001 DROP VIEW IF EXISTS `view_unknown_equipements`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`boxio`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `view_unknown_equipements` AS select `trame_decrypted`.`id_legrand` AS `id_legrand`,`trame_decrypted`.`media` AS `media`,`trame_decrypted`.`date` AS `Date` from ((`trame_decrypted` left join `trame` on((`trame`.`id` = `trame_decrypted`.`id_trame`))) left join `equipements` on((`trame_decrypted`.`id_legrand` = `equipements`.`id_legrand`))) where ((`trame_decrypted`.`date` > (now() - interval 1 day)) and isnull(`equipements`.`nom`) and (`trame_decrypted`.`id_legrand` is not null)) group by `trame_decrypted`.`id_legrand` order by `trame_decrypted`.`date` desc */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `view_cron`
 --
 
@@ -409,14 +480,10 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`boxio`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_cron` AS select `cron`.`id` AS `id`,`cron`.`nom` AS `nom`,`cron`.`minutes` AS `minutes`,`cron`.`heures` AS `heures`,`cron`.`jour` AS `jour`,`cron`.`jourSemaine` AS `jourSemaine`,`cron`.`mois` AS `mois`,`cron`.`id_favoris` AS `id_favoris`,`cron`.`id_macro` AS `id_macro`,`cron`.`trame` AS `trame`,`cron`.`active` AS `active` from `cron` */;
+/*!50001 VIEW `view_cron` AS select `cron`.`id` AS `id`,`cron`.`nom` AS `nom`,`cron`.`minutes` AS `minutes`,`cron`.`heures` AS `heures`,`cron`.`jour` AS `jour`,`cron`.`jourSemaine` AS `jourSemaine`,`cron`.`mois` AS `mois`,`cron`.`id_favoris` AS `id_favoris`,`favoris`.`nom` AS `nom_favoris`,`cron`.`id_macro` AS `id_macro`,`macros`.`nom` AS `nom_macro`,`cron`.`trame` AS `trame`,`cron`.`active` AS `active` from ((`cron` left join `favoris` on((`cron`.`id_favoris` = `favoris`.`id`))) left join `macros` on((`cron`.`id_macro` = `macros`.`id_macro`))) group by `cron`.`nom` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Dumping events for database 'boxio'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -427,4 +494,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-12-08 10:44:10
+-- Dump completed on 2013-03-03 13:21:45
