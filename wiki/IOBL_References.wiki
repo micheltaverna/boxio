@@ -25,14 +25,14 @@ _Pour ajouter de nouvelle références, merci de poster une "Issues"._
 
 <tr>
 <td class='normal' valign='top'>67203</td>
-<td class='normal' valign='top'>Inter Simple �  voyant</td>
+<td class='normal' valign='top'>Inter Simple à voyant</td>
 <td class='normal' valign='top'>LIGHTING</td>
 <td class='normal' valign='top'>CPL</td>
 </tr>
 
 <tr>
 <td class='normal' valign='top'>67204</td>
-<td class='normal' valign='top'>Inter Double �  voyant</td>
+<td class='normal' valign='top'>Inter Double à voyant</td>
 <td class='normal' valign='top'>LIGHTING</td>
 <td class='normal' valign='top'>CPL</td>
 </tr>
