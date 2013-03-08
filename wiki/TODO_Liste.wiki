@@ -6,3 +6,5 @@
   # Automatiser le rafraichissement dans "Liste des équipements non trouvés"
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
   # Bug lors de la mise à jour d'un équipement pour changer la zone, 2 zones sont crées dans "Modification d'un équipement"
+  # Vérifier le retour lors de la programmation automatique d'un scenario et indique une erreur si necessaire
+  # ~~Décrypter les paramètres dans "Etat du Bus" pour faciliter la compréhension~~
