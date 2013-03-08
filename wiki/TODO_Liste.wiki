@@ -2,6 +2,6 @@
 
 = TODO BETA 1.0 =
 
-  # Problèmes d'accents dans "Ajout d'un équipement" lors de l'enregistrement (Bug UTF-8)
+  # ~~Problèmes d'accents dans "Ajout d'un équipement" lors de l'enregistrement (Bug UTF-8)~~ -> client.php
   # Automatiser le rafraichissement dans "Liste des équipements non trouvés"
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
