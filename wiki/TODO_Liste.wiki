@@ -1,5 +1,7 @@
 ﻿#summary Liste des futurs implémentations
 
-= TODO =
+= TODO BETA 1.0 =
 
-  # Valider la Beta 1 avant l'ouverture de la TODO List officiel
+  # Problèmes d'accents dans "Ajout d'un équipement" lors de l'enregistrement (Bug UTF-8)
+  # Automatiser le rafraichissement dans "Liste des équipements non trouvés"
+  # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
