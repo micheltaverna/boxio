@@ -23,9 +23,11 @@ sudo service boxio stop
 
 #Copie/Remplacement des nouveaux fichiers 
 
+#TODO : Mettre à jour tous les fichiers + /etc/ser2net.conf
 
 #Mise a jours des bases de donnees
 
+#TODO : Mettre à jour les références + view
 
 #Demarrage des services de boxio
 sudo service boxio start
