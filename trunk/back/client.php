@@ -65,9 +65,10 @@ class legrand_client {
 
 	/*
 	 // FONCTION : TRANSFORMATION DES PARAMS GET EN REQUETE MYSQLI POUR WHERE/ORDER/LIMIT
+	  // PARAMS : $limit=boolean $order=boolean
 	// RETURN : $query
 	*/
-	private function get_to_mysqli() {
+	private function filter_to_mysqli($where, $limit=true, $order=true) {
 		//Gestion des filtres
 		$query = "";
 		if (isset($_GET['filter'])) {
@@ -96,44 +97,55 @@ class legrand_client {
 					} else {
 						$query_array[] = sprintf("%s is false", $filter[$i]->{'field'});
 					}
-				} 
+				} else if ($filter[$i]->{'type'} == 'date') {
+					$date =  utf8_decode($filter[$i]->{'value'});
+					$date = explode("/", $date);
+					$date = sprintf("%s-%s-%s", $date[2], $date[0], $date[1]);
+					$query_array[] = sprintf("DATE(%s)%s'%s'", $filter[$i]->{'field'}, $tab_type[$filter[$i]->{'comparison'}], $date);
+				}
 			}
 			$query .= sprintf(" WHERE %s", implode(' AND ', $query_array));
 		}
 		//Gestion du triage
-		if (isset($_GET['sort']) || isset($_GET['group'])) {
-			$query .= ' ORDER BY ';
-			if (isset($_GET['group'])) {
-				$group = json_decode(urldecode($_GET['group']));
-				if ($group[0]->{'property'} != $_GET['sort']) {
-					$query .= $group[0]->{'property'};
-					if (isset($group[0]->{'direction'})) {
-						$query .= ' '.$group[0]->{'direction'};
-					}
-					if (isset($_GET['sort'])) {
-						$query .= ', ';
+		if ($order) {
+			if (isset($_GET['sort']) || isset($_GET['group'])) {
+				$query .= ' ORDER BY ';
+				if (isset($_GET['group'])) {
+					$group = json_decode(urldecode($_GET['group']));
+					if ($group[0]->{'property'} != $_GET['sort']) {
+						$query .= $group[0]->{'property'};
+						if (isset($group[0]->{'direction'})) {
+							$query .= ' '.$group[0]->{'direction'};
+						}
+						if (isset($_GET['sort'])) {
+							$query .= ', ';
+						}
 					}
 				}
-			}
-			if (isset($_GET['sort'])) {
-				$query .= $_GET['sort'];
-				if (isset($_GET['dir'])) {
-					$query .= ' '.$_GET['dir'];
+				if (isset($_GET['sort'])) {
+					$query .= $_GET['sort'];
+					if (isset($_GET['dir'])) {
+						$query .= ' '.$_GET['dir'];
+					}
 				}
 			}
 		}
 		//Gestion du nombre de resultats
-		if (isset($_GET['start'])) {
-			$start = $_GET['start'];
+		if ($limit) {
+			if (isset($_GET['start'])) {
+				$start = $_GET['start'];
+			} else {
+				$start = 0;
+			}
+			if (isset($_GET['limit'])) {
+				$limit = $_GET['limit'];
+			} else {
+				$limit = 10;
+			}
+			$query .= sprintf(" LIMIT %s,%s", $start, $limit);
 		} else {
-			$start = 0;
+			$query .= sprintf(" LIMIT %s,%s", 0, 10);
 		}
-		if (isset($_GET['limit'])) {
-			$limit = $_GET['limit'];
-		} else {
-			$limit = 10;
-		}
-		$query .= sprintf(" LIMIT %s,%s", $start, $limit);
 		return $query;
 	}
 
@@ -194,7 +206,7 @@ class legrand_client {
 		if (!isset($this->def->OWN_PARAM_DEFINITION[$function])) {
 			$decrypted_string = 'unknown='.$param;
 			$decrypted_array['unknown'] = $param;
-			//Le parametre est de type UNIT_DESCRIPTION_STATUS on decrypt de quoi il s'agit
+		//Le parametre est de type UNIT_DESCRIPTION_STATUS on decrypt de quoi il s'agit
 		} else if ($function == "UNIT_DESCRIPTION_STATUS" && isset($this->def->OWN_UNIT_DEFINITION[$params[0]])) {
 			for ($i = 0; $i < count($this->def->OWN_UNIT_DEFINITION[$params[0]]); $i++) {
 				if (isset($params[$i])) {
@@ -203,7 +215,7 @@ class legrand_client {
 					$coma = ';';
 				}
 			}
-			//Le parametre est decrypte normalement
+		//Le parametre est decrypte normalement
 		} else {
 			for ($i = 0; $i < count($this->def->OWN_PARAM_DEFINITION[$function]); $i++) {
 				if (isset($params[$i])) {
@@ -334,24 +346,16 @@ class legrand_client {
 
 	/*
 	 // FONCTION : AFFICHE UNE VUE MYSQL ET RETOURNE LE RESULTAT
-	// PARAM : view_name=string,where=string
+	// PARAM : view_name=string where=string
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function view_to_xml($view_name, $where) {
+	public function view_to_xml($view_name, $filter) {
 		//Requetage et preparation des resultats
-		//cas particuler du comptage des trames
-		if ($view_name == 'view_all_trame') {
-			$query = "SELECT COUNT(*) AS total FROM trame_decrypted";
-		} else {
-			$query = "SELECT COUNT(*) AS total FROM ".$view_name;
-		}
-		if (preg_match('/WHERE/i', $where)) {
-			$query .= $where;
-		}
+		$query = "SELECT COUNT(*) AS total FROM ".$view_name.$this->filter_to_mysqli($filter, false, false);
 		$res = $this->mysqli->query($query);
 		$trame = $res->fetch_assoc();
 		$total = $trame['total'];
-		$query = "SELECT * FROM ".$view_name.$where;
+		$query = "SELECT * FROM ".$view_name.$this->filter_to_mysqli($filter);
 		$res = $this->mysqli->query($query);
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -382,6 +386,12 @@ class legrand_client {
 				$attr_module->value = $i;
 				$tag_module->appendChild($attr_module);
 				foreach ($trame as $key => $value) {
+					if ($key == 'dimension') {
+						$dimension = $value;
+					}
+					if ($key == 'param' && $value) {
+						$value = $this->get_params($dimension, $value);
+					}
 					$tag_item = $this->xml->createElement($key,$value);
 					$tag_module->appendChild($tag_item);
 				}
@@ -400,7 +410,7 @@ class legrand_client {
 	// RETOURNE : UN FICHIER XML
 	*/
 	public function call_to_xml($func_name, $params) {
-		$res = $this->mysqli->query("CALL ".$func_name."(".$params.");");
+		$res = $this->mysqli->query("CALL ".$func_name."(".utf8_decode($params).");");
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
 		//Creation de l'elem function
@@ -1059,7 +1069,7 @@ class legrand_client {
 			$this->call_to_xml($_GET['call'], urldecode($_GET['params']));
 		}
 		if (isset($_GET['view'])) {
-			$this->view_to_xml($_GET['view'], $this->get_to_mysqli());
+			$this->view_to_xml($_GET['view'], $_GET['filter']);
 		}
 		
 		$this->flush_output();

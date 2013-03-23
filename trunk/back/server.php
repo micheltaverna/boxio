@@ -806,7 +806,7 @@ class legrand_server {
 	 // FONCTION : LECTURE / ECRITURE DE LA SOCKET EN BOUCLE INFINIE
 	*/
 	private function read_socket() {
-		//On vide toutes les actions pour prevenir d'une surcharge de commandes stockÃ©es hors fonctionnement
+		//On vide toutes les actions pour prevenir d'une surcharge de commandes stockées hors fonctionnement
 		$this->mysqli->query("TRUNCATE trame_standby");
 		$trame = '';
 		echo "Connexion a l'interface et a la socket\n";
@@ -816,7 +816,7 @@ class legrand_server {
 			$trame .= fgets($this->fd_socket);
 			//Analise et sauvegarde de la trame recu
 			while (preg_match("/(.*?##)(.*)$/", $trame, $matches)) {
-				//On ne sauvegarde pas les trames ACK et NACK qui ne servent Ã  rien ! car pas d'identifiant sur qui l'a envoyÃ© !!??
+				//On ne sauvegarde pas les trames ACK et NACK qui ne servent à  rien ! car pas d'identifiant sur qui l'a envoyer !!??
 				if (!preg_match($this->def->OWN_TRAME['ACK'], $matches[1]) && !preg_match($this->def->OWN_TRAME['NACK'], $matches[1])) {
 					$decrypt_trame = $this->decrypt_trame($matches[1]);
 					$this->updateStatus($decrypt_trame);
