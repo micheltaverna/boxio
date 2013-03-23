@@ -6,7 +6,7 @@
   # ~~Automatiser le rafraichissement dans "Liste des équipements non trouvés"~~ -> equipements.js
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
   # ~~Bug lors de la mise à jour d'un équipement pour changer la zone, 2 zones sont crées dans "Modification d'un équipement"~~ -> MYSQL Routine add_equipement
-  # Vérifier le retour lors de la programmation automatique d'un scenario et indique une erreur si necessaire
+  # Vérifier le retour lors de la programmation automatique d'un scenario et indique une erreur si nécessaire dans "liste des scenarios de l'équipement"
   # ~~Décrypter les paramètres dans "Etat du Bus" pour faciliter la compréhension~~ -> trame.js
   # ~~Bug dans "Modification d'un jalon" la mise à jour créée un nouveau jalon~~ -> cron.js
   # ~~Bug lorsque le serveur ne contient aucun jalon, blocage complet du BUS, merci Patrice pour les corrections :)~~ -> crond.php, server.php
