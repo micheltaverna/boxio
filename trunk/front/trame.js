@@ -15,11 +15,22 @@ var openTrame = function() {
 			height: 500,
 			autoScroll: true,
 			closable: true,
+			features: [{
+		        ftype: 'filters',
+		        encode: true,
+		        local: false,
+				phpMode: true
+		    },{
+		        ftype: 'groupingsummary',
+		        groupHeaderTpl: '{columnName}: {name} ({rows.length} trame{[values.rows.length > 1 ? "s" : ""]})',
+		        hideGroupedHeader: false,
+		        enableGroupingMenu: true
+		    }],
 			columns: [
-				{text: "Date", dataIndex: 'Date', width: 131},
-				{text: "Id", dataIndex: 'id', width: 59},
-				{text: "Référence", dataIndex: 'id_legrand', sortable: false, width: 95},
-				{text: "Unite", dataIndex: 'unit', sortable: false, width: 58},
+				{text: "Date", dataIndex: 'Date', width: 131, filter: {type: 'date'}, tooltip:'Heure d\'execution'},
+				{text: "Id", dataIndex: 'id', width: 59, filter: {type: 'string'}, tooltip:'Id de la Trame'},
+				{text: "Id Legrand", dataIndex: 'id_legrand', sortable: false, width: 95, filter: {type: 'list', store:Ext.data.StoreManager.lookup('DataEquipements')}, tooltip:'Id de l\'équipement'},
+				{text: "Unite", dataIndex: 'unit', sortable: false, width: 58, filter: {type: 'string'}, tooltip:'Unite de l\'équipement'},
 				{text: "Media", dataIndex: 'media', sortable: false, width: 84},
 				{text: "Mode", dataIndex: 'mode', sortable: false, width: 83},
 				{text: "Format", dataIndex: 'format', sortable: false, width: 135},

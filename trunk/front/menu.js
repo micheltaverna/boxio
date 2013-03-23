@@ -24,21 +24,21 @@ new Ext.toolbar.Toolbar({
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openEquipements();
+				equipements.func.panelList();
 			},
 			menu: [{
 				text: 'Liste des équipements',
 				icon: 'imgs/share_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openEquipements();
+					equipements.func.panelList();
 				}
 			},{
 				text: 'Ajouter un équipement',
 				icon: 'imgs/plus_alt_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					addEquipements();
+					equipements.win.add();
 				}
 			}]
 		},{
