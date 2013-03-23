@@ -10,3 +10,5 @@
   # ~~Décrypter les paramètres dans "Etat du Bus" pour faciliter la compréhension~~ -> trame.js
   # ~~Bug dans "Modification d'un jalon" la mise à jour créée un nouveau jalon~~ -> cron.js
   # ~~Bug lorsque le serveur ne contient aucun jalon, blocage complet du BUS, merci Patrice pour les corrections :)~~ -> crond.php, server.php
+  # Ajouter les références 67201 et 67202 demande de frederic
+  # Corriger la référence 84541 en attente de validation par frederic
