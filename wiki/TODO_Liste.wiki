@@ -3,10 +3,10 @@
 = TODO BETA 1.0 =
 
   # ~~Problèmes d'accents dans "Ajout d'un équipement" lors de l'enregistrement (Bug UTF-8)~~ -> client.php
-  # ~~Automatiser le rafraichissement dans "Liste des équipements non trouvés"~~
+  # ~~Automatiser le rafraichissement dans "Liste des équipements non trouvés"~~ -> equipements.js
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
   # Bug lors de la mise à jour d'un équipement pour changer la zone, 2 zones sont crées dans "Modification d'un équipement"
   # Vérifier le retour lors de la programmation automatique d'un scenario et indique une erreur si necessaire
-  # ~~Décrypter les paramètres dans "Etat du Bus" pour faciliter la compréhension~~
-  # ~~Bug dans "Modification d'un jalon" la mise à jour créée un nouveau jalon~~
-  # ~~Bug lorsque le serveur ne contient aucun jalon, blocage complet du BUS, merci Patrice pour les corrections :)~~
+  # ~~Décrypter les paramètres dans "Etat du Bus" pour faciliter la compréhension~~ -> trame.js
+  # ~~Bug dans "Modification d'un jalon" la mise à jour créée un nouveau jalon~~ -> cron.js
+  # ~~Bug lorsque le serveur ne contient aucun jalon, blocage complet du BUS, merci Patrice pour les corrections :)~~ -> crond.php, server.php
