@@ -172,8 +172,12 @@ Ext.define('zones',{
 Ext.define('equipements',{
 	extend: 'Ext.data.Model',
 	fields: [
+	   	{name: 'id', mapping: 'id_legrand'},
+	 	{name: 'text', mapping: 'nom', convert:function(value, record) {
+            return record.get('nom')+' - '+record.get('zone')+' ('+record.get('id_legrand')+')';
+		}},
 	 	{name: 'list', mapping: 'nom', convert:function(value, record) {
-            return record.get('id_legrand')+' ('+record.get('nom')+')';
+            return record.get('nom')+' ('+record.get('id_legrand')+')';
 		}},
 		{name: 'nom', type: 'string'}, 
 		{name: 'zone', type: 'string'}, 
@@ -317,17 +321,16 @@ Ext.define('Trame',{
 	extend: 'Ext.data.Model',
 	fields: [
 		{name: 'id', type: 'int'}, 
-		{name: 'trame', type: 'string'}, 
-		{name: 'direction'}, 
-		{name: 'mode'}, 
+		{name: 'direction', list: ['GET', 'SET']}, 
+		{name: 'mode', list: ['UNKNOWN','MULTICAST','UNICAST','BROADCAST','UNICAST_DIRECT']}, 
 		{name: 'media', list: ['RF', 'CPL', 'IR', 'UNKNOWN']}, 
-		{name: 'format'}, 
-		{name: 'type'}, 
-		{name: 'value'}, 
-		{name: 'dimension'}, 
-		{name: 'param'}, 
-		{name: 'id_legrand', type: 'int'}, 
-		{name: 'unit', type: 'int'},
+		{name: 'format', list: ['UNKNOWN','ACK','NACK','BUS_COMMAND','STATUS_REQUEST','DIMENSION_REQUEST','DIMENSION_SET']}, 
+		{name: 'type', list: ['UNKNOWN','LIGHTING','SHUTTER','THERMOREGULATION','ALARM','SCENE','MANAGEMENT','SPECIAL_COMMAND','CONFIGURATION']}, 
+		{name: 'value', list: ['UNKNOWN','ON','OFF','DIM_STOP','MOVE_STOP','MOVE_UP','MOVE_DOWN','CONSIGNE','DEROGATION_CONSIGNE','FIN_DEROGATION','GO_TO_TEMPERATURE','ARRET','FIN_ARRET','STOP_FAN_SPEED','LOW_FAN_SPEED','HIGH_FAN_SPEED','CONFORT_JOUR_ROUGE','CONCIERGE_CALL','LOCKER_CONTROL','ACTION','STOP_ACTION','ACTION_FOR_TIME','ACTION_IN_TIME','INFO_SCENE_OFF','CLOCK_SYNCHRONISATION','LOW_BATTERY','OVERRIDE_FOR_TIME','END_OF_OVERRIDE','OPEN_LEARNING','CLOSE_LEARNING','ADDRESS_ERASE','MEMORY_RESET','MEMORY_FULL','MEMORY_READ','VALID_ACTION','INVALID_ACTION','CANCEL_ID','MANAGEMENT_CLOCK_SYNCHRONISATION','OCCUPIED','UNOCCUPIED']}, 
+		{name: 'dimension', list: ['UNKNOWN','DIM_STEP','GO_TO_LEVEL_TIME','COMMANDE_ECS','INFORMATION_TARIF','QUEL_INDEX','INDEX_BASE','INDEX_HC','INDEX_BLEU','INDEX_BLANC','INDEX_ROUGE','SET_TEMP_CONFORT','READ_TEMP_CONFORT','INDICATION_TEMP_CONFORT','SET_TEMP_ECO','READ_TEMP_ECO','INDICATION_TEMP_ECO','SET_V3V_CONSIGNE','CONSIGN_V3V_REQUEST','READ_CLOCK_TIME_PARAMETER','INDICATION_CLOCK_TIME_PARAMETER','SET_CLOCK_TIME_PARAMETER','ANNOUNCE_ID','DEVICE_DESCRIPTION_REQUEST','DEVICE_DESCRIPTION_STATUS','REQUEST_ID','EXTENDED_MEMORY_DATA','MEMORY_DEPTH_INDICATION','MEMORY_DATA','UNIT_DESCRIPTION_REQUEST','UNIT_DESCRIPTION_STATUS','MEMORY_WRITE','SET_COMMUNICATION_PARAMETER']}, 
+		{name: 'param', type: 'string'}, 
+		{name: 'id_legrand', type: 'string'}, 
+		{name: 'unit', type: 'string'},
 		{name: 'Date', type: 'timestamp'}
 	]
 });
