@@ -1,4 +1,4 @@
-﻿#summary Liste des futurs implémentations
+﻿#summary Liste des futurs implémentations et corrections
 
 = TODO BETA 1.0 =
 
