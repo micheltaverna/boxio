@@ -5,4 +5,9 @@
 		<release>2013-02-20 19:56:04</release>
 		<path></path>
 	</version>
+	<version>
+		<name>Beta 1.1</name>
+		<release>2013-03-28 10:52:14</release>
+		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_1.tgz</path>
+	</version>
 </root>
