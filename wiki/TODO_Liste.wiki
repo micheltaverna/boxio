@@ -1,5 +1,12 @@
 ﻿#summary Liste des futurs implémentations et corrections
 
+= TODO BETA 1.1 =
+
+  # Corriger la référence 84541 en attente de validation par frederic
+  # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
+  # Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues
+  # Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listée dans "liste des références supportées par le serveur"
+
 = TODO BETA 1.0 =
 
   # ~~Problèmes d'accents dans "Ajout d'un équipement" lors de l'enregistrement (Bug UTF-8)~~ -> client.php
@@ -11,5 +18,4 @@
   # ~~Bug dans "Modification d'un jalon" la mise à jour créée un nouveau jalon~~ -> cron.js
   # ~~Bug lorsque le serveur ne contient aucun jalon, blocage complet du BUS, merci Patrice pour les corrections :)~~ -> crond.php, server.php
   # ~~Ajouter les références 67201 et 67202 demande de frederic~~ -> MYSQL Table references
-  # Corriger la référence 84541 en attente de validation par frederic
   # ~~Les jalons ne sont pas mises à jour tant que le serveur n'a pas redémaré~~ -> crond.php, server.php
