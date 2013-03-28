@@ -5,7 +5,7 @@
   # Corriger la référence 84541 en attente de validation par frederic
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
   # Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues
-  # Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listée dans "liste des références supportées par le serveur"
+  # Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listées dans "liste des références supportées par le serveur"
 
 = TODO BETA 1.0 =
 
