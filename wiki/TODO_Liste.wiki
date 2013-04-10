@@ -6,8 +6,9 @@
   # Corriger la référence 84541 en attente de validation par Frederic
   # Ajout de la référence 67255 en attente de validation par Aurelien
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
-  # ~~Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues~~
-  # ~~Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listées dans "liste des références supportées par le serveur"~~
+  # ~~Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues~~ -> equipements.js
+  # ~~Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listées dans "liste des références supportées par le serveur"~~ -> equipements.js
+  # ~~Bug dans la génération des trames lorsque le unit est supérieur à 9 ~~ -> own_scripts.js
 
 = BETA 1.0 =
 
