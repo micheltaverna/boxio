@@ -6,9 +6,12 @@
   # Corriger la référence 84541 en attente de validation par Frederic
   # Ajout de la référence 67255 en attente de validation par Aurelien
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
+  # Ajout de la programmation des scénarios des équipements sans les ouvrir et sans utiliser la procédure classique de Legrand, plus besoin de retirer les enjoliveurs :) -> équipements.js
+  # ~~Bug dans "Liste des scénarios de l'équipement" certains Id/Unit Legrand n'était pas affichés~~ -> equipements.js
   # ~~Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues~~ -> equipements.js
   # ~~Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listées dans "liste des références supportées par le serveur"~~ -> equipements.js
   # ~~Bug dans la génération des trames lorsque le unit est supérieur à 9 ~~ -> own_scripts.js
+  # ~~Bug lorsque le serveur ne contient aucun jalon, fichier de log boxio.err qui gonfle, merci Sylvain~~ -> server.php
 
 = BETA 1.0 =
 
