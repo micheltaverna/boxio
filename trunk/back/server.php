@@ -32,7 +32,7 @@ class legrand_server {
 	*/
 	private function init_socket($port) {
 		set_time_limit(0);
-		//Fermeture de la socket si dÃ©jÃ  ouverte
+		//Fermeture de la socket si déjÃ  ouverte
 		if (isset($this->fd_socket)) {
 			@fclose($this->fd_socket);
 			sleep(3);
@@ -328,7 +328,7 @@ class legrand_server {
 		//Mise a jour de la commande du scenario
 		$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
 		$this->mysqli->query($query);
-		//On recherche les elements affectÃ©s et comment il rÃ©agisse
+		//On recherche les elements affectés et comment il réagisse
 		$query = "SELECT DISTINCT scenarios.id_legrand, scenarios.unit, scenarios.value_listen,
 		references.family, scenarios.id_legrand_listen, scenarios.unit_listen
 		FROM scenarios LEFT JOIN (equipements LEFT JOIN boxio.references
@@ -391,7 +391,7 @@ class legrand_server {
 			"param" => string,
 			"id" => string,
 			"unit" => string,)
-	$scenarios => boolean (true si l'on doit recherche des scenarios associÃ©s)
+	$scenarios => boolean (true si l'on doit recherche des scenarios associés)
 	*/
 	private function updateStatusLight($decrypted_trame, $scenarios) {
 		//Creation des variables utiles
@@ -482,7 +482,7 @@ class legrand_server {
 			"param" => string,
 			"id" => string,
 			"unit" => string,)
-	$scenarios => boolean (true si l'on doit recherche des scenarios associÃ©s)
+	$scenarios => boolean (true si l'on doit recherche des scenarios associés)
 	*/
 	private function updateStatusShutter($decrypted_trame, $scenarios) {
 		//Creation des variables utiles
@@ -733,6 +733,7 @@ class legrand_server {
 		//Premiere appel on regarde en base la CRONTAB et on construit la classe crond
 		if (!isset($this->crond)) {
 			$this->crond = new crond();
+			$this->crond->cronAnalyse = time();
 			$res = $this->mysqli->query("SELECT * FROM view_cron WHERE active=1");
 			while ($cron_array = $res->fetch_assoc()) {
 				$this->crond->addCron($cron_array['id'],
@@ -742,11 +743,24 @@ class legrand_server {
 						$cron_array['jourSemaine'],
 						$cron_array['mois']);
 			}
-			//On regarde s'il y a une execuction Ã  rÃ©aliser
+		//On reset la table
+		} else if ($this->crond->cronAnalyse+600 < time()) {
+			$this->crond->resetCron();
+			$this->crond->cronAnalyse = time();
+			$res = $this->mysqli->query("SELECT * FROM view_cron WHERE active=1");
+			while ($cron_array = $res->fetch_assoc()) {
+				$this->crond->addCron($cron_array['id'],
+						$cron_array['minutes'],
+						$cron_array['heures'],
+						$cron_array['jour'],
+						$cron_array['jourSemaine'],
+						$cron_array['mois']);
+			}
+		//On regarde s'il y a une execuction à réaliser
 		} else {
 			$id = $this->crond->findNextCronTab();
-			//Si la prochaine execution est dÃ©passÃ©e on execute la CRON
-			if (time() >= $this->crond->crontab[$id]['prochain']) {
+			//Si la prochaine execution est dépassée on execute la CRON
+			if (isset($id) && $id != NULL && time() >= $this->crond->crontab[$id]['prochain']) {
 				$res = $this->mysqli->query("SELECT * FROM view_cron WHERE id='".$id."'");
 				$cron_array = $res->fetch_assoc();
 				if ($cron_array['trame'] != NULL) {
@@ -759,7 +773,7 @@ class legrand_server {
 					$res = $this->mysqli->query("CALL send_macro('".$cron_array['id_macro']."')");
 					$this->free_mysqli($res);
 				}
-				//Mise Ã  jour du Cron
+				//Mise à jour du Cron
 				$this->crond->updateCron($id);
 			}
 		}
@@ -769,11 +783,11 @@ class legrand_server {
 	 // FONCTION : CREATION DE REQUETE POUR LA MISE A JOUR DES STATUS
 	*/
 	private function cronRequestStatus() {
-		//Premiere appel on regarde en base qui est concernÃ© et on construit le tableau des mises Ã  jours
+		//Premiere appel on regarde en base qui est concerné et on construit le tableau des mises à jours
 		if (!isset($this->cronRequest)) {
 			$this->cronRequest = array();
 			$res = $this->mysqli->query("SELECT id_legrand, unit, server_opt FROM boxio.equipements_status WHERE server_opt LIKE '%upd_time%'");
-			//permet de dÃ©caler les requetes dans le temps pour eviter une saturation
+			//permet de décaler les requetes dans le temps pour eviter une saturation
 			$decal_time = 2;
 			$time = time();
 			while ($trame = $res->fetch_assoc()) {
