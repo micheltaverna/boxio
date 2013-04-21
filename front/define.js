@@ -177,12 +177,74 @@ Ext.define('equipements',{
             return record.get('nom')+' - '+record.get('zone')+' ('+record.get('id_legrand')+')';
 		}},
 	 	{name: 'list', mapping: 'nom', convert:function(value, record) {
-            return record.get('nom')+' ('+record.get('id_legrand')+')';
+            return record.get('id_legrand')+' ('+record.get('nom')+')';
 		}},
 		{name: 'nom', type: 'string'}, 
 		{name: 'zone', type: 'string'}, 
+		{name: 'reference', type: 'string'}, 
 		{name: 'id_legrand', type: 'int'}, 
-		{name: 'ref_legrand', type: 'int'}
+		{name: 'ref_legrand', type: 'int'},
+		{name: 'media', type: 'string'},
+		{name: 'family', type: 'string'},
+		{name: 'unit_code', type: 'int'}
+	]
+});
+Ext.define('equipementsStatus',{
+	extend: 'Ext.data.Model',
+	fields: [
+ 	   	{name: 'id', mapping: 'idunit'},
+	 	{name: 'listEquipements', mapping: 'idunit', convert:function(value, record) {
+            return record.get('idunit')+' - '+record.get('equipement')+' ('+record.get('Btn')+')';
+		}},
+	 	{name: 'listUnits', mapping: 'unit', convert:function(value, record) {
+            return record.get('unit')+' ('+record.get('Btn')+')';
+		}},
+ 		{name: 'id_legrand', type: 'int'}, 
+ 		{name: 'unit', type: 'int'}, 
+ 		{name: 'idunit', type: 'int'}, 
+		{name: 'ref_legrand', type: 'int'},
+		{name: 'equipement', type: 'string'}, 
+		{name: 'reference', type: 'string'}, 
+		{name: 'nom_interne', type: 'string'}, 
+		{name: 'Btn', type: 'string'}, 
+		{name: 'possibility', type: 'string'},
+		{name: 'unit_code', type: 'int'}
+	]
+});
+Ext.define('equipementsUniqueStatus',{
+	extend: 'Ext.data.Model',
+	fields: [
+ 	   	{name: 'id', mapping: 'id_legrand'},
+	 	{name: 'listEquipements', mapping: 'id_legrand', convert:function(value, record) {
+            return record.get('id_legrand')+' - '+record.get('equipement')+' ('+record.get('zone')+')';
+		}},
+	 	{name: 'listUnits', mapping: 'unit', convert:function(value, record) {
+            return record.get('unit')+' ('+record.get('Btn')+')';
+		}},
+ 		{name: 'id_legrand', type: 'int'}, 
+ 		{name: 'unit', type: 'int'}, 
+ 		{name: 'idunit', type: 'int'}, 
+		{name: 'ref_legrand', type: 'int'},
+		{name: 'equipement', type: 'string'}, 
+		{name: 'reference', type: 'string'}, 
+		{name: 'nom_interne', type: 'string'}, 
+		{name: 'Btn', type: 'string'}, 
+		{name: 'possibility', type: 'string'},
+		{name: 'unit_code', type: 'int'},
+		{name: 'zone', type: 'string'}
+	]
+});
+Ext.define('referencesMemory',{
+	extend: 'Ext.data.Model',
+	fields: [
+ 	   	{name: 'id', mapping: 'id'},
+	 	{name: 'listActions', mapping: 'value', convert:function(value, record) {
+            return record.get('value')+' ('+record.get('nom')+')';
+		}},
+ 		{name: 'unit_code', type: 'int'}, 
+ 		{name: 'value', type: 'int'}, 
+ 		{name: 'action', type: 'string'}, 
+		{name: 'nom', type: 'string'}
 	]
 });
 

@@ -15,6 +15,7 @@ new Ext.data.Store({
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_all_trame',
+		timeout: 300000,
 		reader: {
 			type: 'xml',
 			record: 'module',
@@ -59,6 +60,24 @@ new Ext.data.Store({
 		simpleSortMode: true
 	}
 });
+new Ext.data.Store({
+	storeId: 'AllDataReferences',
+	model: 'references',
+	pageSize: 1000,
+	remoteSort: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_references',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
 
 /**
  * Gestion des Scenarios
@@ -74,7 +93,7 @@ new Ext.data.Store({
 		reader: {
 			type: 'xml',
 			record: 'module',
-			root: 'content'
+			root: 'request'
 		},
 		simpleSortMode: true
 	}
@@ -195,6 +214,121 @@ new Ext.data.Store({
 		simpleSortMode: true
 	}
 });
+new Ext.data.Store({
+	storeId: 'AllDataEquipements',
+	model: 'equipements',
+	pageSize: 1000,
+	remoteSort: true,
+	remoteGroup: true,
+	autoLoad: false,
+	groupField: 'zone',
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'AllDataEquipementsStatus',
+	model: 'equipementsStatus',
+	pageSize: 1000,
+	remoteSort: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements_status',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'unitDataEquipementsStatus',
+	model: 'equipementsStatus',
+	pageSize: 1000,
+	remoteSort: true,
+	remoteFilter: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements_status',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'ProgramableDataEquipementsStatus',
+	model: 'equipementsUniqueStatus',
+	pageSize: 1000,
+	remoteSort: true,
+	remoteFilter: true,
+	autoLoad: false,
+	filters: [{property: 'filter', value: '{type="string"},{field="possibility"},{value="COMMAND"}'}],
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements_status',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'ProgramableUnitDataEquipementsStatus',
+	model: 'equipementsStatus',
+	pageSize: 1000,
+	remoteSort: true,
+	remoteFilter: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements_status',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'DataReferencesMemory',
+	model: 'referencesMemory',
+	pageSize: 1000,
+	remoteSort: true,
+	remoteFilter: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_references_memory',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
 
 /**
  * Gestion des zones
@@ -203,6 +337,24 @@ new Ext.data.Store({
 	storeId: 'DataZones',
 	model: 'zones',
 	pageSize: 20,
+	remoteSort: true,
+	autoLoad: false,
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_zones',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+new Ext.data.Store({
+	storeId: 'AllDataZones',
+	model: 'zones',
+	pageSize: 1000,
 	remoteSort: true,
 	autoLoad: false,
 	proxy: {

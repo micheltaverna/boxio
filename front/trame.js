@@ -9,8 +9,7 @@ var openTrame = function() {
 			title : 'Lecture du BUS', 
 			id: 'panelTrame',
 			store: Ext.data.StoreManager.lookup('dataTrame'),
-			disableSelection: true,
-			loadMask: true,
+			disableSelection: false,
 			width: '100%',
 			height: 500,
 			autoScroll: true,
@@ -29,7 +28,7 @@ var openTrame = function() {
 			columns: [
 				{text: "Date", dataIndex: 'Date', width: 131, filter: {type: 'date'}, tooltip:'Heure d\'execution'},
 				{text: "Id", dataIndex: 'id', width: 59, filter: {type: 'string'}, tooltip:'Id de la Trame'},
-				{text: "Id Legrand", dataIndex: 'id_legrand', sortable: false, width: 95, filter: {type: 'list', store:Ext.data.StoreManager.lookup('DataEquipements')}, tooltip:'Id de l\'équipement'},
+				{text: "Id Legrand", dataIndex: 'id_legrand', sortable: false, width: 95, filter: {type: 'string'}, tooltip:'Id de l\'équipement'},
 				{text: "Unite", dataIndex: 'unit', sortable: false, width: 58, filter: {type: 'string'}, tooltip:'Unite de l\'équipement'},
 				{text: "Media", dataIndex: 'media', sortable: false, width: 84},
 				{text: "Mode", dataIndex: 'mode', sortable: false, width: 83},
@@ -37,8 +36,7 @@ var openTrame = function() {
 				{text: "Dimension", dataIndex: 'dimension', sortable: false, width: 198},
 				{text: "Type", dataIndex: 'type', sortable: false, width: 123},
 				{text: "Value", dataIndex: 'value', sortable: false, width: 132},
-				{text: "Param", dataIndex: 'param', sortable: false, width: 143},
-				{text: "Trame", dataIndex: 'trame', sortable: false, width: 272}
+				{text: "Param", dataIndex: 'param', sortable: false, width: 143}
 			],
 			// Creation de la bar de defilement des pages
 			bbar: Ext.create('Ext.PagingToolbar', {

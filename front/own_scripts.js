@@ -195,7 +195,7 @@ var InOne = function() {
 	/*
 	    switch(idunit.length)
 	    {
-	        case 8: //Unit sur 2 caractÃ¨res, ex RTS Somfy
+	        case 8: //Unit sur 2 caractères, ex RTS Somfy
 	            var id = idunit.substring(0, idunit.length - 2);
 	            var unit = idunit.substring(idunit.length - 2, idunit.length);
 	            break;
@@ -314,11 +314,12 @@ var InOne = function() {
 	this.ownManager_idToWHERE = function(id, media)
 	{
 		idunit = id.toString();
-		// algo : id to hexa + unit > decimal
+		// algo : id to hexa + unit to hexa > decimal
 		var id = this.eManager_split_id(idunit).id;
 		var unit = this.eManager_split_id(idunit).unit;
 		var idh = this.decToHexa(id);
-		var h = this.HexaToDec(idh + unit);
+		var unith = this.decToHexa(unit);
+		var h = this.HexaToDec(idh + unith);
 		var ret = this.AddLeadingZero(h.toString(), 7);
 		
 		switch(media)
