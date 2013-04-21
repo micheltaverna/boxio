@@ -71,6 +71,11 @@ class legrand_def {
 
 	//Definition des differents valeur de status par unit
 	public $OWN_UNIT_DEFINITION = array(
+			//Envoyé par Thermostat : 145 unit 3 (inconnu), 144 unit 4 (inconnu), 24 unit 5 (inconnu), 
+			//Envoyé par VMC : 19 unit 1 (inconnu), 141 unit 2 (status)
+			//Envoyé par variateur :
+			//Envoyé par inter double : 
+			//Envoyé par volet :
 			"143" => array("variator","wanted_level","real_level","unknown","unknown","unknown"),
 			"129" => array("inter","level"),
 			"149" => array("confort","mode","internal_temp_multiplicator","internal_temp","wanted_temp_multiplicator","wanted_temp"),
@@ -101,9 +106,12 @@ class legrand_def {
 
 	//Definition des function code
 	public $OWN_FUNCTION_CODE = array(
-			"49" => "LIGHTING",
+			"48" => "INTERFACE",
+			"49" => "VARIATOR",
 			"50" => "SHUTTER",
-			"51" => "CONFORT"
+			"51" => "CONFORT",
+			"53" => "SCENE",
+			"55" => "LIGHTING"
 	);
 	
 	//Definition des differents parametres

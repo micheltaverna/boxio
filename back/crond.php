@@ -1,11 +1,14 @@
 <?php
 /*
  // ClASS : GESTION DE LA CRONTAB POUR LE SERVEUR IOBL
-// La classe enregistre des elements cron (identique Ã  une crontab unix)
+// La classe enregistre des elements cron (identique à une crontab unix)
 // puis retourne le unix timestamp de la prochaine occurence d'un element cron
 */
 
 class crond {
+	//Contient l'horodatage de l'analyse de la crontab
+	public $cronAnalyse = NULL;
+	
 	//Contient toutes les crons a analyser
 	public $crontab = array(
 			/*
@@ -28,8 +31,6 @@ class crond {
 			'hour' => "", //heur en cours
 			'min' => "" //minute en cours
 	);
-
-
 
 	/*
 	 // FONCTION : FUNCTION PRINCIPALE DE LANCEMENT DU SERVEUR
@@ -101,6 +102,18 @@ class crond {
 		return TRUE;
 	}
 
+
+	/*
+	// FONCTION : EFFACE TOUS LES CRONS
+	// PARAMS : $id=string => référence du cron
+	// RETURN : $res=boolean true|false
+	*/
+	public function resetCron() {
+		unset($this->crontab);
+		$this->crontab = array();
+		return TRUE;
+	}
+
 	/*
 	 // FONCTION : MET A JOUR EN CHERCHANT LA PROCHAINE OCCURENCE D'UN ELEMENT CRON
 	// PARAMS : $id=string => référence du cron
@@ -126,7 +139,11 @@ class crond {
 				$nextId = $id;
 			}
 		}
-		return ($nextId);
+		if (isset($nextId)) {
+ 			return ($nextId);
+ 		} else {
+ 			return NULL;
+ 		}
 	}
 
 	/*

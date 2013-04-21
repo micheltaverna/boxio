@@ -80,9 +80,17 @@ class legrand_client {
 			$filter = json_decode(urldecode($_GET['filter']));
 			for ($i=0,$query_array=array(); $filter[$i]; $i++) {
 				if (!isset($filter[$i]->{'type'})) {
-					$query_array[] = sprintf("%s='%s'", $filter[$i]->{'property'}, utf8_decode($filter[$i]->{'value'}));
+					if ($filter[$i]->{'property'} == 'filter') {
+						preg_match('/^{type="(.*)"},{field="(.*)"},{value="(.*)"}$/', utf8_decode($filter[$i]->{'value'}), $matches);
+						$filter[$i]->{'type'} = $matches[1];
+						$filter[$i]->{'field'} = $matches[2];
+						$filter[$i]->{'value'} = $matches[3];
+					} else {
+						$query_array[] = sprintf("%s='%s'", $filter[$i]->{'property'}, utf8_decode($filter[$i]->{'value'}));
+						continue;
+					}
 				}
-				else if ($filter[$i]->{'type'} == 'string') {
+				if ($filter[$i]->{'type'} == 'string') {
 					$query_array[] = sprintf("%s LIKE '%%%s%%'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}));
 				} else if ($filter[$i]->{'type'} == 'numeric') {
 					$query_array[] = sprintf("%s%s%s", $filter[$i]->{'field'}, $tab_type[$filter[$i]->{'comparison'}], utf8_decode($filter[$i]->{'value'}));
@@ -385,12 +393,21 @@ class legrand_client {
 				$attr_module = $this->xml->createAttribute('num');
 				$attr_module->value = $i;
 				$tag_module->appendChild($attr_module);
+				$dimension = null;
+				$dimension_value = null;
 				foreach ($trame as $key => $value) {
-					if ($key == 'dimension') {
+					if ($key == 'dimension' && $value) {
 						$dimension = $value;
 					}
+					if ($key == 'value' && $value) {
+						$dimension_value = $value;
+					}
 					if ($key == 'param' && $value) {
-						$value = $this->get_params($dimension, $value);
+						if ($dimension) {
+							$value = $this->get_params($dimension, $value);
+						} else if ($dimension_value) {
+							$value = $this->get_params($dimension_value, $value);
+						}
 					}
 					$tag_item = $this->xml->createElement($key,$value);
 					$tag_module->appendChild($tag_item);
@@ -704,7 +721,7 @@ class legrand_client {
 	// PARAM : $id=string|int, $unit=NULL, $string
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function check_memory_db($id, $unit=NULL) {
+	public function check_memory_db($id, $unit=NULL, $media=NULL) {
 		$max_retry = 3;//Nombre de tentative si non reception du message
 		$reponse_time = 10;//Attente pour la reponse du module
 		//On cherche les units qui gere la memory  et on relance en recursif
@@ -716,79 +733,103 @@ class legrand_client {
 			$attr_request = $this->xml->createAttribute('function');
 			$attr_request->value = 'check_memory_db';
 			$tag_request->appendChild($attr_request);
-			//On cherche tous les units qui gere la memoire
-			$res = $this->mysqli->query("SELECT references.unit AS unit
+			$programmable_error = 'MEMORY';
+			//On vérifie si la référence est programmable
+			$res = $this->mysqli->query("SELECT references.possibility AS possibility, references.media AS media
 					FROM equipements LEFT JOIN boxio.references ON equipements.ref_legrand = references.ref_legrand
-					WHERE equipements.id_legrand='$id' AND references.possibility LIKE '%MEMORY%' AND references.media='CPL';
+					WHERE equipements.id_legrand='$id';
 					");
-			//On boucle sur les units et on recherche en recurssif
 			for ($i=0; $units = $res->fetch_assoc(); $i++) {
-				$tag_elems = $this->check_memory_db($id, $units["unit"]);
-				$tag_request->appendChild($tag_elems);
+				$media = $units['media'];
+				if (preg_match("/MEMORY/", $units['possibility'])) {
+					$programmable_error = false;
+					break;
+				}
+			}
+				
+			if ($programmable_error === false) {
+				//On cherche tous les units qui gere la memoire
+				$res = $this->mysqli->query("SELECT references.unit AS unit
+						FROM equipements LEFT JOIN boxio.references ON equipements.ref_legrand = references.ref_legrand
+						WHERE equipements.id_legrand='$id' AND references.possibility LIKE '%MEMORY%';
+						");
+				//On boucle sur les units et on recherche en recurssif
+				for ($i=0; $units = $res->fetch_assoc(); $i++) {
+					$tag_elems = $this->check_memory_db($id, $units["unit"], $media);
+					$tag_request->appendChild($tag_elems);
+				}
 			}
 			$tag_elems = $this->xml->createElement('return', $i);
 			$attr_elems = $this->xml->createAttribute('status');
 			$attr_elems->value = 'true';
 			$tag_elems->appendChild($attr_elems);
 			$tag_request->appendChild($tag_elems);
+			if ($media != 'CPL') {
+				$tag_info = $this->xml->createElement('Information', 'La référence "'.$id.'" n\'est pas programmable, produit de type '.$media.', vous devez enregistrer manuellement les programmations.');
+				$tag_request->appendChild($tag_info);
+			}
+			if ($programmable_error != false) {
+				if ($programmable_error == 'MEMORY') {
+					$tag_erreur = $this->xml->createElement('Erreur', 'La référence "'.$id.'" n\'est pas programmable, aucun bloc mémoire (émetteur seulement).');
+					$tag_request->appendChild($tag_erreur);
+				}
+			}
 			$this->xml_root->appendChild($tag_request);
 			$res->free();
 			//On cherche les differences sur le unit en param
 		} else {
-			//On recupere les valeurs de retour
-			//$start_date = date("Y-m-d H:i:s", time()-1);
-			$res = $this->mysqli->query("SELECT Now() AS 'Date'");
-			$start_date = $res->fetch_row();
-			$res->free();
-			$own_id = $this->idunit_to_ownid($id, $unit);
-			$query = "SELECT * FROM trame_decrypted WHERE id_legrand='$id' AND unit='$unit' AND
-			(dimension='EXTENDED_MEMORY_DATA' OR dimension='MEMORY_DEPTH_INDICATION') AND Date>='$start_date[0]'";
-			$memory = array();
-			for ($retry = 1; $retry <= $max_retry; $retry++) {
-				//Requetage sur le CPL pour tester le module
-				$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NOW())");
-				//Nettoyage memoire du bug des STORE PROC MYSQL !
-				$this->free_mysqli($res);
-				sleep($reponse_time);
-				$res = $this->mysqli->query($query);
-				//On attend que le unit reponde
-				if (!isset($depth)) {
-					$depth = false;
-				}
-				while ($trames = $res->fetch_assoc()) {
-					$param = $this->get_params($trames['dimension'], $trames['param'], 'array');
-					if ($trames['dimension'] == 'MEMORY_DEPTH_INDICATION') {
-						$depth = $param['depth'];
-					} else {
-						if (!isset($memory[$param['frame_number']])) {
-							$memory[$param['frame_number']] = array();
+			if ($media == 'CPL') {
+				//On recupere les valeurs de retour
+				//$start_date = date("Y-m-d H:i:s", time()-1);
+				$res = $this->mysqli->query("SELECT Now() AS 'Date'");
+				$start_date = $res->fetch_row();
+				$res->free();
+				$own_id = $this->idunit_to_ownid($id, $unit);
+				$query = "SELECT * FROM trame_decrypted WHERE id_legrand='$id' AND unit='$unit' AND
+				(dimension='EXTENDED_MEMORY_DATA' OR dimension='MEMORY_DEPTH_INDICATION') AND Date>='$start_date[0]'";
+				$memory = array();
+				for ($retry = 1; $retry <= $max_retry; $retry++) {
+					//Requetage sur le CPL pour tester le module
+					$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NOW())");
+					//Nettoyage memoire du bug des STORE PROC MYSQL !
+					$this->free_mysqli($res);
+					sleep($reponse_time);
+					$res = $this->mysqli->query($query);
+					//On attend que le unit reponde
+					if (!isset($depth)) {
+						$depth = false;
+					}
+					while ($trames = $res->fetch_assoc()) {
+						$param = $this->get_params($trames['dimension'], $trames['param'], 'array');
+						if ($trames['dimension'] == 'MEMORY_DEPTH_INDICATION') {
+							$depth = $param['depth'];
+						} else {
+							if (!isset($memory[$param['frame_number']])) {
+								$memory[$param['frame_number']] = array();
+							}
+							$id_listen = $this->getId($param['address']);
+							$unit_listen = $this->getUnit($param['address']);
+							$memory[$param['frame_number']]['id_legrand'] = $id;
+							$memory[$param['frame_number']]['unit'] = $unit;
+							$memory[$param['frame_number']]['id_legrand_listen'] = $id_listen;
+							$memory[$param['frame_number']]['unit_listen'] = $unit_listen;
+							$memory[$param['frame_number']]['value_listen'] = $param['preset_value'];
+							$memory[$param['frame_number']]['media_listen'] = $param['family_type'];
+							$memory[$param['frame_number']]['in_memory'] = 'true';
+							$memory[$param['frame_number']]['in_db'] = 'false';
 						}
-						$id_listen = $this->getId($param['address']);
-						$unit_listen = $this->getUnit($param['address']);
-						$memory[$param['frame_number']]['id_legrand'] = $id;
-						$memory[$param['frame_number']]['unit'] = $unit;
-						$memory[$param['frame_number']]['id_legrand_listen'] = $id_listen;
-						$memory[$param['frame_number']]['unit_listen'] = $unit_listen;
-						$memory[$param['frame_number']]['value_listen'] = $param['preset_value'];
-						$memory[$param['frame_number']]['media_listen'] = $param['family_type'];
-						$memory[$param['frame_number']]['in_memory'] = 'true';
-						$memory[$param['frame_number']]['in_db'] = 'false';
+					}
+					$res->free();
+					if ($depth !== false && ($depth == (count($memory)))) {
+						break;
 					}
 				}
-				$res->free();
-				if ($depth !== false && ($depth == (count($memory)))) {
-					break;
+				if ($retry >= $max_retry) {
+					$tag_elems = $this->xml->createElement('Erreur', 'Problème de Communication avec "'.$id.'".');
+					return($tag_elems);
 				}
 			}
-			if ($retry >= $max_retry) {
-				$tag_elems = $this->xml->createElement('content');
-				$attr_elems = $this->xml->createAttribute('error');
-				$attr_elems->value = 'communication_error';
-				$tag_elems->appendChild($attr_elems);
-				return($tag_elems);
-			}
 			//Requetage et preparation des resultats des scenarios en DB
-			//@TODO: Faire une requete sur l'id_legrand pour recup nom, zone et family
 			$query = "SELECT equipements.nom As nom, zones.nom AS zone, family AS family FROM equipements
 						LEFT JOIN zones ON equipements.id_legrand = zones.id_legrand
 						LEFT JOIN boxio.references ON equipements.ref_legrand = boxio.references.ref_legrand
@@ -834,7 +875,7 @@ class legrand_client {
 						$memory['db_'.$i]['media_listen'] = $media_listen;
 						$memory['db_'.$i]['in_memory'] = 'false';
 						$memory['db_'.$i]['in_db'] = 'true';
-						$memory['db_'.$i]['nom'] = $nom²;
+						$memory['db_'.$i]['nom'] = $nom;
 						$memory['db_'.$i]['zone'] = $zone;
 						$memory['db_'.$i]['family'] = $family;
 						$i++;
@@ -894,18 +935,30 @@ class legrand_client {
 	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where = 'both') {
 		if ($where == 'db' || $where == 'both') {
 			$res = $this->mysqli->query("CALL add_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."','".$value_listen."','".$media_listen."');");
-		}
-		if ($where == 'memory' || $where == 'both') {
-			//On programme le module
-			$media = "";
-			if ($trame['media'] == 'RF') {
-				$media = "#1";
-			} else if ($trame['media'] == 'IR') {
-				$media = "#2";
+			if ($res) {
+				while ($elem = $res->fetch_assoc()) {
+					foreach ($elem as $key => $value) {
+						if ($key == 'Erreur') {
+							$erreur_db = true;
+						}
+					}
+				}
 			}
-			$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
-			$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
-			$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$media_listen."*".$own_id_listen."*".$value_listen."##', NOW());");
+			if ($erreur_db !== true) {
+				$this->free_mysqli($res);
+			} else {
+				$res->data_seek(0);
+			}
+		}
+		if ($erreur_db !== true) {
+			if ($where == 'memory' || $where == 'both') {
+				//On programme le module
+				//@TODO: bug $media inconnu !
+				$media = "";
+				$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
+				$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
+				$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$media_listen."*".$own_id_listen."*".$value_listen."##', NOW());");
+			}
 		}
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -952,15 +1005,12 @@ class legrand_client {
 	public function del_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $media_listen, $where='both') {
 		if ($where == 'db' || $where == 'both') {
 			$res = $this->mysqli->query("CALL del_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."');");
+			$this->free_mysqli($res);
 		}
 		if ($where == 'memory' || $where == 'both') {
 			//On programme le module
+			//@TODO : $media inconnu !
 			$media = "";
-			if ($trame['media'] == 'RF') {
-				$media = "#1";
-			} else if ($trame['media'] == 'IR') {
-				$media = "#2";
-			}
 			$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
 			$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
 			$res = $this->mysqli->query("CALL send_trame('*1000*63#".$media_listen."#".$own_id_listen."*".$own_id.$media."##', NOW());");
@@ -1064,7 +1114,6 @@ class legrand_client {
 		if (isset($_GET['server_service']) && isset($_GET['action'])) {
 			$this->server_service($_GET['action']);
 		}
-
 		if (isset($_GET['call'])) {
 			$this->call_to_xml($_GET['call'], urldecode($_GET['params']));
 		}
