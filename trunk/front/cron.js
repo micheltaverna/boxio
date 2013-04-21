@@ -1233,6 +1233,7 @@ function cron() {
 			encode = Ext.String.htmlEncode;
 			var error = false;
 			if (form.isValid()) {
+		        Ext.getCmp('formRefNomaddCron').enable(true);
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
 				var minutes = encode(formValues.minutes);

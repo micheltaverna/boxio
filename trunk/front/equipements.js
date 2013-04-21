@@ -10,7 +10,6 @@ function equipements() {
 				title : 'Liste des équipements référencés dans le serveur', 
 				icon: 'imgs/share_32x32.png',
 				store: Ext.data.StoreManager.lookup('DataEquipements'),
-				disableSelection: false,
 				loadMask: true,
 				minWidth: 500,
 				width: '100%',
@@ -18,6 +17,26 @@ function equipements() {
 				emptyText: 'Aucun équipement trouvé',
 				autoScroll: true,
 				closable: true,
+				viewConfig: {
+					enableTextSelection: true,
+		            listeners: {
+		                itemcontextmenu: function(view, rec, node, index, e) {
+		                    e.stopEvent();
+		                    Ext.create('Ext.menu.Menu', {
+		                    	items: [{
+		                    		text:'Copier l\'Id Legrand',
+		                    		handler: function() {
+		                    			var rec = Ext.getCmp('panelEquipements').getSelectionModel().getSelection()[0];
+		                                if (rec) {
+		                                    alert(rec.get('id_legrand'));
+		                                }
+		                            }
+		                    	}]
+		                    }).showAt(e.getXY());
+		                    return false;
+		                }
+		            }
+				},
 				selModel: {
 					listeners: {
 				        selectionchange: function(sm, selections) {
@@ -45,9 +64,10 @@ function equipements() {
 				        enableGroupingMenu: true
 			    }],
 				columns: [
-					{text: 'Nom', dataIndex: 'nom', width: 131, filter: {type: 'string'}, tooltip:'Nom de l\'équipement'},
-					{text: 'Zone', dataIndex: 'zone', width: 131, filter: {type: 'list', store:Ext.data.StoreManager.lookup('DataZones')}, tooltip:'Zone de l\'équipement'}, 
-					{text: 'Référence Legrand', dataIndex: 'ref_legrand', width: 131, filter: {type: 'list', store:Ext.data.StoreManager.lookup('DataReferences')}, tooltip:'Référence Legrand'},
+					{text: 'Nom', dataIndex: 'nom', width: 200, filter: {type: 'string'}, tooltip:'Nom de l\'équipement'},
+					{text: 'Zone', dataIndex: 'zone', width: 150, filter: {type: 'list', store:Ext.data.StoreManager.lookup('AllDataZones')}, tooltip:'Zone de l\'équipement'}, 
+					{text: 'Référence', dataIndex: 'reference', width: 200, filter: {type: 'string'}, tooltip:'Nom Référence Legrand'},
+					{text: 'Id Référence', dataIndex: 'ref_legrand', width: 131, filter: {type: 'list', store:Ext.data.StoreManager.lookup('AllDataReferences')}, tooltip:'Id Référence Legrand'},
 					{text: 'Id Legrand', dataIndex: 'id_legrand', width: 131, filter: {type: 'string'}, tooltip:'Id de l\'équipement'}, 
 					{
 					    xtype:'actioncolumn', tooltip:'Opération sur l\'équipement',
@@ -133,10 +153,11 @@ function equipements() {
 	
 	};
 
-	this.win = {		
+	this.win = {
 		add: function() {
 			var winAddEquipement = Ext.getCmp('winAddEquipement');
 			if (!winAddEquipement) {
+				Ext.data.StoreManager.lookup('AllDataReferences').load();
 				winAddEquipement = Ext.create('Ext.window.Window', {
 					xtype: 'form',
 					id: 'winAddEquipement',
@@ -189,7 +210,7 @@ function equipements() {
 										name:'reference',
 										valueField: 'id',
 										displayField: 'list',
-										store: Ext.data.StoreManager.lookup('DataReferences'),
+										store: Ext.data.StoreManager.lookup('AllDataReferences'),
 										msgTarget: 'side',
 										vtype:'listInteger',
 										allowBlank: false
@@ -448,20 +469,21 @@ function equipements() {
 			}
 		},
 		
-		equipementScenars: function() {
+		equipementScenars: function(rec) {
 			var winEquipementScenars = Ext.getCmp('winEquipementScenars');
+			Ext.data.StoreManager.lookup('AllDataEquipements').load();
+			Ext.data.StoreManager.lookup('AllDataEquipementsStatus').load();
 			if (!winEquipementScenars) {
 				winEquipementScenars = Ext.create('Ext.window.Window', {
 					id: 'winEquipementScenars',
 				    title: 'Listes des scenarios de l\'équipements (dans le serveur / dans le module)',
 					icon: 'imgs/cog.png',
 				    closeAction: 'close',
-				    width: 900,
+				    width: 1200,
 				    items: [{
 			        	xtype:'gridpanel',
 						id: 'gridScenario',
 						store: Ext.data.StoreManager.lookup('DataCheckScenarios'),
-				    	title : 'Scénarios enregistrés dans la base de donnée ET/OU la mémoire du module', 
 				    	height: 500,
 				        viewConfig: {
 				            stripeRows: true,
@@ -469,15 +491,72 @@ function equipements() {
 				        },
 						disableSelection: false,
 					    columns: [
-							{text: "Id Legrand", dataIndex: 'id_legrand', tooltip:'Id Legrand de l\'équipement programmé', width: 110, renderer: function(val, style, record) {
-								if (record.get('nom') && record.get('zone')) {
-									return val+' <span style="font-style:italic;">('+record.get('nom')+' - '+record.get('zone')+')</span>';
+							{text: "Id Legrand", dataIndex: 'id_legrand', hidden: true, tooltip:'Id Legrand de l\'équipement programmé', width: 200, renderer: function(val, style, record) {
+								var dataEquipement = Ext.getStore('AllDataEquipements').getRange();
+								var ret = false;
+								for (var num in dataEquipement) {
+									if (dataEquipement[num].data.id_legrand == val) {
+										ret = dataEquipement[num].data.nom + ' - ' + dataEquipement[num].data.zone;
+										break;
+									}
 								}
-								return val;
+								if (ret) {
+									return ret+' <span style="font-style:italic;">('+val+')</span>';									
+								} else {
+									return 'Equipement Inconnu ! <span style="font-style:italic;">('+val+')</span>';
+								}
 							}},
-							{text: "Unite", dataIndex: 'unit', tooltip:'Unité de l\'équipement programmé', width: 80},
-							{text: "Id Legrand d'écoute", dataIndex: 'id_legrand_listen', tooltip:'Id Legrand d\'écoute', width: 120},
-							{text: "Unité d'écoute", dataIndex: 'unit_listen', tooltip:'Unité d\'écoute', width: 100},
+							{text: "Unite", dataIndex: 'unit', tooltip:'Unité de l\'équipement programmé', width: 200, renderer: function(val, style, record) {
+								var id_legrand = record.get('id_legrand');
+								var unit = val;
+								var dataEquipement = Ext.getStore('AllDataEquipementsStatus').getRange();
+								var ret = false;
+								for (var num in dataEquipement) {
+									if (dataEquipement[num].data.id_legrand == id_legrand
+										&& dataEquipement[num].data.unit == unit) {
+										ret = dataEquipement[num].data.Btn;
+										break;
+									}
+								}
+								if (ret) {
+									return ret+' <span style="font-style:italic;">('+unit+')</span>';									
+								} else {
+									return 'Equipement Inconnu ! <span style="font-style:italic;">('+unit+')</span>';
+								}
+							}},
+							{text: "Id Legrand d'écoute", dataIndex: 'id_legrand_listen', tooltip:'Id Legrand d\'écoute', width: 250, renderer: function(val, style, record) {
+								var dataEquipement = Ext.getStore('AllDataEquipements').getRange();
+								var ret = false;
+								for (var num in dataEquipement) {
+									if (dataEquipement[num].data.id_legrand == val) {
+										ret = dataEquipement[num].data.nom + ' - ' + dataEquipement[num].data.zone;
+										break;
+									}
+								}
+								if (ret) {
+									return ret+' <span style="font-style:italic;">('+val+')</span>';									
+								} else {
+									return 'Equipement Inconnu ! <span style="font-style:italic;">('+val+')</span>';
+								}
+							}},
+							{text: "Unité d'écoute", dataIndex: 'unit_listen', tooltip:'Unité d\'écoute', width: 200, renderer: function(val, style, record) {
+								var id_legrand = record.get('id_legrand_listen');
+								var unit = val;
+								var dataEquipement = Ext.getStore('AllDataEquipementsStatus').getRange();
+								var ret = false;
+								for (var num in dataEquipement) {
+									if (dataEquipement[num].data.id_legrand == id_legrand
+										&& dataEquipement[num].data.unit == unit) {
+										ret = dataEquipement[num].data.Btn;
+										break;
+									}
+								}
+								if (ret) {
+									return ret+' <span style="font-style:italic;">('+unit+')</span>';									
+								} else {
+									return 'Equipement Inconnu ! <span style="font-style:italic;">('+unit+')</span>';
+								}
+							}},
 							{text: "Média d'écoute", dataIndex: 'media_listen', tooltip:'Média d\'écoute', width: 85, renderer: function(val) {
 								return defineMedia[val]+' <span style="font-style:italic;">('+val+')</span>';
 							}},
@@ -500,7 +579,7 @@ function equipements() {
 									} else if (val == '101') {
 										ret = 'STOP';
 									}
-								} else if (family == 'CONFORT') {
+								} else if (family == 'COMFORT') {
 									if (val == '6') {
 										ret = 'PRESENCE';
 									} else if (val == '7') {
@@ -549,6 +628,14 @@ function equipements() {
 							        	var rec = grid.getStore().getAt(rowIndex);
 							        	equipements.func.progScenario(rec);
 							        }
+							    },{
+							        icon: 'imgs/delete.png',
+							        tooltip: 'Effacer',
+				                    tooltip:'Supprimer le scénario',
+							        handler: function(grid, rowIndex, colIndex) {
+							        	var rec = grid.getStore().getAt(rowIndex);
+							        	equipements.func.progDelScenario(rec);
+							        }							    	
 							    }]
 							}
 						]
@@ -565,6 +652,12 @@ function equipements() {
 		                    	var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
 		            		    ScenarStore.load();
 		            		}
+			            }, {
+		                	icon: 'imgs/add.png',
+		                	id: 'winEquipementScenarsBtnAdd',
+		                    text: 'Ajouter',
+		                    tooltip:'Ajouter un scénario',
+		                    disabled: true
 			            }]
 					}],
 			        buttons: [{
@@ -577,6 +670,163 @@ function equipements() {
 				});
 			}
 			winEquipementScenars.show();
+			Ext.getCmp('winEquipementScenarsBtnAdd').disable();
+			Ext.getCmp('winEquipementScenarsBtnAdd').setHandler(function(widget, event) {
+            	equipements.win.addScenar(rec);
+    		});
+		},
+
+		addScenar: function(rec) {
+		    var id_legrand = rec.get('id_legrand');
+			Ext.data.StoreManager.lookup('unitDataEquipementsStatus').clearFilter(true);
+			Ext.data.StoreManager.lookup('unitDataEquipementsStatus').filter(
+					[{property: 'id_legrand', value: id_legrand},{property: 'filter', value: '{type="string"},{field="possibility"},{value="MEMORY"}'}]
+			);
+			var winAddScenar = Ext.getCmp('winAddScenar');
+			if (!winAddScenar) {
+				winAddScenar = Ext.create('Ext.window.Window', {
+					id: 'winAddScenar',
+				    title: 'Ajouter un scénario',
+					icon: 'imgs/cog.png',
+				    closeAction: 'close',
+				    items: [{
+			            xtype: 'form',
+			            id: 'formAddScenar',
+					    items: [{
+					    	xtype: 'fieldset',
+							title: 'Equipement à programmer',
+							collapsible: true,
+							defaults: {
+								width: 600,
+								layout: {
+									type: 'hbox',
+									defaultMargins: {top: 0, right: 5, bottom: 0, left: 0}
+								}
+							},
+							items: [{
+								xtype : 'textfield',
+								id: 'formAddScenarIdLegrand',
+								name:'id_legrand',
+								hidden:true
+							},{
+								xtype : 'combobox',
+								id: 'formAddScenarUnit',
+								name:'unit',
+								fieldLabel:'Unité',
+								valueField: 'unit',
+								displayField: 'listUnits',
+								store: Ext.data.StoreManager.lookup('unitDataEquipementsStatus'),
+								listeners: {
+									select: function(o, val, e) {
+										var unit_code = val[0].getData().unit_code;
+										var unit = val[0].getData().unit;
+										var Btn = val[0].getData().Btn;
+										Ext.data.StoreManager.lookup('DataReferencesMemory').clearFilter(true);
+										Ext.data.StoreManager.lookup('DataReferencesMemory').filter(
+												[{property: 'unit_code', value: unit_code}]
+										);
+										Ext.data.StoreManager.lookup('DataReferencesMemory').reload();
+										Ext.getCmp('formAddScenarUnit').setValue(unit);
+										Ext.getCmp('formAddScenarUnit').setRawValue(unit+' ('+Btn+')');
+										Ext.getCmp('formAddScenarValueListen').clearValue();
+									}
+								},
+								msgTarget: 'side',
+								vtype:'listInteger',
+								allowBlank: false
+							},{
+								xtype : 'combobox',
+								id: 'formAddScenarValueListen',
+								name:'value_listen',
+								fieldLabel:'Action',
+								valueField: 'value',
+								displayField: 'listActions',
+								store: Ext.data.StoreManager.lookup('DataReferencesMemory'),
+								msgTarget: 'side',
+								vtype:'listInteger',
+								allowBlank: false
+							},{
+								xtype : 'textfield',
+								id: 'formAddScenarMediaListen',
+								name:'media_listen',
+								hidden:true
+							}]
+						},{
+					    	xtype: 'fieldset',
+							title: 'Equipement à écouter',
+							collapsible: true,
+							defaults: {
+								width: 600
+							},
+							items: [{
+								xtype: 'combobox',
+								fieldLabel:'Equipement',
+								name:'id_legrand_listen',
+								id: 'formAddScenarIdLegrandListen',
+								valueField: 'id_legrand',
+								displayField: 'listEquipements',
+								store: Ext.data.StoreManager.lookup('ProgramableDataEquipementsStatus'),
+								listeners: {
+									select: function(o, val, e) {
+										var id_legrand = val[0].getData().id_legrand;
+										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').clearFilter(true);
+										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').filter(
+												[{property: 'id_legrand', value: id_legrand},
+												 {property: 'filter', value: '{type="string"},{field="possibility"},{value="COMMAND"}'}]
+										);
+										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').reload();
+										Ext.getCmp('formAddScenarIdLegrandListen').setValue(id_legrand);
+										Ext.getCmp('formAddScenarUnitListen').clearValue();
+									}
+								},
+								msgTarget: 'side',
+								vtype:'listInteger',
+								allowBlank: false
+							},{
+								xtype: 'combobox',
+								fieldLabel:'Unité',
+								id: 'formAddScenarUnitListen',
+								name:'unit_listen',
+								valueField: 'unit',
+								displayField: 'listUnits',
+								store: Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus'),
+								msgTarget: 'side',
+								vtype:'listInteger',
+								allowBlank: false
+							}]
+						}]
+				    }],	
+				    buttons: [{
+				    	id:'winAddScebarBtnClear',
+						text: 'Effacer',
+				        tooltip: 'Effacer tous les champs',
+						handler: function() {
+							Ext.getCmp('formAddScenar').getForm().reset();
+						}
+					},{
+						text: 'Annuler',
+				        tooltip: 'Annuler l\'ajout et fermer la fenêtre',
+						handler: function() {
+							Ext.getCmp('winAddScenar').close();
+						}
+					},{
+						text: 'Programmer',
+				    	id:'winAddScenarBtnSave',
+				        tooltip: 'Programmer l\'équipement',
+						handler: function() {
+							equipements.func.validateAddScenar();
+						}
+					}]
+				});
+			}
+			winAddScenar.show();
+			Ext.getCmp('formAddScenar').getForm().reset();
+		    var equipement = rec.get('nom');
+		    var zone = rec.get('zone');
+		    var media_listen = rec.get('media');
+		    winAddScenar.setTitle('Ajouter un scénario à '+equipement+' - '+zone+' ('+id_legrand+')');
+			Ext.getCmp('formAddScenarIdLegrand').setValue(id_legrand);
+			Ext.getCmp('formAddScenarMediaListen').setValue(media_listen);
 		}
 	};
 	
@@ -588,7 +838,7 @@ function equipements() {
 				var formValues = form.getValues();
 				
 				//Gestion de l'ID LEGRAND
-				var dataRef = Ext.getStore('DataEquipements').getRange();
+				var dataRef = Ext.getStore('AllDataEquipements').getRange();
 				var ret = true;
 				for (var ref in dataRef) {
 					if (dataRef[ref].data.id_legrand == formValues.id_legrand) {
@@ -607,7 +857,7 @@ function equipements() {
 				}
 		
 				//Gestion de la Référence
-				var dataRef = Ext.getStore('DataReferences').getRange();
+				var dataRef = Ext.getStore('AllDataReferences').getRange();
 				var ret = false;
 				for (var ref in dataRef) {
 					if (dataRef[ref].data.ref_legrand == formValues.reference) {
@@ -626,7 +876,7 @@ function equipements() {
 				}
 				
 				//Gestion du nom
-				var dataRef = Ext.getStore('DataEquipements').getRange();
+				var dataRef = Ext.getStore('AllDataEquipements').getRange();
 				var ret = true;
 				for (var ref in dataRef) {
 					if (dataRef[ref].data.nom == formValues.nom) {
@@ -657,11 +907,70 @@ function equipements() {
 						Ext.getCmp('formAddEquipement').getForm().reset();
 						Ext.getCmp('winAddEquipement').close();
 						Ext.data.StoreManager.lookup('DataEquipements').reload();
+						Ext.data.StoreManager.lookup('AllDataEquipements').reload();
 					},
 					onfailure:function(response){
 						Ext.MessageBox.show({
 							title: 'Information',
 							msg: 'Equipement "'+formValues.nom+'" na pas pu être ajouté ! Erreur de communication, réessayez plus tard.',
+							buttons: Ext.MessageBox.OK,
+							icon: Ext.MessageBox.ERROR
+						});
+					}
+				});
+			} else {
+				Ext.MessageBox.show({
+					title: 'Erreur',
+					msg: 'Vous devez remplir tous les champs',
+					buttons: Ext.MessageBox.OK,
+					icon: Ext.MessageBox.ERROR
+				});
+			}
+		},
+
+		validateAddScenar: function() {
+			var form = Ext.getCmp('formAddScenar').getForm(),
+			encode = Ext.String.htmlEncode;
+			if (form.isValid()) {
+				var formValues = form.getValues();
+				var id_legrand = encode(formValues.id_legrand);
+				var unit = encode(formValues.unit);
+				var id_legrand_listen = encode(formValues.id_legrand_listen);
+				var unit_listen = encode(formValues.unit_listen);
+				var media_listen = 96;
+				if (formValues.media_listen == "CPL") {
+					media_listen = 96;
+				} else if (formValues.media_listen == "RF") {
+					media_listen = 64;
+				} else if (formValues.media_listen == "IR") {
+					media_listen = 128;
+				}
+				var value_listen = encode(formValues.value_listen);
+				//Creation de l'envoie
+				requestGET('../back/client.php', 
+						{
+							add_scenario: '', 
+							id_legrand:id_legrand,unit:unit,
+							id_legrand_listen:id_legrand_listen,unit_listen:unit_listen,
+							value_listen:value_listen,media_listen:media_listen,where:'both'
+						}, 
+						{ok:'scénario programmé !', error:'impossible de programmé le scénario !'}, {
+					onsuccess:function(response) {
+						Ext.MessageBox.show({
+							title: 'Information',
+							msg: 'Scénario programmé !',
+							buttons: Ext.MessageBox.OK,
+							icon: Ext.MessageBox.INFO
+						});
+						Ext.getCmp('formAddScenar').getForm().reset();
+						Ext.getCmp('winAddScenar').close();
+                    	var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+            		    ScenarStore.load();
+					},
+					onfailure:function(response){
+						Ext.MessageBox.show({
+							title: 'Information',
+							msg: 'Le scénario n\'a pas pu être programmé ! Erreur de communication, réessayez plus tard.',
 							buttons: Ext.MessageBox.OK,
 							icon: Ext.MessageBox.ERROR
 						});
@@ -755,10 +1064,35 @@ function equipements() {
 		updScenar: function(rec) {
 			if (rec) {
 			    var id = rec.get('id_legrand');
-			    equipements.win.equipementScenars();
+			    equipements.win.equipementScenars(rec);
+				Ext.getCmp('gridScenario').setTitle(rec.get('nom') + ' - ' + rec.get('zone') + ' ('+rec.get('id_legrand')+')');
 			    var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
 			    ScenarStore.getProxy().url = '../back/client.php?check_memory_db='+id;
-			    ScenarStore.load();
+			    ScenarStore.load({
+			    	callback: function (records, operation, success) {
+						var reg_erreur = /<erreur>(.*)<\/erreur>/i;
+						var erreur = reg_erreur.exec(operation.response.responseText);
+						var reg_info = /<information>(.*)<\/information>/i;
+						var info = reg_info.exec(operation.response.responseText);								
+						Ext.getCmp('winEquipementScenarsBtnAdd').enable();
+						if (erreur) {
+							Ext.getCmp('winEquipementScenarsBtnAdd').disable();
+							Ext.MessageBox.show({
+								title: 'Erreur',
+								msg: erreur[1],
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.ERROR
+							});
+						} else if (info) {
+							Ext.MessageBox.show({
+								title: 'Information',
+								msg: info[1],
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.INFO
+							});
+						}
+			        }
+                });
 			}
 		},
 
@@ -780,6 +1114,12 @@ function equipements() {
 		progScenario: function(rec) {
 	    	var in_memory = rec.get('in_memory');
 	    	var in_db = rec.get('in_db');
+	    	var id_legrand = rec.get('id_legrand');
+	    	var unit = rec.get('unit');
+	    	var id_legrand_listen = rec.get('id_legrand_listen');
+	    	var unit_listen = rec.get('unit_listen');
+	    	var value_listen = rec.get('value_listen');
+	    	var media_listen = rec.get('media_listen');
 	    	if (in_memory === 'true' && in_db === 'true') {
 	        	Ext.MessageBox.show({
 					title: 'Information',
@@ -788,15 +1128,41 @@ function equipements() {
 					icon: Ext.MessageBox.INFO
 				});
 	    	} else if (in_memory === 'true' && in_db === 'false') {
-				params = "'"+rec.get('id_legrand')+"','"+rec.get('unit')+"','"+rec.get('id_legrand_listen')+"','"+rec.get('unit_listen')+"','"+rec.get('value_listen')+"','"+rec.get('media_listen')+"'";
 	        	Ext.MessageBox.show({
 					title: 'Programmation',
 					msg: 'Voulez-vous vraiment ajouter la programmation du module au serveur ?',
 					buttons: Ext.MessageBox.OKCANCEL,
-					fn: function() {
-						requestCall('add_scenario', params, {ok:'scénario programmé !', error:'Impossible de programmer le scénario !'}, {
+					fn: function(btn) {
+						if (btn == 'cancel') {
+							return;
+						}
+						requestGET('../back/client.php', 
+								{
+									add_scenario: '', 
+									id_legrand:id_legrand,unit:unit,
+									id_legrand_listen:id_legrand_listen,unit_listen:unit_listen,
+									value_listen:value_listen,media_listen:media_listen,where:'db'
+								},
+								{ok:'scénario envoyé !', error:'Impossible de programmer le scénario !'}, {
 							onsuccess:function(response) {
-								rec.set('in_memory', 'update');
+								var reg_erreur = /<erreur>(.*)<\/erreur>/i;
+								var erreur = reg_erreur.exec(response.responseText);
+								if (erreur) {
+									Ext.MessageBox.show({
+										title: 'Erreur',
+										msg: 'Le scénario pour "'+rec.get('id_legrand')+'" n\'a pas pu être programmé ! '+erreur[1],
+										buttons: Ext.MessageBox.OK,
+										icon: Ext.MessageBox.ERROR
+									});
+								} else {
+									rec.set('in_db', 'update');
+						        	Ext.MessageBox.show({
+										title: 'Information',
+										msg: 'Programmation ajoutée.',
+										buttons: Ext.MessageBox.OK,
+										icon: Ext.MessageBox.INFO
+									});
+								}
 			            	},
 			            	onfailure:function(response){
 								Ext.MessageBox.show({
@@ -807,7 +1173,6 @@ function equipements() {
 								});
 			            	}
 			            });
-						alert('add!!');
 					},
 					icon: Ext.MessageBox.WARNING
 				});
@@ -816,12 +1181,97 @@ function equipements() {
 					title: 'Inofrmation',
 					msg: 'Voulez-vous vraiment supprimmer du serveur la programmation inexistante du module ?',
 					buttons: Ext.MessageBox.OKCANCEL,
-					fn: function() {
-						alert('delete!!');
+					fn: function(btn) {
+						if (btn == 'cancel') {
+							return;
+						}
+						requestGET('../back/client.php', 
+								{
+									add_scenario: '', 
+									id_legrand:id_legrand,unit:unit,
+									id_legrand_listen:id_legrand_listen,unit_listen:unit_listen,
+									value_listen:value_listen,media_listen:media_listen,where:'db'
+								},
+								{ok:'scénario supprimmé !', error:'Impossible de supprimmer le scénario !'}, {
+							onsuccess:function(response) {
+		                    	var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+		            		    ScenarStore.load();
+			            	},
+			            	onfailure:function(response){
+								Ext.MessageBox.show({
+									title: 'Erreur',
+									msg: 'Le scénario pour "'+rec.get('id_legrand')+'" n\'a pas pu être programmé ! Erreur de communication, réessayez plus tard.',
+									buttons: Ext.MessageBox.OK,
+									icon: Ext.MessageBox.ERROR
+								});
+			            	}
+			            });
 					},
 					icon: Ext.MessageBox.WARNING
 				});
 	    	}
+	    },
+
+		progDelScenario: function(rec) {
+	    	var in_memory = rec.get('in_memory');
+	    	var in_db = rec.get('in_db');
+	    	var id_legrand = rec.get('id_legrand');
+	    	var unit = rec.get('unit');
+	    	var id_legrand_listen = rec.get('id_legrand_listen');
+	    	var unit_listen = rec.get('unit_listen');
+	    	var media_listen = rec.get('media_listen');
+	    	var where = 'both';
+	    	var msg = 'Voulez-vous vraiment supprimmer le scénario du module et du serveur ?';
+	    	if (in_memory === false) {
+	    		where = 'db';
+		    	msg = 'Voulez-vous vraiment supprimmer le scénario du serveur ?';
+	    	} else if (in_db === false) {
+	    		where = 'memory';
+		    	msg = 'Voulez-vous vraiment supprimmer le scénario du module ?';
+	    	}
+        	Ext.MessageBox.show({
+				title: 'Programmation',
+				msg: msg,
+				buttons: Ext.MessageBox.OKCANCEL,
+				fn: function(btn) {
+					if (btn == 'cancel') {
+						return;
+					}
+					requestGET('../back/client.php', 
+							{
+								del_scenario: '', 
+								id_legrand:id_legrand,unit:unit,
+								id_legrand_listen:id_legrand_listen,unit_listen:unit_listen,
+								media_listen:media_listen,where:where
+							},
+							{ok:'scénario supprimmé !', error:'Impossible de supprimmer le scénario !'}, {
+						onsuccess:function(response) {
+							var reg = /<erreur>(.*)<\/erreur>/i;
+							var erreur = reg.exec(response.responseText);
+							if (erreur) {
+								Ext.MessageBox.show({
+									title: 'Erreur',
+									msg: 'Le scénario pour "'+rec.get('id_legrand')+'" n\'a pas pu être programmé ! '+erreur[1],
+									buttons: Ext.MessageBox.OK,
+									icon: Ext.MessageBox.ERROR
+								});
+							} else {
+		                    	var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+		            		    ScenarStore.load();
+							}
+		            	},
+		            	onfailure:function(response){
+							Ext.MessageBox.show({
+								title: 'Erreur',
+								msg: 'Le scénario pour "'+rec.get('id_legrand')+'" n\'a pas pu être supprimé ! Erreur de communication, réessayez plus tard.',
+								buttons: Ext.MessageBox.OK,
+								icon: Ext.MessageBox.ERROR
+							});
+		            	}
+		            });
+				},
+				icon: Ext.MessageBox.WARNING
+			});
 	    },
 
 		panelList: function() {

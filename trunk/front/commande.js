@@ -1,3 +1,15 @@
+function commande() {
+	this.form = {
+			
+	};
+	
+	this.win = {
+			
+	};
+}
+
+var commande = new commande();
+
 /**
  * 
  */
@@ -31,15 +43,14 @@ var createCommande = function(action) {
 			defaults: {
 			},
 			items: [{
-				xtype: 'numberfield',
+				xtype: 'combobox',
 				name: 'id',
-				minValue:0,
-				maxValue:999999999999,
-				width:200,
-				hideTrigger: true,
-				keyNavEnabled: false,
-				mouseWheelEnabled: false,
+				width:400,
+				valueField: 'id_legrand',
+				displayField: 'list',
+				store: Ext.data.StoreManager.lookup('AllDataEquipements'),
 				msgTarget: 'side',
+				vtype:'listInteger',
 				allowBlank: false
 			},{
 				xtype: 'displayfield',
