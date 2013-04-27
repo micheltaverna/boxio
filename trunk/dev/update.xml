@@ -10,4 +10,9 @@
 		<release>2013-03-28 10:52:14</release>
 		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_1.tgz</path>
 	</version>
+	<version>
+		<name>Beta 1.2</name>
+		<release>2013-04-27 10:55:02</release>
+		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_2.tgz</path>
+	</version>
 </root>
