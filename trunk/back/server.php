@@ -786,6 +786,7 @@ class legrand_server {
 		//Premiere appel on regarde en base qui est concerné et on construit le tableau des mises à jours
 		if (!isset($this->cronRequest)) {
 			$this->cronRequest = array();
+			$this->cronRequestAnalyse = time();
 			$res = $this->mysqli->query("SELECT id_legrand, unit, server_opt FROM boxio.equipements_status WHERE server_opt LIKE '%upd_time%'");
 			//permet de décaler les requetes dans le temps pour eviter une saturation
 			$decal_time = 2;
@@ -803,7 +804,10 @@ class legrand_server {
 				$this->cronRequest[$id_legrand.$unit]['upd_time'] = $upd_time;
 				$this->cronRequest[$id_legrand.$unit]['next_request'] = $next_request;
 			}
-			//On regarde les mises Ã  jour necessaire et on prevoit les prochaines
+			//On regarde les mises à jour necessaire et on prevoit les prochaines
+		//On reset la table
+		} else if ($this->cronRequestAnalyse+600 < time()) {
+			unset($this->cronRequest);
 		} else {
 			foreach($this->cronRequest as $idunit => $request) {
 				if (time() >= $this->cronRequest[$idunit]['next_request']) {
