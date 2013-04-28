@@ -1,6 +1,6 @@
 ﻿#summary Liste des futurs implémentations et corrections
 
-= BETA 1.1 =
+= BETA 1.2 =
 
   # Correction et Amélioration des exemples dans iViewer 
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
