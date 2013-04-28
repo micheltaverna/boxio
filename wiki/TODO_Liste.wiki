@@ -7,8 +7,8 @@
 
 = BETA 1.1 =
 
-  # ~~Corriger la référence 84541 en attente de validation par Frederic~~
-  # ~~Ajout de la référence 67255 en attente de validation par Aurélien~~
+  # ~~Corriger la référence 84541 en attente de validation par Frederic~~ -> MYSQL Table references
+  # ~~Ajout de la référence 67255 en attente de validation par Aurélien~~ -> MYSQL Table references
   # ~~Ajout de la programmation des scénarios des équipements sans les ouvrir et sans utiliser la procédure classique de Legrand, plus besoin de retirer les enjoliveurs :)~~ -> équipements.js
   # ~~Bug dans "Liste des scénarios de l'équipement" certains Id/Unit Legrand n'était pas affichés~~ -> equipements.js
   # ~~Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues~~ -> equipements.js
