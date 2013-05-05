@@ -7,6 +7,7 @@
   # Ajout de la gestion des status pour les scenarios temporels (ACTION_IN_TIME et ACTION_FOR_TIME)
   # Ajout du support des paramètres pour les commandes Lexic (inter, poussoir, tempo, etc.), pour détecter le bon status
   # Ajout des commandes d'arrêt pour interrompre les scripts en cours (stop_command, stop_favoris, stop_macros et stop_trame)
+  # Ajout de délais pour les commandes en cours (delay_command, delay_favoris, delay_macros et delay_trame)
   # Ajout des déclencheurs
 
 = BETA 1.1 =
