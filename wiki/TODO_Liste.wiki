@@ -1,21 +1,24 @@
 ﻿#summary Liste des futurs implémentations et corrections
 
-= BETA 1.2 =
+= BETA 1.3 =
 
   # Correction et Amélioration des exemples dans iViewer 
   # Afficher la dernière action (et trier par date) les équipements trouvés dans "Liste des équipements non trouvés"
   # Ajout de la gestion des status pour les scenarios temporels (ACTION_IN_TIME et ACTION_FOR_TIME)
   # Ajout du support des paramètres pour les commandes Lexic (inter, poussoir, tempo, etc.), pour détecter le bon status
-  # Ajout des commandes d'arrêt pour interrompre les scripts en cours (stop_command, stop_favoris, stop_macros et stop_trame)
+  # ~~Ajout des commandes d'arrêt pour interrompre les scripts en cours (stop_command, stop_favoris, stop_macros et stop_trame)~~
   # Ajout de délais pour les commandes en cours (delay_command, delay_favoris, delay_macros et delay_trame)
   # Ajout des déclencheurs
 
-= BETA 1.1 =
+= BETA 1.2 =
 
   # ~~Corriger la référence 84541 en attente de validation par Frederic~~ -> MYSQL Table references
   # ~~Ajout de la référence 67255 en attente de validation par Aurélien~~ -> MYSQL Table references
   # ~~Ajout de la programmation des scénarios des équipements sans les ouvrir et sans utiliser la procédure classique de Legrand, plus besoin de retirer les enjoliveurs :)~~ -> équipements.js
   # ~~Bug dans "Liste des scénarios de l'équipement" certains Id/Unit Legrand n'était pas affichés~~ -> equipements.js
+
+= BETA 1.1 =
+
   # ~~Bug dans "ajout d'un équipement" si la liste des références n'a pas été dépliée les références sont inconnues~~ -> equipements.js
   # ~~Bug dans "ajout d'un équipement" la liste des références n'affiche que les références listées dans "liste des références supportées par le serveur"~~ -> equipements.js
   # ~~Bug dans la génération des trames lorsque le unit est supérieur à 9 ~~ -> own_scripts.js
