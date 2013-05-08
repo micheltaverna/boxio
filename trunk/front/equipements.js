@@ -568,6 +568,12 @@ function equipements() {
 										ret = 'ON';
 									} else if (val == '102') {
 										ret = 'OFF';
+									} else if (val == '103') {
+										ret = 'ON_FORCED';
+									} else if (val == '104') {
+										ret = 'OFF_FORCED';
+									} else if (val == '105') {
+										ret = 'AUTO';
 									} else {
 										ret = 'DIM '+val+'%';
 									}

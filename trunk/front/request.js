@@ -2,7 +2,7 @@
 * Gestion des requetes au Client
 */
 
-var sendCommand = function(type, trame, dateFormat) {
+var sendCommand = function(type, trame, dateFormat, delay) {
 	Ext.Ajax.request({
 		url: '../back/client.php',
 		method: 'GET',
@@ -12,7 +12,7 @@ var sendCommand = function(type, trame, dateFormat) {
 		failure: function(response) {
 			Ext.myMsg.msg('Information', 'Erreur : La trame n\'a pas été envoyé !');
 		},
-		params: { type: type, send_command: trame, date: dateFormat }
+		params: { type: type, send_command: trame, date: dateFormat, delay: delay }
 	});
 };
 

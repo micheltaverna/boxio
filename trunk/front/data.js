@@ -12,6 +12,13 @@ new Ext.data.Store({
 	pageSize: 50,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_all_trame',
@@ -33,6 +40,13 @@ new Ext.data.Store({
 	storeId: 'savedTrame',
 	model: 'trameSaved',
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'localstorage',
 	    id: 'cookiesTrameExt'
@@ -48,6 +62,13 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_references',
@@ -66,6 +87,13 @@ new Ext.data.Store({
 	pageSize: 1000,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_references',
@@ -86,6 +114,13 @@ new Ext.data.Store({
 	storeId: 'DataCheckScenarios',
 	model: 'checkScenarios',
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?check_memory_db',
@@ -110,6 +145,13 @@ new Ext.data.Store({
 	remoteGroup: true,
 	autoLoad: false,
 	groupField: 'nom',
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_macros',
@@ -134,6 +176,13 @@ new Ext.data.Store({
 	remoteGroup: true,
 	autoLoad: false,
 	groupField: 'nom',
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_macros',
@@ -156,6 +205,13 @@ var DataFavoris = new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_favoris',
@@ -178,6 +234,13 @@ var DataUnknownEquipements = new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_unknown_equipements',
@@ -202,6 +265,13 @@ new Ext.data.Store({
 	remoteGroup: true,
 	autoLoad: false,
 	groupField: 'zone',
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements',
@@ -222,6 +292,13 @@ new Ext.data.Store({
 	remoteGroup: true,
 	autoLoad: false,
 	groupField: 'zone',
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements',
@@ -240,6 +317,13 @@ new Ext.data.Store({
 	pageSize: 1000,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements_status',
@@ -259,6 +343,13 @@ new Ext.data.Store({
 	remoteSort: true,
 	remoteFilter: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements_status',
@@ -279,6 +370,13 @@ new Ext.data.Store({
 	remoteFilter: true,
 	autoLoad: false,
 	filters: [{property: 'filter', value: '{type="string"},{field="possibility"},{value="COMMAND"}'}],
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements_status',
@@ -298,6 +396,13 @@ new Ext.data.Store({
 	remoteSort: true,
 	remoteFilter: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_equipements_status',
@@ -317,6 +422,13 @@ new Ext.data.Store({
 	remoteSort: true,
 	remoteFilter: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_references_memory',
@@ -339,6 +451,13 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_zones',
@@ -357,6 +476,13 @@ new Ext.data.Store({
 	pageSize: 1000,
 	remoteSort: true,
 	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_zones',
@@ -381,9 +507,49 @@ new Ext.data.Store({
 	autoLoad: false,
 	remoteGroup: true,
 	groupField: 'active',
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
 	proxy: {
 		type: 'ajax',
 		url: '../back/client.php?view=view_cron',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+/**
+ * Gestion des status des equipements (status)
+ */
+new Ext.data.Store({
+	storeId: 'DataEquipementsStatus',
+	model: 'equipementsStatus',
+	pageSize: 20,
+	autoLoad: false,
+	remoteSort: true,
+	remoteFilter: true,
+	remoteGroup: true,
+	groupField: 'zone',
+	filters: [{property: 'filter', value: '{type="string"},{field="possibility"},{value="STATUS"}'}],
+	listeners: {
+		load: function(t, data) {
+			if (data[0].get('login_status') === 'false') {
+				login.win.login();
+			}
+		}
+	},
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_equipements_status',
 		reader: {
 			type: 'xml',
 			record: 'module',

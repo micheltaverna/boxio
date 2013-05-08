@@ -886,7 +886,7 @@ function cron() {
 				},{
 					xtype: 'radiofield',
 					name: 'active',
-					inputValue: 'false',
+					inputValue: 'non',
 					boxLabel: 'non'
 				}]
 			}]

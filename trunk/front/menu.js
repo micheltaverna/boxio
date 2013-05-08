@@ -64,13 +64,14 @@ new Ext.toolbar.Toolbar({
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openStatus();
+				status.func.panelList();
 			},
 			menu: [{
 				text: 'Vérifier le statut',
+				icon: 'imgs/magnifying_glass_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openStatus();
+					status.func.panelList();
 				}
 			}]
 		},{
@@ -341,6 +342,22 @@ new Ext.toolbar.Toolbar({
 					openAuthor();
 				}
 			}]
+		}]
+	},{
+		xtype: 'buttongroup',
+		title: 'Déconnexion',
+		defaults: {
+			scale: 'large',
+			iconAlign:'top'
+		},
+		items: [{
+			xtype:'splitbutton',
+			text: 'Déconnecter',
+			icon: 'imgs/lock_stroke_24x32.png',
+			arrowAlign:'bottom',
+			handler: function() {
+				login.func.logout();
+			}
 		}]
 	}]
 });

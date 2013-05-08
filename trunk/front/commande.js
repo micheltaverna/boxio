@@ -264,7 +264,7 @@ var createCommande = function(action) {
 						trame = InOne.ownManager_starsharp_to_YZ(trame);
 						var dateFormat=Ext.util.Format.date(formValues.date, 'Y-m-d');
 						dateFormat=dateFormat+' '+formValues.hours+':'+formValues.minutes+':'+formValues.secondes;
-						sendCommand('trame', trame, dateFormat);
+						sendCommand('trame', trame, dateFormat, 0);
 					}
 				}
 			}]
