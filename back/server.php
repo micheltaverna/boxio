@@ -315,7 +315,7 @@ class legrand_server {
 			"date" => date)
 	*/
 	private function updateStatusScenario($decrypted_trame) {
-		//TODO NE METTRE A JOUR LE STATUS AVEC LA COMMANDE EXEMPLE "ACTION" SUR VARIATEUR UNIT "4" NE PAS CHANGER LE STATUS
+		//@TODO NE PAS METTRE A JOUR LE STATUS AVEC LA COMMANDE EXEMPLE "ACTION" SUR VARIATEUR UNIT "4" NE PAS CHANGER LE STATUS
 		//Il ne s'agit plus de mettre à jour...
 		if ($decrypted_trame['value'] == 'STOP_ACTION') {
 			return;
@@ -381,17 +381,17 @@ class legrand_server {
 	}
 
 	/*
-	 // FONCTION : MISE A JOUR DU STATUS DES LIGHTS
+	// FONCTION : MISE A JOUR DU STATUS DES LIGHTS
 	// PARAMS : $decrypted_trame = array(
-			"trame" => string,
-			"format" => 'string',
-			"type" => 'string',
-			"value" => string,
-			"dimension" => string,
-			"param" => string,
-			"id" => string,
-			"unit" => string,)
-	$scenarios => boolean (true si l'on doit recherche des scenarios associés)
+					"trame" => string,
+					"format" => 'string',
+					"type" => 'string',
+					"value" => string,
+					"dimension" => string,
+					"param" => string,
+					"id" => string,
+					"unit" => string,)
+			$scenarios => boolean (true si l'on doit recherche des scenarios associés)
 	*/
 	private function updateStatusLight($decrypted_trame, $scenarios) {
 		//Creation des variables utiles
@@ -450,15 +450,15 @@ class legrand_server {
 		if ($status === NULL) {
 			return;
 		}
-		//Mise Ã  jour de la touche de l'equipement (s'il ne s'agit pas du unit_status)
+		//Mise à jour de la touche de l'equipement (s'il ne s'agit pas du unit_status)
 		if ($unit != $unit_status) {
 			$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
 			$this->mysqli->query($query);
 		}
-		//Mise Ã  jour interne du status de l'equipement
+		//Mise à jour interne du status de l'equipement
 		$query = "UPDATE `equipements_status` SET status='$status' WHERE id_legrand='$id' AND unit='$unit_status'";
 		$this->mysqli->query($query);
-		//Mise Ã  jour des scenarios si necessaire
+		//Mise à jour des scenarios si necessaire
 		if ($scenarios === true && $decrypted_trame["dimension"] != 'GO_TO_LEVEL_TIME') {
 			$scenarios_decrypted_trame = $decrypted_trame;
 			$query = "SELECT id_legrand,unit FROM scenarios WHERE id_legrand_listen='$id' AND unit_listen='$unit' AND id_legrand<>'$id';";
@@ -650,23 +650,24 @@ class legrand_server {
 			"unit" => string,
 			*/
 	private function updateStatus($decrypted_trame) {
+		//@TODO: Vérifier les status des trames "COMFORT"
 		//CAS DES VOLETS
 		if ($decrypted_trame['type'] == 'SHUTTER') {
 			$this->updateStatusShutter($decrypted_trame, true);
-			//CAS DES LUMIERES
+		//CAS DES LUMIERES
 		} else if ($decrypted_trame['type'] == 'LIGHTING') {
 			$this->updateStatusLight($decrypted_trame, true);
-			//CAS DES SCENARIOS
+		//CAS DES SCENARIOS
 		} else if ($decrypted_trame['type'] == 'SCENE') {
 			$this->updateStatusScenario($decrypted_trame);
-			//ON NE S'EST PAS DE QUOI IL S'AGIT, ON QUITTE
+		//ON NE S'EST PAS DE QUOI IL S'AGIT, ON QUITTE
 		} else {
 			return;
 		}
 	}
 
 	/*
-	 // FONCTION : LECTURE DES REQUEST DU STATUS DES UNITS
+	// FONCTION : LECTURE DES REQUEST DU STATUS DES UNITS
 	// PARAMS : $decrypted_trame = array(
 			"trame" => string,
 			"format" => 'string',
@@ -679,10 +680,16 @@ class legrand_server {
 			"date" => date
 			*/
 	private function updateRequestStatus($decrypted_trame) {
+		//@TODO: mettre à jour les status en fonction du OWN_STATUS_DEFINITION
 		//ON VERIFIE SI IL S'AGIT D'UNE REQUEST
 		if ($decrypted_trame['type'] == 'CONFIGURATION' && $decrypted_trame['dimension'] == "UNIT_DESCRIPTION_STATUS") {
 			$params = preg_split('/[\*|#]/', $decrypted_trame['param']);
-			$type = $this->def->OWN_UNIT_DEFINITION[$params[0]][0];
+			$unit_code = $params[0];
+			//ON NE CONNAIT PAS CE STATUS
+			if (!isset($this->def->OWN_STATUS_DEFINITION[$unit_code])) {
+				return;
+			}
+			$type = $this->def->OWN_STATUS_DEFINITION[$unit_code]['DEFINITION'][0];
 			$id = $decrypted_trame['id'];
 			$unit = $decrypted_trame['unit'];
 			//MISE A JOUR DES LIGHTS
@@ -698,7 +705,7 @@ class legrand_server {
 			//MISE A JOUR DES THERMOSTATS
 			else if ($type == 'confort' || $type == 'inter_confort') {
 				if ($type == 'confort') {
-					foreach ($this->def->OWN_STATUS_DEFINITION['CONFORT'] as $command => $reg) {
+					foreach ($this->def->OWN_STATUS_DEFINITION[$unit_code]['VALUE']['mode'] as $command => $reg) {
 						if (preg_match($reg, $params[1])) {
 							$mode = $command;
 						}
@@ -764,13 +771,13 @@ class legrand_server {
 				$res = $this->mysqli->query("SELECT * FROM view_cron WHERE id='".$id."'");
 				$cron_array = $res->fetch_assoc();
 				if ($cron_array['trame'] != NULL) {
-					$res = $this->mysqli->query("CALL send_trame('".$cron_array['trame']."', NOW())");
+					$res = $this->mysqli->query("CALL send_trame('".$cron_array['trame']."', NULL, NULL)");
 					$this->free_mysqli($res);
 				} else if ($cron_array['id_favoris'] != NULL) {
-					$res = $this->mysqli->query("CALL send_favoris('".$cron_array['id_favoris']."')");
+					$res = $this->mysqli->query("CALL send_favoris('".$cron_array['id_favoris']."', NULL, NULL)");
 					$this->free_mysqli($res);
 				} else if ($cron_array['id_macro'] != NULL) {
-					$res = $this->mysqli->query("CALL send_macro('".$cron_array['id_macro']."')");
+					$res = $this->mysqli->query("CALL send_macro('".$cron_array['id_macro']."', NULL, NULL)");
 					$this->free_mysqli($res);
 				}
 				//Mise à jour du Cron
@@ -812,7 +819,7 @@ class legrand_server {
 			foreach($this->cronRequest as $idunit => $request) {
 				if (time() >= $this->cronRequest[$idunit]['next_request']) {
 					$ownid = $this->ioblId_to_ownId($this->cronRequest[$idunit]['id'], $this->cronRequest[$idunit]['unit']);
-					$res = $this->mysqli->query("CALL send_trame('*#1000*$ownid*55##', NOW())");
+					$res = $this->mysqli->query("CALL send_trame('*#1000*$ownid*55##', NULL, NULL)");
 					$this->free_mysqli($res);
 					$this->cronRequest[$idunit]['next_request'] = time()+$this->cronRequest[$idunit]['upd_time'];
 				}
@@ -845,7 +852,7 @@ class legrand_server {
 			}
 			//Analise des mises update en attente
 			$this->updateWaitingStatus();
-			//Analise des crons interne pour les mises Ã  jours
+			//Analise des crons interne pour les mises à jours
 			$this->cronRequestStatus();
 			//Analise des crons utilisateurs
 			$this->cronTabUser();

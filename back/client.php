@@ -3,9 +3,12 @@
  * @author michel.taverna
  * Gestion du client pour le backoffice
  */
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 include("./conf.php");
 include("./definitions.php");
+include("./secure.php");
 
 class legrand_client {
 	/*
@@ -68,17 +71,17 @@ class legrand_client {
 	  // PARAMS : $limit=boolean $order=boolean
 	// RETURN : $query
 	*/
-	private function filter_to_mysqli($where, $limit=true, $order=true) {
+	private function filter_to_mysqli($filters=null, $limit=true, $order=true) {
 		//Gestion des filtres
 		$query = "";
-		if (isset($_GET['filter'])) {
+		if (isset($filters['filter'])) {
 			$tab_type = array(
 					"lt" => "<",
 					"gt" => ">",
 					"eq" => "="
 					);
-			$filter = json_decode(urldecode($_GET['filter']));
-			for ($i=0,$query_array=array(); $filter[$i]; $i++) {
+			$filter = json_decode($filters['filter']);
+			for ($i=0,$query_array=array(); isset($filter[$i]); $i++) {
 				if (!isset($filter[$i]->{'type'})) {
 					if ($filter[$i]->{'property'} == 'filter') {
 						preg_match('/^{type="(.*)"},{field="(.*)"},{value="(.*)"}$/', utf8_decode($filter[$i]->{'value'}), $matches);
@@ -116,37 +119,37 @@ class legrand_client {
 		}
 		//Gestion du triage
 		if ($order) {
-			if (isset($_GET['sort']) || isset($_GET['group'])) {
+			if (isset($filters['sort']) || isset($filters['group'])) {
 				$query .= ' ORDER BY ';
-				if (isset($_GET['group'])) {
-					$group = json_decode(urldecode($_GET['group']));
-					if ($group[0]->{'property'} != $_GET['sort']) {
+				if (isset($filters['group'])) {
+					$group = json_decode(urldecode($filters['group']));
+					if ($group[0]->{'property'} != $filters['sort']) {
 						$query .= $group[0]->{'property'};
 						if (isset($group[0]->{'direction'})) {
 							$query .= ' '.$group[0]->{'direction'};
 						}
-						if (isset($_GET['sort'])) {
+						if (isset($filters['sort'])) {
 							$query .= ', ';
 						}
 					}
 				}
-				if (isset($_GET['sort'])) {
-					$query .= $_GET['sort'];
-					if (isset($_GET['dir'])) {
-						$query .= ' '.$_GET['dir'];
+				if (isset($filters['sort'])) {
+					$query .= $filters['sort'];
+					if (isset($filters['dir'])) {
+						$query .= ' '.$filters['dir'];
 					}
 				}
 			}
 		}
 		//Gestion du nombre de resultats
 		if ($limit) {
-			if (isset($_GET['start'])) {
-				$start = $_GET['start'];
+			if (isset($filters['start'])) {
+				$start = $filters['start'];
 			} else {
 				$start = 0;
 			}
-			if (isset($_GET['limit'])) {
-				$limit = $_GET['limit'];
+			if (isset($filters['limit'])) {
+				$limit = $filters['limit'];
 			} else {
 				$limit = 10;
 			}
@@ -215,11 +218,11 @@ class legrand_client {
 			$decrypted_string = 'unknown='.$param;
 			$decrypted_array['unknown'] = $param;
 		//Le parametre est de type UNIT_DESCRIPTION_STATUS on decrypt de quoi il s'agit
-		} else if ($function == "UNIT_DESCRIPTION_STATUS" && isset($this->def->OWN_UNIT_DEFINITION[$params[0]])) {
-			for ($i = 0; $i < count($this->def->OWN_UNIT_DEFINITION[$params[0]]); $i++) {
+		} else if ($function == "UNIT_DESCRIPTION_STATUS" && isset($this->def->OWN_STATUS_DEFINITION[$params[0]])) {
+			for ($i = 0; $i < count($this->def->OWN_STATUS_DEFINITION[$params[0]]['DEFINITION']); $i++) {
 				if (isset($params[$i])) {
-					$decrypted_array[$this->def->OWN_UNIT_DEFINITION[$params[0]][$i]] = $params[$i];
-					$decrypted_string .= $coma.$this->def->OWN_UNIT_DEFINITION[$params[0]][$i].'='.$params[$i];
+					$decrypted_array[$this->def->OWN_STATUS_DEFINITION[$params[0]]['DEFINITION'][$i]] = $params[$i];
+					$decrypted_string .= $coma.$this->def->OWN_STATUS_DEFINITION[$params[0]]['DEFINITION'][$i].'='.$params[$i];
 					$coma = ';';
 				}
 			}
@@ -228,7 +231,9 @@ class legrand_client {
 			for ($i = 0; $i < count($this->def->OWN_PARAM_DEFINITION[$function]); $i++) {
 				if (isset($params[$i])) {
 					$decrypted_array[$this->def->OWN_PARAM_DEFINITION[$function][$i]] = $params[$i];
-					if ($this->def->OWN_PARAM_DEFINITION[$function][$i] == "reference"
+					if ($this->def->OWN_PARAM_DEFINITION[$function][$i] == "function_or_reference") {
+						$params[$i] = intval($params[$i])/16;
+					} else if ($this->def->OWN_PARAM_DEFINITION[$function][$i] == "reference"
 							|| $this->def->OWN_PARAM_DEFINITION[$function][$i] == "version") {
 						$params[$i] = dechex(intval($params[$i]));
 					}
@@ -300,16 +305,17 @@ class legrand_client {
 	// PARAM : UNE TRAME COMPOSEE DES CARACTERES [0-9YZ]
 	// RETOURNE : UN FICHIER XML
 	*/
-	private function send_trame($get_trame, $date=NULL) {
-		if ($date == NULL) {
-			$date = 'NOW()';
-		} else {
-			$date = "'".$date."'";
-		}
+	private function send_trame($get_trame, $date=NULL, $delay=NULL) {
 		$trame = $this->YZ_to_starsharp($get_trame);
 		$res_trame = $this->test_trame($trame);
+		if ($date !== NULL) {
+			$date = "'".$date."'";
+		}
+		if ($delay === NULL) {
+			$delay = 'NULL';
+		}
 		if ($res_trame == true) {
-			$res = $this->mysqli->query("CALL send_trame('".$trame."', ".$date.")") ;
+			$res = $this->mysqli->query("CALL send_trame('".$trame."', ".$date.", ".$delay.")") ;
 		} else {
 			$res = 'Trame non valide :'.$trame;
 		}
@@ -317,7 +323,7 @@ class legrand_client {
 		$tag_request = $this->xml->createElement('request');
 		//Creation de l'elem function
 		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = "CALL send_trame('".$trame."', ".$date.")";
+		$attr_request->value = "CALL send_trame('".$trame."', ".$date.", ".$delay.")";
 		$tag_request->appendChild($attr_request);
 		//Creation de l'elem return
 		$attr_return = $this->xml->createAttribute('status');
@@ -357,13 +363,13 @@ class legrand_client {
 	// PARAM : view_name=string where=string
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function view_to_xml($view_name, $filter) {
+	public function view_to_xml($view_name, $filters=null) {
 		//Requetage et preparation des resultats
-		$query = "SELECT COUNT(*) AS total FROM ".$view_name.$this->filter_to_mysqli($filter, false, false);
+		$query = "SELECT COUNT(*) AS total FROM ".$view_name.$this->filter_to_mysqli($filters, false, false);
 		$res = $this->mysqli->query($query);
 		$trame = $res->fetch_assoc();
 		$total = $trame['total'];
-		$query = "SELECT * FROM ".$view_name.$this->filter_to_mysqli($filter);
+		$query = "SELECT * FROM ".$view_name.$this->filter_to_mysqli($filters);
 		$res = $this->mysqli->query($query);
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -531,23 +537,29 @@ class legrand_client {
 	}
 
 	/*
-	 // FONCTION : ENVOIE D'UNE ACTION DIVERSE (TRAME OU FAVORIS OU MACROS) IOBL SUR LE CPL
-	// PARAM : $command=string(trame|favoris|macros), $type=string(trame|favoris|macros)|default(trame)
+	// FONCTION : ENVOIE D'UNE ACTION DIVERSE (TRAME OU FAVORIS OU MACROS) IOBL SUR LE CPL
+	// PARAM : $command=string(trame|favoris|macros), $type=string(trame|favoris|macros)|default(trame), $date=timestamp, $delay=int(secondes)
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function send_command($command, $type, $date=NULL) {
-		if ($date == NULL) {
-			$date = 'NOW()';
+	public function send_command($command, $type, $date=NULL, $delay=NULL) {
+		if ($delay === NULL) {
+			$delay = 'NULL';
 		}
 		if ($type == "trame") {
 			$this->send_trame($command, $date);
 			return;
 		} else if ($type == "favoris") {
-			$res = $this->mysqli->query("CALL send_favoris('".$command."')") ;
+			if ($date !== NULL) {
+				$date = "'".$date."'";
+			}
+			$res = $this->mysqli->query("CALL send_favoris('".$command."', ".$date.", ".$delay.")") ;
 			$function = "CALL send_favoris('".$command."')";
 		} else if ($type == "macros") {
-			$res = $this->mysqli->query("CALL send_macros('".$command."')") ;
-			$function = "CALL send_macros('".$command."')";
+			if ($date !== NULL) {
+				$date = "'".$date."'";
+			}
+			$res = $this->mysqli->query("CALL send_macro('".$command."', ".$date.", ".$delay.")") ;
+			$function = "CALL send_macro('".$command."', ".$date.", ".$delay.")";
 		} else {
 			$res = "Type d'action inconnu :".$type;
 		}
@@ -790,7 +802,7 @@ class legrand_client {
 				$memory = array();
 				for ($retry = 1; $retry <= $max_retry; $retry++) {
 					//Requetage sur le CPL pour tester le module
-					$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NOW())");
+					$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NULL, NULL)");
 					//Nettoyage memoire du bug des STORE PROC MYSQL !
 					$this->free_mysqli($res);
 					sleep($reponse_time);
@@ -957,7 +969,7 @@ class legrand_client {
 				$media = "";
 				$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
 				$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
-				$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$media_listen."*".$own_id_listen."*".$value_listen."##', NOW());");
+				$res = $this->mysqli->query("CALL send_trame('*#1000*".$own_id.$media."*#54*".$media_listen."*".$own_id_listen."*".$value_listen."##', NULL, NULL);");
 			}
 		}
 		//Creation du neud xml principal
@@ -1013,7 +1025,7 @@ class legrand_client {
 			$media = "";
 			$own_id = $this->ioblId_to_ownId($id_legrand, $unit);
 			$own_id_listen = $this->ioblId_to_ownId($id_legrand_listen, $unit_listen);
-			$res = $this->mysqli->query("CALL send_trame('*1000*63#".$media_listen."#".$own_id_listen."*".$own_id.$media."##', NOW());");
+			$res = $this->mysqli->query("CALL send_trame('*1000*63#".$media_listen."#".$own_id_listen."*".$own_id.$media."##', NULL, NULL);");
 		}
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -1052,7 +1064,53 @@ class legrand_client {
 	}
 
 	/*
-	 // FONCTION : FUNCTION PRINCIPALE DU CLIENT POUR TESTER LES PARAMETRES EN GET
+	// FONCTION : FUNCTION DE TEST DE LA CONNECTION
+	*/
+	public function check_connection() {
+		//@TODO: ajouter les informations de login/password
+		$status = ($this->secure->connected) ? 'true' : 'false';
+		$login = $this->secure->login;
+		$error = $this->secure->error;
+		
+		//Creation du neud xml principal
+		$tag_request = $this->xml->createElement('request');
+		//Creation de l'elem function
+		$attr_request = $this->xml->createAttribute('function');
+		$attr_request->value = 'check_connection';
+		$tag_request->appendChild($attr_request);
+		//Creation de l'elem return
+		$attr_return = $this->xml->createAttribute('status');
+		$tag_return = $this->xml->createElement('return', $status);
+		$attr_return->value = $status;
+		$tag_return->appendChild($attr_return);
+		$tag_request->appendChild($tag_return);
+		//Creation de l'elem content
+		$tag_elems = $this->xml->createElement('content');
+		$tag_module = $this->xml->createElement('module');
+		$attr_module = $this->xml->createAttribute('num');
+		$attr_module->value = '1';
+		$tag_module->appendChild($attr_module);
+		
+		$tag_item = $this->xml->createElement('login_user',$login);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
+		$tag_item = $this->xml->createElement('login_status',$status);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
+		$tag_item = $this->xml->createElement('login_error',$error);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
+		$this->xml_root->appendChild($tag_request);
+	}
+	
+	/*
+	// FONCTION : FUNCTION PRINCIPALE DU CLIENT POUR TESTER LES PARAMETRES EN GET
 	*/
 	public function init() {
 		$this->conf = new legrand_conf();
@@ -1065,7 +1123,20 @@ class legrand_client {
 			$output = $_GET['output'];
 		}
 		$this->init_output($output);
-
+		
+		//Test de securite
+		$this->secure = new secure();
+		$this->secure->init();
+		//on affiche le résultat et on quitte
+		if ($this->secure->connected == false 
+			|| isset($_GET['check_login']) 
+			|| isset($_GET['logout']) 
+			|| isset($_GET['login'])) {
+			$this->check_connection();
+			$this->flush_output();
+			return;
+		}
+		
 		if (isset($_GET['version'])) {
 			if (isset($_GET['action'])) {
 				$action = $_GET['action'];
@@ -1106,7 +1177,12 @@ class legrand_client {
 			} else {
 				$date = urldecode($_GET['date']);
 			}
-			$this->send_command($_GET['send_command'], $type, $date);
+			if (!isset($_GET['delay'])) {
+				$delay = NULL;
+			} else {
+				$delay = urldecode($_GET['delay']);
+			}
+			$this->send_command($_GET['send_command'], $type, $date, $delay);
 		}
 		if (isset($_GET['check_memory_db'])) {
 			$this->check_memory_db($_GET['check_memory_db']);
@@ -1118,7 +1194,14 @@ class legrand_client {
 			$this->call_to_xml($_GET['call'], urldecode($_GET['params']));
 		}
 		if (isset($_GET['view'])) {
-			$this->view_to_xml($_GET['view'], $_GET['filter']);
+			$filters = array();
+			$filters['filter'] = isset($_GET['filter']) ? urldecode($_GET['filter']) : null;
+			$filters['sort'] = isset($_GET['sort']) ? urldecode($_GET['sort']) : null;
+			$filters['group'] = isset($_GET['group']) ? urldecode($_GET['group']) : null;
+			$filters['dir'] = isset($_GET['dir']) ? urldecode($_GET['dir']) : null;
+			$filters['limit'] = isset($_GET['limit']) ? urldecode($_GET['limit']) : null;
+			$filters['start'] = isset($_GET['start']) ? urldecode($_GET['start']) : null;
+			$this->view_to_xml($_GET['view'], $filters);
 		}
 		
 		$this->flush_output();
