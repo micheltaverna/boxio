@@ -51,6 +51,11 @@ Ext.define('trameSaved', {
 Ext.define('checkScenarios',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 	  	{name: 'id_legrand', type: 'int'}, 
 	  	{name: 'unit', type: 'int'}, 
 	  	{name: 'id_legrand_listen', type: 'int'}, 
@@ -71,6 +76,11 @@ Ext.define('checkScenarios',{
 Ext.define('findReference',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
  		{name: 'reference', type: 'int'}, 
 		{name: 'id_legrand', type: 'int'}, 
 		{name: 'reference_geree', type: 'string'},
@@ -85,9 +95,31 @@ Ext.define('findReference',{
 Ext.define('findStatus',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{name: 'status_long', type: 'string'},
 		{name: 'status_short', type: 'string'},
 		{name: 'status', type: 'string'}
+	]
+});
+
+/**
+ * Definition du module de connection
+ */
+Ext.define('checkLogin',{
+	extend: 'Ext.data.Model',
+	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'}
 	]
 });
 
@@ -97,6 +129,11 @@ Ext.define('findStatus',{
 Ext.define('checkVersion',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
   		{name: 'current_version_name', type: 'string'},
  		{name: 'current_version_update', type: 'timestamp'},
 		{name: 'current_version_release', type: 'timestamp'},
@@ -113,6 +150,11 @@ Ext.define('checkVersion',{
 Ext.define('macros',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{name: 'id_command', type: 'int'}, 
 		{name: 'id_macro', type: 'int'}, 
 		{name: 'nom', type: 'string'}, 
@@ -129,6 +171,11 @@ Ext.define('macros',{
 Ext.define('references',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
   		{name: 'id', mapping: 'ref_legrand'},
 		{name: 'text', mapping: 'nom', convert:function(value, record) {
             return record.get('nom')+' ('+record.get('id')+')';
@@ -149,6 +196,11 @@ Ext.define('references',{
 Ext.define('favoris',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{name: 'id', type: 'int'}, 
 		{name: 'nom', type: 'string'}, 
 		{name: 'trame', type: 'string'}
@@ -161,6 +213,11 @@ Ext.define('favoris',{
 Ext.define('zones',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
  		{name: 'id', mapping: 'nom'},
 		{name: 'text', mapping: 'nom'}
 	]
@@ -172,6 +229,11 @@ Ext.define('zones',{
 Ext.define('equipements',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 	   	{name: 'id', mapping: 'id_legrand'},
 	 	{name: 'text', mapping: 'nom', convert:function(value, record) {
             return record.get('nom')+' - '+record.get('zone')+' ('+record.get('id_legrand')+')';
@@ -192,7 +254,12 @@ Ext.define('equipements',{
 Ext.define('equipementsStatus',{
 	extend: 'Ext.data.Model',
 	fields: [
- 	   	{name: 'id', mapping: 'idunit'},
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+	   	{name: 'id', mapping: 'idunit'},
 	 	{name: 'listEquipements', mapping: 'idunit', convert:function(value, record) {
             return record.get('idunit')+' - '+record.get('equipement')+' ('+record.get('Btn')+')';
 		}},
@@ -208,12 +275,22 @@ Ext.define('equipementsStatus',{
 		{name: 'nom_interne', type: 'string'}, 
 		{name: 'Btn', type: 'string'}, 
 		{name: 'possibility', type: 'string'},
-		{name: 'unit_code', type: 'int'}
+		{name: 'unit_code', type: 'int'},
+		{name: 'server_opt', type: 'string'}, 
+		{name: 'status', type: 'string'}, 
+		{name: 'unit_status', type: 'string'}, 
+		{name: 'zone', type: 'string'}, 
+		{name: 'Date', type: 'timestamp'}
 	]
 });
 Ext.define('equipementsUniqueStatus',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
  	   	{name: 'id', mapping: 'id_legrand'},
 	 	{name: 'listEquipements', mapping: 'id_legrand', convert:function(value, record) {
             return record.get('id_legrand')+' - '+record.get('equipement')+' ('+record.get('zone')+')';
@@ -237,6 +314,11 @@ Ext.define('equipementsUniqueStatus',{
 Ext.define('referencesMemory',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
  	   	{name: 'id', mapping: 'id'},
 	 	{name: 'listActions', mapping: 'value', convert:function(value, record) {
             return record.get('value')+' ('+record.get('nom')+')';
@@ -254,9 +336,14 @@ Ext.define('referencesMemory',{
 Ext.define('unknownEquipements',{
 	extend: 'Ext.data.Model',
 	fields: [
-			{name: 'id_legrand', type: 'int'}, 
-			{name: 'media', list: ['RF', 'CPL', 'IR', 'UNKNOWN']}, 
-			{name: 'Date', type: 'timestamp'}
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+		{name: 'id_legrand', type: 'int'}, 
+		{name: 'media', list: ['RF', 'CPL', 'IR', 'UNKNOWN']}, 
+		{name: 'Date', type: 'timestamp'}
 	]
 });
 
@@ -266,6 +353,11 @@ Ext.define('unknownEquipements',{
 Ext.define('cron',{
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{name: 'id_cron', mapping: 'id', type: 'int'}, 
 		{name: 'nom', type: 'string'}, 
 		{name: 'readCron', convert:function(value, record) {
@@ -382,6 +474,11 @@ Ext.define('cron',{
 Ext.define('Trame',{
 	extend: 'Ext.data.Model',
 	fields: [
+ 		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{name: 'id', type: 'int'}, 
 		{name: 'direction', list: ['GET', 'SET']}, 
 		{name: 'mode', list: ['UNKNOWN','MULTICAST','UNICAST','BROADCAST','UNICAST_DIRECT']}, 
@@ -403,8 +500,14 @@ Ext.define('Trame',{
 Ext.define('TrameAction', {
 	extend: 'Ext.data.Model',
 	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
 		{type: 'string', name: 'type'},
 		{type: 'string', name: 'name'}
 	]
 });
+
 

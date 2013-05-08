@@ -25,7 +25,8 @@
         <link rel="stylesheet" type="text/css" href="equipements.css" />
         <link rel="stylesheet" type="text/css" href="server.css" />
 		<link rel="stylesheet" type="text/css" href="update.css" />
-        <script type="text/javascript" src="ux/ext-lang-fr.js"></script>
+		<script type="text/javascript" src="sha512.js"></script>
+		<script type="text/javascript" src="ux/ext-lang-fr.js"></script>
         <script type="text/javascript" src="require.js"></script>
         <script type="text/javascript" src="define.js"></script>
         <script type="text/javascript" src="data.js"></script>
@@ -50,13 +51,19 @@
         <script type="text/javascript" src="user.js"></script>
         <script type="text/javascript" src="doc.js"></script>
         <script type="text/javascript" src="update.js"></script>
+        <script type="text/javascript" src="login.js"></script>
+        <script type="text/javascript">
+			var version = "Beta 1.3";
+			var auteur = "Michel Taverna";
+			layout.func.init();
+			login.func.checkLogin(function(status) {
+				if (status == 'false') {
+					login.win.login();
+				}
+			});
+		</script>
+        
     </head>
     <body>
     </body>
-<script type="text/javascript">
-var version = "Beta 1.2";
-var auteur = "Michel Taverna";
-layout.func.init();
-</script>
-
 </html> 
