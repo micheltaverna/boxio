@@ -4,7 +4,7 @@ class legrand_def {
 	//temp par default pour l'ouverture complete d'un volet (si pas de variable move_time defini en DB)
 	public $DEFAULT_SHUTTER_MOVE_TIME = 40;
 
-	//temp pour que le relais interne change d'Ã©tat
+	//temp pour que le relais interne change d'état
 	public $SHUTTER_RELAY_TIME = 1;
 
 	//Definition des differentes trames IOBL possibles
@@ -49,10 +49,16 @@ class legrand_def {
 	);
 
 	//Definition des differentes scenarios type
+	//@TODO: Modifier le type par le unit_code
 	public $OWN_SCENARIO_DEFINITION = array(
 			"LIGHTING" => array(
 					"ON" => "/^101$/",
 					"OFF" => "/^102$/",
+					"ON_FORCED" => "/^103$/",
+					"OFF_FORCED" => "/^104$/",
+					"AUTO" => "/^105$/",
+					"AUTO_ON" => "/^101$/",
+					"AUTO_OFF" => "/^102$/",
 					"LEVEL" => "/^(\d{1,2})$/"
 			),
 			"SHUTTER" => array(
@@ -69,38 +75,55 @@ class legrand_def {
 			)
 	);
 
-	//Definition des differents valeur de status par unit
-	public $OWN_UNIT_DEFINITION = array(
-			//Envoyé par Thermostat : 145 unit 3 (inconnu), 144 unit 4 (inconnu), 24 unit 5 (inconnu), 
-			//Envoyé par VMC : 19 unit 1 (inconnu), 141 unit 2 (status)
-			//Envoyé par variateur :
-			//Envoyé par inter double : 
-			//Envoyé par volet :
-			"143" => array("variator","wanted_level","real_level","unknown","unknown","unknown"),
-			"129" => array("inter","level"),
-			"149" => array("confort","mode","internal_temp_multiplicator","internal_temp","wanted_temp_multiplicator","wanted_temp"),
-			"1" => array("inter_confort","status_inter","status_confort","unknown","unknown","unknown")
-	);
-
 	//Definition des differentes scenarios type
 	public $OWN_STATUS_DEFINITION = array(
+			"1" => array(
+					"DEFINITION" => array("inter_confort","unknown","status_confort","unknown","unknown","unknown"),
+					"VALUE" => array (
+							"status_confort" => array(
+								"ON" => "/^100$/",
+								"OFF" => "/^0$/"
+							)
+					)
+			),
+			"129" => array(
+					"DEFINITION" => array("inter","level"),
+					"VALUE" => array (
+							"level" => array(
+								"ON" => "/^128$/",
+								"OFF" => "/^0$/",
+								"ON_DEROGATION" => "/^129$/",
+								"OFF_DEROGATION" => "/^1$/",
+								"ON_DETECTION" => "/^130$/"
+							)
+					)
+			),
+			"143" => array(
+					"DEFINITION" => array("variator","wanted_level","real_level","action_for_time","unknown","unknown"),
+					"VALUE" => array (
+							"action_for_time" => array(
+								"ACTION_IN_PROGRESS" => "/^1$/",
+								"NO_ACTION" => "/^0$/"
+							)
+					)
+			),
+			"149" => array(
+					"DEFINITION" => array("confort","mode","internal_temp_multiplicator","internal_temp","wanted_temp_multiplicator","wanted_temp"),
+					"VALUE" => array (
+							"mode" => array(
+								"CONFORT" => "/^0$/",
+								"HORS_GEL" => "/^4$/",
+								"REDUIT" => "/^3$/",
+								"MANUEL" => "/^38$/"
+							)
+					)
+			),
 			"SHUTTER" => array(
 					"UP" => "/^100$/",
 					"MOVE_UP" => "/^102$/",
 					"MOVE_DOWN" => "/^103$/",
 					"DOWN" => "/^0$/",
 					"STOP" => "/^101$/"
-			),
-			"LIGHTING" => array(
-					"ON" => "/^101$/",
-					"OFF" => "/^102$/",
-					"LEVEL" => "/^(\d{1,2})$/"
-			),
-			"CONFORT" => array(
-					"CONFORT" => "/^0$/",
-					"HORS_GEL" => "/^4$/",
-					"REDUIT" => "/^3$/",
-					"MANUEL" => "/^38$/"
 			)
 	);
 

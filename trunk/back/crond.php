@@ -38,7 +38,6 @@ class crond {
 	public function init() {
 		return;
 
-
 		//Boucle infinie
 		while (1 == 1)  {
 			/* on récupère l'heure (timestamp) de la prochaine éxécution */
@@ -47,18 +46,18 @@ class crond {
 					$next = $script['prochain'];
 				}
 			}
-			/* on récupère le numéro du prochain script Ã  éxécuter */
+			/* on récupère le numéro du prochain script à éxécuter */
 			foreach ($crontab as $index => $script) {
 				if ($script['prochain'] < $min || !(isset($min))) {
 					$min = $script['prochain'];
 					$id = $index;
 				}
 			}
-			//le temps en seconde qu'il faut pour arriver Ã  $next
+			//le temps en seconde qu'il faut pour arriver à $next
 			$dodo = $next - time();
-			sleep($dodo);/* on dort jusqu'Ã  ce qu'il soit temps d'éxécuter le script */
+			sleep($dodo);/* on dort jusqu'à ce qu'il soit temps d'éxécuter le script */
 			fopen($crontab[$id]['URLScript'], 'r'); /* on lance le script. */
-			/* fopen peut Ãªtre remplacé par une autre méthode, (shell_exec...) */
+			/* fopen peut être remplacé par une autre méthode, (shell_exec...) */
 			$crontab[$id]['prochain'] = findNextCron($id); /* prochaine éxécution */
 		}
 	}
@@ -166,7 +165,7 @@ class crond {
 
 		//on parcourt tous les mois de l'intervalle demandé
 		while ($this->findNextMonth($id) != -1) {
-			//jusqu'Ã  trouver une réponse convanable
+			//jusqu'à trouver une réponse convanable
 			//si ce n'est pas ce mois ci
 			if ($this->nextCron['month'] != $monthNow || $this->nextCron['year'] != $yearNow) {
 				$this->nextCron['day'] = 0;
@@ -183,7 +182,7 @@ class crond {
 				}
 			} else {						/* c'est ce mois ci */
 				$this->nextCron['day'] = $dayNow-1;
-				/* on cherche un jour Ã  partir d'aujourd'hui compris */
+				/* on cherche un jour à partir d'aujourd'hui compris */
 				while ($this->findNextDay($id) != -1) {
 					/* si ce n'est pas aujourd'hui */
 					if ($this->nextCron['day'] > $dayNow) {
@@ -194,7 +193,7 @@ class crond {
 						$this->findNextMinute($id);
 						return mktime($this->nextCron['hour'], $this->nextCron['min'], 0, $this->nextCron['month'], $this->nextCron['day'], $this->nextCron['year']);
 					}
-					/* mÃªme algo pour les heures et les minutes */
+					/* même algo pour les heures et les minutes */
 					if ($this->nextCron['day'] == $dayNow) {
 						$this->nextCron['hour'] = $hourNow - 1;
 						while ($this->findNextHour($id) != -1) {
