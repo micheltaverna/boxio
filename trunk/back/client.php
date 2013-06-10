@@ -10,7 +10,7 @@ include("./conf.php");
 include("./definitions.php");
 include("./secure.php");
 
-class legrand_client {
+class boxio_client {
 	/*
 	 // FONCTION : INITIALISATION DE LA DB MYSQL
 	*/
@@ -84,10 +84,14 @@ class legrand_client {
 			for ($i=0,$query_array=array(); isset($filter[$i]); $i++) {
 				if (!isset($filter[$i]->{'type'})) {
 					if ($filter[$i]->{'property'} == 'filter') {
-						preg_match('/^{type="(.*)"},{field="(.*)"},{value="(.*)"}$/', utf8_decode($filter[$i]->{'value'}), $matches);
+						preg_match('/^{type="(.*)"},{field="(.*)"},{value="{0,1}(.*?)"*}$/', utf8_decode($filter[$i]->{'value'}), $matches);
 						$filter[$i]->{'type'} = $matches[1];
 						$filter[$i]->{'field'} = $matches[2];
-						$filter[$i]->{'value'} = $matches[3];
+						if ($filter[$i]->{'type'} == 'list') {
+							$filter[$i]->{'value'} = json_decode($matches[3]);
+						} else {
+							$filter[$i]->{'value'} = $matches[3];
+						}
 					} else {
 						$query_array[] = sprintf("%s='%s'", $filter[$i]->{'property'}, utf8_decode($filter[$i]->{'value'}));
 						continue;
@@ -98,8 +102,12 @@ class legrand_client {
 				} else if ($filter[$i]->{'type'} == 'numeric') {
 					$query_array[] = sprintf("%s%s%s", $filter[$i]->{'field'}, $tab_type[$filter[$i]->{'comparison'}], utf8_decode($filter[$i]->{'value'}));
 				} else if ($filter[$i]->{'type'} == 'list') {
-					for ($j=0, $type_array=array(); $filter[$i]->{'value'}[$j]; $j++) {
-						$type_array[] = sprintf("%s='%s'", $filter[$i]->{'field'}, utf8_decode($filter[$i]->{'value'}[$j]));
+					for ($j=0, $type_array=array(); isset($filter[$i]->{'value'}[$j]); $j++) {
+						$comp = "=";
+						if (preg_match("/%/", $filter[$i]->{'value'}[$j])) {
+							$comp = " LIKE ";
+						}
+						$type_array[] = sprintf("%s%s'%s'", $filter[$i]->{'field'}, $comp, utf8_decode($filter[$i]->{'value'}[$j]));
 					}
 					$query_array[] = '('.implode(' OR ', $type_array).')';
 				} else if ($filter[$i]->{'type'} == 'boolean') {
@@ -241,7 +249,9 @@ class legrand_client {
 						$params[$i] = $this->getId($params[$i]).'/'.$this->getUnit($params[$i]);
 					}
 					else if ($this->def->OWN_PARAM_DEFINITION[$function][$i] == "family_type") {
-						$params[$i] = $this->def->OWN_FAMILY_DEFINITION[$params[$i]];
+						if (isset($this->def->OWN_FAMILY_DEFINITION[$params[$i]])) {
+							$params[$i] = $this->def->OWN_FAMILY_DEFINITION[$params[$i]];
+						}
 					}
 					$decrypted_string .= $coma.$this->def->OWN_PARAM_DEFINITION[$function][$i].'='.$params[$i];
 					$coma = ';';
@@ -310,6 +320,8 @@ class legrand_client {
 		$res_trame = $this->test_trame($trame);
 		if ($date !== NULL) {
 			$date = "'".$date."'";
+		} else {
+			$date = 'NULL';
 		}
 		if ($delay === NULL) {
 			$delay = 'NULL';
@@ -729,6 +741,94 @@ class legrand_client {
 	}
 	
 	/*
+	 // FONCTION : GERE LES MISES A JOUR
+	// PARAM : $action=string, $params=array
+	// RETOURNE : UN FICHIER XML
+	*/
+	public function manage_user($action, $params) {
+		//Ajout d'utilisateur
+		if ($action == 'add') {
+			//verification des conditions
+			if (isset($params['login']) && isset($params['pHash512'])) {
+				$this->secure->set_account($params['login'], $params['pHash512']);
+			}
+			//L'utilisateur n'est pas boxio erreur ou mauvais params
+			else {
+			}
+		} else if ($action == 'upd') {
+			//verification des conditions
+			if (isset($params['login']) && isset($params['pHash512'])) {
+				$this->secure->upd_account($params['login'], $params['pHash512']);
+			}
+			//Erreur parametres
+			else {
+			}
+		} else if ($action == 'del') {
+			if (isset($params['login'])) {
+				$this->secure->del_account($params['login']);
+			} 
+			//Erreur parametres
+			else {
+			}
+		}
+		
+		return;
+		
+		//Creation du neud xml principal
+		$tag_request = $this->xml->createElement('request');
+		//Creation de l'elem function
+		$attr_request = $this->xml->createAttribute('function');
+		$attr_request->value = 'check_version';
+		$tag_request->appendChild($attr_request);
+		//Creation de l'elem return
+		$attr_return = $this->xml->createAttribute('status');
+		$ret_status=($ret_status)?"TRUE":"FALSE";
+		$tag_return = $this->xml->createElement('return', $ret_status);
+		$attr_return->value = $res_status;
+		$tag_return->appendChild($attr_return);
+		$tag_request->appendChild($tag_return);
+		//Creation de l'elem content
+		$tag_elems = $this->xml->createElement('content');
+		$tag_module = $this->xml->createElement('module');
+		$attr_module = $this->xml->createAttribute('num');
+		$attr_module->value = '1';
+		$tag_module->appendChild($attr_module);
+		
+		$tag_item = $this->xml->createElement('current_version_name', $local_version['name']);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		$tag_item = $this->xml->createElement('current_version_release', $local_version['release']);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		$tag_item = $this->xml->createElement('current_version_update', $local_version['update']);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
+		$tag_item = $this->xml->createElement('next_version_name', $version->name);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		$tag_item = $this->xml->createElement('next_version_release', $version->release);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		$tag_item = $this->xml->createElement('next_version_path', $version->path);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
+		$tag_item = $this->xml->createElement('status', $ret_status);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+			
+		$this->xml_root->appendChild($tag_request);
+	}
+	
+	/*
 	 // FONCTION : VERIFIE LES SCENARIOS D'UN EQUIPEMENT SUR LA DB ET LE MODULE
 	// PARAM : $id=string|int, $unit=NULL, $string
 	// RETOURNE : UN FICHIER XML
@@ -790,6 +890,8 @@ class legrand_client {
 			$res->free();
 			//On cherche les differences sur le unit en param
 		} else {
+			$memory = array();
+			$depth = false;
 			if ($media == 'CPL') {
 				//On recupere les valeurs de retour
 				//$start_date = date("Y-m-d H:i:s", time()-1);
@@ -799,18 +901,12 @@ class legrand_client {
 				$own_id = $this->idunit_to_ownid($id, $unit);
 				$query = "SELECT * FROM trame_decrypted WHERE id_legrand='$id' AND unit='$unit' AND
 				(dimension='EXTENDED_MEMORY_DATA' OR dimension='MEMORY_DEPTH_INDICATION') AND Date>='$start_date[0]'";
-				$memory = array();
 				for ($retry = 1; $retry <= $max_retry; $retry++) {
 					//Requetage sur le CPL pour tester le module
 					$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NULL, NULL)");
-					//Nettoyage memoire du bug des STORE PROC MYSQL !
 					$this->free_mysqli($res);
 					sleep($reponse_time);
 					$res = $this->mysqli->query($query);
-					//On attend que le unit reponde
-					if (!isset($depth)) {
-						$depth = false;
-					}
 					while ($trames = $res->fetch_assoc()) {
 						$param = $this->get_params($trames['dimension'], $trames['param'], 'array');
 						if ($trames['dimension'] == 'MEMORY_DEPTH_INDICATION') {
@@ -881,6 +977,8 @@ class legrand_client {
 					}
 					if ($find == false) {
 						$memory['db_'.$i] = array();
+						$memory['db_'.$i]['id_legrand'] = $id;
+						$memory['db_'.$i]['unit'] = $unit;
 						$memory['db_'.$i]['id_legrand_listen'] = $id_legrand_listen;
 						$memory['db_'.$i]['unit_listen'] = $unit_listen;
 						$memory['db_'.$i]['value_listen'] = $value_listen;
@@ -945,6 +1043,7 @@ class legrand_client {
 	// RETOURNE : UN FICHIER XML
 	*/
 	public function add_scenario($id_legrand, $unit, $id_legrand_listen, $unit_listen, $value_listen, $media_listen, $where = 'both') {
+		$erreur_db = false;
 		if ($where == 'db' || $where == 'both') {
 			$res = $this->mysqli->query("CALL add_scenario('".$id_legrand."','".$unit."','".$id_legrand_listen."','".$unit_listen."','".$value_listen."','".$media_listen."');");
 			if ($res) {
@@ -1067,10 +1166,10 @@ class legrand_client {
 	// FONCTION : FUNCTION DE TEST DE LA CONNECTION
 	*/
 	public function check_connection() {
-		//@TODO: ajouter les informations de login/password
 		$status = ($this->secure->connected) ? 'true' : 'false';
 		$login = $this->secure->login;
 		$error = $this->secure->error;
+		$password = $this->secure->password;
 		
 		//Creation du neud xml principal
 		$tag_request = $this->xml->createElement('request');
@@ -1096,6 +1195,11 @@ class legrand_client {
 		$tag_elems->appendChild($tag_module);
 		$tag_request->appendChild($tag_elems);
 		
+		$tag_item = $this->xml->createElement('password',$password);
+		$tag_module->appendChild($tag_item);
+		$tag_elems->appendChild($tag_module);
+		$tag_request->appendChild($tag_elems);
+		
 		$tag_item = $this->xml->createElement('login_status',$status);
 		$tag_module->appendChild($tag_item);
 		$tag_elems->appendChild($tag_module);
@@ -1113,8 +1217,8 @@ class legrand_client {
 	// FONCTION : FUNCTION PRINCIPALE DU CLIENT POUR TESTER LES PARAMETRES EN GET
 	*/
 	public function init() {
-		$this->conf = new legrand_conf();
-		$this->def = new legrand_def();
+		$this->conf = new boxio_conf();
+		$this->def = new boxio_def();
 		$this->init_mysql();
 
 		if (!isset($_GET['output'])) {
@@ -1137,6 +1241,25 @@ class legrand_client {
 			return;
 		}
 		
+		if (isset($_GET['user']) && isset($_GET['action'])) {
+			$action = $_GET['action'];
+			if ($action == 'add') {
+				$params = [
+					'login' => $_GET['new_login'],
+					'pHash512' => $_GET['new_password']
+				];
+			} else if ($action == 'upd') {
+				$params = [
+					'login' => $_GET['old_login'],
+					'pHash512' => $_GET['new_password']
+				];
+			} else if ($action == 'del') {
+				$params = [
+					'login' => $_GET['old_login']
+				];
+			}
+			$this->manage_user($action, $params);
+		}
 		if (isset($_GET['version'])) {
 			if (isset($_GET['action'])) {
 				$action = $_GET['action'];
@@ -1209,7 +1332,7 @@ class legrand_client {
 }
 
 //CREATION DE LA CLASSE ET ANALYSE DES DEMANDES CLIENTS
-$lgc = new legrand_client();
+$lgc = new boxio_client();
 $lgc->init();
 
 ?>
