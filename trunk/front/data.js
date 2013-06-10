@@ -14,8 +14,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -42,8 +47,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -64,8 +74,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -89,8 +104,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -116,8 +136,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -147,8 +172,13 @@ new Ext.data.Store({
 	groupField: 'nom',
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -178,8 +208,13 @@ new Ext.data.Store({
 	groupField: 'nom',
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -197,9 +232,43 @@ new Ext.data.Store({
 });
 
 /**
+ * Gestion des users
+ */
+new Ext.data.Store({
+	storeId: 'DataUsers',
+	model: 'users',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
+			}
+		}
+	},
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_users',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+/**
  * Gestion des favoris
  */
-var DataFavoris = new Ext.data.Store({
+new Ext.data.Store({
 	storeId: 'DataFavoris',
 	model: 'favoris',
 	pageSize: 20,
@@ -207,8 +276,13 @@ var DataFavoris = new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -228,7 +302,7 @@ var DataFavoris = new Ext.data.Store({
 /**
  * Gestion des equipements inconnu
  */
-var DataUnknownEquipements = new Ext.data.Store({
+new Ext.data.Store({
 	storeId: 'DataUnknownEquipements',
 	model: 'unknownEquipements',
 	pageSize: 20,
@@ -236,8 +310,13 @@ var DataUnknownEquipements = new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -267,8 +346,13 @@ new Ext.data.Store({
 	groupField: 'zone',
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -294,8 +378,13 @@ new Ext.data.Store({
 	groupField: 'zone',
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -319,8 +408,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -345,8 +439,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -372,8 +471,13 @@ new Ext.data.Store({
 	filters: [{property: 'filter', value: '{type="string"},{field="possibility"},{value="COMMAND"}'}],
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -398,8 +502,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -424,8 +533,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -453,8 +567,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -478,8 +597,13 @@ new Ext.data.Store({
 	autoLoad: false,
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -509,8 +633,13 @@ new Ext.data.Store({
 	groupField: 'active',
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},
@@ -539,11 +668,16 @@ new Ext.data.Store({
 	remoteFilter: true,
 	remoteGroup: true,
 	groupField: 'zone',
-	filters: [{property: 'filter', value: '{type="string"},{field="possibility"},{value="STATUS"}'}],
+	filters: [{property: 'filter', value: '{type="list"},{field="possibility"},{value=["%STATUS%","%SERVER_STATUS%"]}'}],
 	listeners: {
 		load: function(t, data) {
-			if (data[0].get('login_status') === 'false') {
-				login.win.login();
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
 			}
 		}
 	},

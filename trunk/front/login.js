@@ -29,7 +29,7 @@ function login() {
 	};
 	
 	this.win = {
-		login: function() {
+		login: function(callback) {
 			var winLogin = Ext.getCmp('winLogin');
 			if (!winLogin) {
 				winLogin = Ext.create('Ext.window.Window', {
@@ -39,7 +39,7 @@ function login() {
 					modal: true,
 					icon: 'imgs/key_fill_32x32.png',
 				    closeAction: 'close',
-				    //closable: false,
+				    closable: false,
 				    items: [{
 				            xtype: 'form',
 				            id: 'formLogin',
@@ -49,7 +49,7 @@ function login() {
 						text: 'Connexion',
 						id: 'winLoginBtnConnect',
 						handler: function() {
-							login.func.validateLogin();
+							login.func.validateLogin(callback);
 						}
 					}]
 				});
@@ -64,7 +64,11 @@ function login() {
 			requestGET('../back/client.php', {logout:''}, {ok:'Déconnexion en cours...', error:'impossible de vérifier la connexion au serveur !'}, {
 				onsuccess:function(response) {
 					layout.func.clear();
-					login.win.login();
+					login.func.checkLogin(function(status) {
+						if (status == 'false') {
+							login.win.login();
+						}
+					});
 				},
 				onfailure:function(response) {
 					Ext.MessageBox.show({
@@ -109,7 +113,7 @@ function login() {
 			});
 		},
 		
-		validateLogin: function() {
+		validateLogin: function(callback) {
 			var form = Ext.getCmp('formLogin').getForm();
 			if (form.isValid()) {
 				var formValues = form.getValues();
@@ -132,6 +136,9 @@ function login() {
 						});
 						var arrayResult = memstore.getRange(0);
 						if (arrayResult[0].data.login_status == 'true') {
+							if (callback && callback.onSucess) {
+								callback.onSucess();
+							}
 							Ext.getCmp('winLogin').close();
 						} else {
 							Ext.MessageBox.show({

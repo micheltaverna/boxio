@@ -205,7 +205,7 @@ function favoris() {
 				var nom = encode(formValues.nom);
 				var trame = encode(formValues.trame);
 				var params = "'"+nom+"','"+trame+"'";
-				requestCall('add_favoris', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le favoris !'}, {
+				requestCall('add_favoris', params, {ok:'favoris ajouté !', error:'impossible d\'ajouter le favoris !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddFavoris').getForm().reset();
 						Ext.getCmp('winFavoris').close();
