@@ -212,12 +212,12 @@ new Ext.toolbar.Toolbar({
 			icon: 'imgs/user_24x32.png',
 			arrowAlign:'bottom',
 			handler: function() {
-				openUser();
+				users.func.panelList();
 			},
 			menu: [{
 				text: 'Modifier l\'utilisateur',
 				handler: function() {
-					openUser();
+					users.func.panelList();
 				}
 			}]
 		},{

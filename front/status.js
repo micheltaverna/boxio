@@ -108,11 +108,55 @@ function status() {
 	};
 	
 	this.win = {
-			
+		upd: function() {
+			var winStatus = Ext.getCmp('winStatus');
+			if (!winStatus) {
+				winStatus = Ext.create('Ext.window.Window', {
+					xtype: 'form',
+					title: 'Modification des options de l\'unité',
+					id: 'winStatus',
+					icon: 'imgs/magnifying_glass_32x32.png',
+				    closeAction: 'close',
+				    items: [{
+				            xtype: 'form',
+				            id: 'formUpdStatus',
+						    items: [status.form.opt]
+				    }],
+				    buttons: [{
+						text: 'Annuler',
+						handler: function() {
+							Ext.getCmp('winStatus').close();
+						}
+					},{
+						text: 'Enregistrer',
+						id: 'winStatusBtnSave',
+						handler: function() {
+							status.func.validateUpd();
+						}
+					}]
+				});
+			}
+			winStatus.show();
+			Ext.getCmp('formUpdStatus').getForm().reset();
+		}
 	};
 	
-	this.from = {
-			
+	this.form = {
+		opt: {
+			xtype: 'fieldset',
+			title: 'Options de l\'unité',
+			collapsible: true,
+			defaults: {
+				width: 500
+			},
+			items: [{
+				xtype: 'textfield',
+				name: 'opt',
+				fieldLabel: 'Options',
+				msgTarget: 'side',
+				allowBlank: false
+			}]
+		}	
 	};
 	
 	this.func = {
@@ -124,7 +168,10 @@ function status() {
 				layout.func.add(status.panel.status());
 				Ext.data.StoreManager.lookup('DataEquipementsStatus').reload();
 			};
-		}	
+		},
+		
+		validateUpd: function(rec) {
+		}
 	};
 };
 

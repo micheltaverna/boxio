@@ -119,6 +119,7 @@ Ext.define('checkLogin',{
 		//Definition
 		{name: 'login_status', type: 'string'},
 		{name: 'login_user', type: 'string'},
+		{name: 'password', type: 'string'},
 		{name: 'login_error', type: 'string'}
 	]
 });
@@ -187,6 +188,23 @@ Ext.define('references',{
 		{name: 'nom', type: 'string'}, 
 		{name: 'family', type: 'string'}, 
 		{name: 'media', list: ['RF', 'CPL', 'IR', 'UNKNOWN']}
+	]
+});
+
+/**
+ * Definition des users
+ */
+Ext.define('users',{
+	extend: 'Ext.data.Model',
+	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+		{name: 'id', type: 'int'}, 
+		{name: 'login', type: 'string'},
+		{name: 'password', type: 'string'}
 	]
 });
 
@@ -306,6 +324,7 @@ Ext.define('equipementsUniqueStatus',{
 		{name: 'reference', type: 'string'}, 
 		{name: 'nom_interne', type: 'string'}, 
 		{name: 'Btn', type: 'string'}, 
+		{name: 'media', type: 'string'},
 		{name: 'possibility', type: 'string'},
 		{name: 'unit_code', type: 'int'},
 		{name: 'zone', type: 'string'}

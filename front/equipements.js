@@ -775,14 +775,16 @@ function equipements() {
 								listeners: {
 									select: function(o, val, e) {
 										var id_legrand = val[0].getData().id_legrand;
+										var media = val[0].getData().media;
 										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').clearFilter(true);
 										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').filter(
 												[{property: 'id_legrand', value: id_legrand},
 												 {property: 'filter', value: '{type="string"},{field="possibility"},{value="COMMAND"}'}]
 										);
-										Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').reload();
+										//Ext.data.StoreManager.lookup('ProgramableUnitDataEquipementsStatus').reload();
 										Ext.getCmp('formAddScenarIdLegrandListen').setValue(id_legrand);
 										Ext.getCmp('formAddScenarUnitListen').clearValue();
+										Ext.getCmp('formAddScenarMediaListen').setValue(media);
 									}
 								},
 								msgTarget: 'side',
@@ -829,10 +831,8 @@ function equipements() {
 			Ext.getCmp('formAddScenar').getForm().reset();
 		    var equipement = rec.get('nom');
 		    var zone = rec.get('zone');
-		    var media_listen = rec.get('media');
 		    winAddScenar.setTitle('Ajouter un scénario à '+equipement+' - '+zone+' ('+id_legrand+')');
 			Ext.getCmp('formAddScenarIdLegrand').setValue(id_legrand);
-			Ext.getCmp('formAddScenarMediaListen').setValue(media_listen);
 		}
 	};
 	
