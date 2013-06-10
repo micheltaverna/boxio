@@ -27,20 +27,20 @@ class secure {
 	private function sec_session_start() {
 		$session_name = 'sec_session_id';
 		$secure = false;
-		$httponly = true;
+		$httponly = false;
 	
-		ini_set('session.use_only_cookies', 1);
+		ini_set('session.use_only_cookies', 0);
 		$cookieParams = session_get_cookie_params();
 		session_set_cookie_params($cookieParams["lifetime"], $cookieParams["path"], $cookieParams["domain"], $secure, $httponly);
 		session_name($session_name);
 		session_start();
-		session_regenerate_id(true);
+		session_regenerate_id(false);
 	}
 
 	/*
 	// FONCTION : FONCTION DE LOGIN PRINCIPALE
 	*/
-	private function login($login, $password) {
+	private function login($login, $password, $direct_login=false) {
 		if ($stmt = $this->mysqli->prepare("SELECT id, login, password, salt FROM users WHERE login = ? LIMIT 1")) {
 			$stmt->bind_param('s', $login);
 			$stmt->execute();
@@ -48,7 +48,9 @@ class secure {
 			$stmt->bind_result($user_id, $username, $db_password, $salt);
 			$stmt->fetch();
 			$passwordHash512 = $password;
-			$password = hash('sha512', $password.$salt);
+			if ($direct_login === false) {
+				$password = hash('sha512', $password.$salt);
+			}
 	
 			if($stmt->num_rows == 1) { // Le user existe
 				// Test si trop de connexion fausses
@@ -133,6 +135,7 @@ class secure {
 					$login_check = hash('sha512', $password.$user_browser);
 					if($login_check == $login_string) {
 						$this->login = $username;
+						$this->password = $password;
 						$this->connected = true;
 						$this->error = false;
 						$this->timeout = time();
@@ -171,14 +174,48 @@ class secure {
 		$password = hash('sha512', $password.$random_salt);
 		
 		//Ajout en base
-		if ($insert_stmt = $this->mysqli->prepare("INSERT INTO users (login, password, salt) VALUES (?, ?, ?)")) {
+		if ($insert_stmt = $this->mysqli->prepare("REPLACE INTO users (login, password, salt) VALUES (?, ?, ?)")) {
 			$insert_stmt->bind_param('sss', $login, $password, $random_salt);
 			$insert_stmt->execute();
 		}
 	}
 
 	/*
-	 // FONCTION : FUNCTION DE DECONNEXION
+	// FONCTION : FUNCTION DE SUPPRESSION D'UTILISATEUR
+	*/
+	public function del_account($login) {
+		//il faut être connecté pour modifier !
+		if ($this->connected !== true) {
+			return false;
+		}
+	
+		//Suppression en base
+		if ($insert_stmt = $this->mysqli->prepare("DELETE FROM users WHERE login=?")) {
+			$insert_stmt->bind_param('s', $login);
+			$insert_stmt->execute();
+		}
+	}
+	
+	/*
+	 // FONCTION : FUNCTION DE MISE A JOUR D'UTILISATEUR
+	*/
+	public function upd_account($login, $password) {
+		//il faut être connecté pour modifier !
+		if ($this->connected !== true) {
+			return false;
+		}
+		$random_salt = hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
+		$password = hash('sha512', $password.$random_salt);
+		
+		//Modification en base
+		if ($insert_stmt = $this->mysqli->prepare("REPLACE INTO users (login, password, salt) VALUES (?, ?, ?)")) {
+			$insert_stmt->bind_param('sss', $login, $password, $random_salt);
+			$insert_stmt->execute();
+		}
+	}
+	
+	/*
+	// FONCTION : FUNCTION DE DECONNEXION
 	*/
 	public function logout() {
 		$_SESSION = array();
@@ -196,10 +233,22 @@ class secure {
 	// FONCTION : FUNCTION PRINCIPALE TEST SI LOGGER SINON FORCE LE LOG
 	*/
 	public function init() {
-		$this->conf = new legrand_conf();
+		$this->conf = new boxio_conf();
 		$this->init_mysql();
 		
 		//@TODO: Test si db vide pour supprimmer l'authentification
+		if ($stmt = $this->mysqli->prepare("SELECT login FROM users")) {
+			$stmt->execute(); // Execute the prepared query.
+			$stmt->store_result();
+			if ($stmt->num_rows == 0) {
+				$this->connected = true;
+				$this->login = null;
+				$this->password = null;
+				$this->error = null;
+				$this->timeout = null;
+				return;
+			}
+		}
 		
 		//Init des sessions
 		$this->sec_session_start();
@@ -208,7 +257,8 @@ class secure {
 		if (isset($_GET['login'], $_GET['pHash512']) || isset($_GET['direct_login'], $_GET['pHash512'])) {
 			$login = (!isset($_GET['login'])) ? $_GET['direct_login'] : $_GET['login'];
 			$password = $_GET['pHash512'];//password en Hash512
-			$this->login($login, $password);
+			$direct_login = (isset($_GET['direct_login'])) ? true : false;
+			$this->login($login, $password, $direct_login);
 			return;
 		}
 		

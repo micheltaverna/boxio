@@ -1,6 +1,6 @@
 <?php
 
-class legrand_conf {
+class boxio_conf {
 
 	//DEFINITION DU PROXY SERVER
 	public $SERVER_HOST = '127.0.0.1';

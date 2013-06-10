@@ -20,19 +20,20 @@ chdir( dirname ( __FILE__ ) );//Force a se positionner dans le bon repertoire po
 include("./conf.php");//POUR LES PARAMETRES DU SERVEUR PROXY + MYSQL
 include("./definitions.php");//LISTE DES DEFINITIONS DU PROTOCOLE IOBL
 include("./crond.php");//GESTION DU CRON
+include("./triggers.php");//GESTION DES TRIGGERS
 
 /*
  // ClASS : GESTION DU SERVEUR IOBL
 // La classe tourne en boucle inifinie, elle analyse les trames recus sur le CPL puis les transformes et les stocks en DB
 // Elle lit et vide une table temporaire pour envoyer les requetes sur le CPL
 */
-class legrand_server {
+class boxio_server {
 	/*
 	 // FONCTION : INITIALISATION DE LA SOCKET
 	*/
 	private function init_socket($port) {
 		set_time_limit(0);
-		//Fermeture de la socket si déjÃ  ouverte
+		//Fermeture de la socket si déjà ouverte
 		if (isset($this->fd_socket)) {
 			@fclose($this->fd_socket);
 			sleep(3);
@@ -275,7 +276,7 @@ class legrand_server {
 	}
 
 	/*
-	 // FONCTION : CALCUL UNE VALEUR IOBL DE LUMIERE EN POURCENTAGE
+	// FONCTION : CALCUL UNE VALEUR IOBL DE LUMIERE EN POURCENTAGE
 	// PARAMS : $iobl_value => string
 	// RETOURNE : LA VALEUR EN POURCENTAGE
 	*/
@@ -291,7 +292,19 @@ class legrand_server {
 	}
 
 	/*
-	 // FONCTION : CALCUL UNE VALEUR IOBL DECOMPOSE DE TEMPERATTURE EN UNE VALEUR ENTIERE
+	// FONCTION : CALCUL UNE VALEUR IOBL D'UNE TEMPORISATION
+	// PARAMS : $iobl_value => string
+	// RETOURNE : LA VALEUR EN SECONDES
+	*/
+	private function calc_iobl_to_time($iobl_value) {
+		$time = $iobl_value / 5;
+		//On arrondi à la seconde supérieure
+		$time = round($time, 0, PHP_ROUND_HALF_UP);
+		return $time;
+	}
+
+	/*
+	// FONCTION : CALCUL UNE VALEUR IOBL DECOMPOSE DE TEMPERATTURE EN UNE VALEUR ENTIERE
 	// PARAMS : $iobl_value1 => string, $iobl_value2 => string
 	// RETOURNE : LA VALEUR EN POURCENTAGE
 	*/
@@ -302,7 +315,7 @@ class legrand_server {
 	}
 
 	/*
-	 // FONCTION : MISE A JOUR DU STATUS DES SCENARIO
+	// FONCTION : MISE A JOUR DU STATUS DES SCENARIO
 	// PARAMS : $decrypted_trame = array(
 			"trame" => string,
 			"format" => 'string',
@@ -315,19 +328,35 @@ class legrand_server {
 			"date" => date)
 	*/
 	private function updateStatusScenario($decrypted_trame) {
-		//@TODO NE PAS METTRE A JOUR LE STATUS AVEC LA COMMANDE EXEMPLE "ACTION" SUR VARIATEUR UNIT "4" NE PAS CHANGER LE STATUS
-		//Il ne s'agit plus de mettre à jour...
-		if ($decrypted_trame['value'] == 'STOP_ACTION') {
-			return;
-		}
 		//Creation des variables utiles
 		$id = $decrypted_trame["id"];
 		$unit = $decrypted_trame["unit"];
 		$value = $decrypted_trame["value"];
 		$date = $decrypted_trame["date"];
-		//Mise a jour de la commande du scenario
+		$param = $decrypted_trame["param"];
+		
+		//Mise a jour de la commande du scenario le bouton
 		$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
 		$this->mysqli->query($query);
+		
+		//On arrete l'action si celle ci est de type specifique
+		if ($decrypted_trame['value'] == 'STOP_ACTION') {
+			return;
+		}
+				
+		//On recherche si le scenario n'est pas de type LIGHTING, si oui on le met à jour tout de suite
+		$query = "SELECT family 
+		FROM equipements
+		LEFT JOIN boxio.references ON boxio.references.ref_legrand=equipements.ref_legrand
+		WHERE equipements.id_legrand='$id' AND references.unit='$unit';";
+		$res = $this->mysqli->query($query);
+		if ($row = $res->fetch_assoc()) {
+			if ($row['family'] == 'LIGHTING') {
+				$this->updateStatusLight($decrypted_trame, false);
+			}
+		}
+		$this->free_mysqli($res);
+		
 		//On recherche les elements affectés et comment il réagisse
 		$query = "SELECT DISTINCT scenarios.id_legrand, scenarios.unit, scenarios.value_listen,
 		references.family, scenarios.id_legrand_listen, scenarios.unit_listen
@@ -337,6 +366,9 @@ class legrand_server {
 		$res = $this->mysqli->query($query);
 		$scenarios_decrypted_trame = array(
 				'format' => 'DIMENSION_REQUEST',
+				'value' => '',
+				'dimension' => '',
+				'param' => '',
 				'date' => $date
 		);
 		while ($row = $res->fetch_assoc()) {
@@ -347,22 +379,42 @@ class legrand_server {
 				$scenarios_decrypted_trame['type'] = 'LIGHTING';
 				//on teste le format de la trame
 				foreach ($this->def->OWN_SCENARIO_DEFINITION['LIGHTING'] as $command => $command_reg) {
+					$scenarios_decrypted_trame['dimension'] = '';
+					$scenarios_decrypted_trame['value'] = '';
+					$scenarios_decrypted_trame['param'] = '';
+					$scenarios_decrypted_trame['internal_status'] = '';
 					//si on trouve un format valide de trame
 					if (preg_match($command_reg, $row['value_listen'])) {
 						if ($command == 'LEVEL') {
-							$scenarios_decrypted_trame['value'] = '';
+							$status = $row['value_listen'];
 							$scenarios_decrypted_trame['dimension'] = 'GO_TO_LEVEL_TIME';
 							$scenarios_decrypted_trame['param'] = $row['value_listen'].'*0';
+						} else if ($command == 'ON' || $command == 'ON_FORCED' || $command == 'AUTO_ON') {
+							$status = 'ON';
+							$scenarios_decrypted_trame['value'] = 'ON';
+						} else if ($command == 'OFF' || $command == 'OFF_FORCED' || $command == 'AUTO_OFF') {
+							$status = 'OFF';
+							$scenarios_decrypted_trame['value'] = 'OFF';
 						} else {
-							$scenarios_decrypted_trame['value'] = $command;
-							$scenarios_decrypted_trame['dimension'] = '';
-							$scenarios_decrypted_trame['param'] = '';
+							continue;
 						}
 						//ON SIMULE EN INTERNE UNE TRAME DE MISE A JOUR
-						$this->updateStatusLight($scenarios_decrypted_trame, false);
+						//SI CES UN TIMER ON ANTICIPE LE FUTUR OFF
+						if ($decrypted_trame['value'] == 'ACTION_FOR_TIME') {
+							$scenarios_decrypted_trame['dimension'] = '';
+							$scenarios_decrypted_trame['value'] = 'ACTION_FOR_TIME';
+							$scenarios_decrypted_trame['param'] = $param;
+							$scenarios_decrypted_trame['internal_status'] = $status;
+							$this->updateStatusLight($scenarios_decrypted_trame, false);
+						} else {
+							$this->updateStatusLight($scenarios_decrypted_trame, false);
+						}
+						//On arrete de boucle ce n'est plus necessaire
+						break;
 					}
 				}
 			}
+			//CAS DES SHUTTER
 			else if ($row['family'] == 'SHUTTER') {
 				$scenarios_decrypted_trame['type'] = 'SHUTTER';
 				//on teste le format de la trame
@@ -375,6 +427,15 @@ class legrand_server {
 						//ON SIMULE EN INTERNE UNE TRAME DE MISE A JOUR
 						$this->updateStatusShutter($scenarios_decrypted_trame, false);
 					}
+				}
+			}
+			//CAS DES THERMOREGULATION
+			else if ($row['family'] == 'THERMOREGULATION') {
+				$scenarios_decrypted_trame['type'] = 'THERMOREGULATION';
+				//on teste le format de la trame
+				foreach ($this->def->OWN_SCENARIO_DEFINITION['CONFORT'] as $command => $command_reg) {
+					//si on trouve un format valide de trame
+					//TODO:Mettre a jour les scenarios
 				}
 			}
 		}
@@ -393,67 +454,167 @@ class legrand_server {
 					"unit" => string,)
 			$scenarios => boolean (true si l'on doit recherche des scenarios associés)
 	*/
-	private function updateStatusLight($decrypted_trame, $scenarios) {
+	private function updateStatusLight($decrypted_trame, $scenarios=false) {
 		//Creation des variables utiles
 		$id = $decrypted_trame["id"];
 		$unit = $decrypted_trame["unit"];
-		//recuperation du derniere etat connu si necessaire ET du unit principale de sauvegarde des status
+		//On recupere la date de l'action
+		$date = strtotime($decrypted_trame["date"]);
+		//recuperation du unit principale de sauvegarde des status
 		$query = "SELECT unit_status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
 		$res = $this->mysqli->query($query)->fetch_assoc();
 		$unit_status = $res["unit_status"];
-		if ($decrypted_trame["value"] == 'ON') {
-			$status = 100;
-			$value = $decrypted_trame["value"];
-		} else if ($decrypted_trame["value"] == 'OFF') {
-			$status = 0;
-			$value = $decrypted_trame["value"];
-		} else if ($decrypted_trame["dimension"] == 'DIM_STEP') {
+		$timer = 0;//L'action est par défaut immédiate
+		$status = NULL;
+		
+		//Gestion des ACTION
+		if ($decrypted_trame["value"] == 'ACTION_FOR_TIME') {
+			$value = 'ACTION_FOR_TIME';
+			preg_match('/(?P<time>\d+)/', $decrypted_trame["param"], $param);
+			//on test si le status est trouve
+			if (isset($param['time'])) {
+				$timer = $this->calc_iobl_to_time($param['time']);
+				//on a envoyé en interne le status sinon on prend par defaut ON
+				if (isset($decrypted_trame['internal_status'])) {
+					$status = $decrypted_trame['internal_status'];
+				} else {
+					$status = 'ON';
+				}
+				$next_status = 'OFF';
+			} else {
+				$status = NULL;
+			}
+		}
+		//Interruption des actions en cours on fait une demande de status
+		else if ($decrypted_trame["value"] == 'DIM_STOP') {
+			$value = 'DIM_STOP';
+			$ownid = $this->ioblId_to_ownId($id, $unit);
+			$res = $this->mysqli->query("CALL send_trame('*#1000*$ownid*55##', NULL, NULL)");
+			$this->free_mysqli($res);
+			//on supprimme les actions en cours
+			if (isset($this->waitingStatus[$id.$unit_status])) {
+				unset($this->waitingStatus[$id.$unit_status]);
+			}
+		} 
+		//Allumage
+		else if ($decrypted_trame["value"] == 'ON') {
+			$value = 'ON';
+			$status = 'ON';
+			$next_status = 'ON';
+		}
+		//Extinction 
+		else if ($decrypted_trame["value"] == 'OFF') {
+			$value = 'OFF';
+			$status = 'OFF';
+			$next_status = 'OFF';
+		}
+		//Variation par etape 
+		else if ($decrypted_trame["dimension"] == 'DIM_STEP') {
+			$value = 'DIM_STEP';
+			//Recuperation du derniere etat connu
 			$query = "SELECT status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit_status';";
 			$res = $this->mysqli->query($query)->fetch_assoc();
 			$old_status = $res["status"];
 			if (!is_numeric($old_status)) {
-				$old_status = 0;
+				if ($old_status == 'OFF') {
+					$old_status = 0;
+				} else if ($old_status == 'ON') {
+					$old_status = 100;
+				} else {
+					$old_status = 0;
+				}
 			}
-			$value = $decrypted_trame["dimension"];
-			preg_match('/(\d+)/', $decrypted_trame["param"], $param);
+			preg_match('/(?P<step>\d+?)\*(?P<time>\d+)/', $decrypted_trame["param"], $param);
 			//on test si le status est trouve
-			if (isset($param[1])) {
-				$change_status = $this->calc_iobl_to_light($param[1]);
-				$status = $old_status + $change_status;
-				if ($status > 100) {
-					$status = 100;
-				} else if ($status < 0) {
-					$status = 0;
+			if (isset($param['step']) && isset($param['time'])) {
+				$timer = $this->calc_iobl_to_time($param['time']);
+				$change_status = $this->calc_iobl_to_light($param['step']);
+				$next_status = $old_status + $change_status;
+				if ($next_status > 100) {
+					$next_status = 100;
+				} else if ($next_status < 0) {
+					$next_status = 0;
+				}
+				if ($old_status < $next_status) {
+					$status = 'DIM_UP_'.$old_status.'_TO_'.$next_status.'_IN_'.$timer.'S';
+				} else {
+					$status = 'DIM_DOWN_'.$old_status.'_TO_'.$next_status.'_IN_'.$timer.'S';
+				}
+				if ($next_status == 0) {
+					$next_status = 'OFF';
+				} else if ($next_status == 100) {
+					$next_status = 'ON';
 				}
 			} else {
-				$status = $old_status;
+				$next_status = NULL;
 			}
-		} else if ($decrypted_trame["dimension"] == 'GO_TO_LEVEL_TIME') {
-			$value = $decrypted_trame["dimension"];
-			preg_match('/(\d+)/', $decrypted_trame["param"], $param);
+		}
+		//Variation directe 
+		else if ($decrypted_trame["dimension"] == 'GO_TO_LEVEL_TIME') {
+			$value = 'GO_TO_LEVEL_TIME';
+			//Recuperation du derniere etat connu
+			$query = "SELECT status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit_status';";
+			$res = $this->mysqli->query($query)->fetch_assoc();
+			$old_status = $res["status"];
+			if (!is_numeric($old_status)) {
+				if ($old_status == 'OFF') {
+					$old_status = 0;
+				} else if ($old_status == 'ON') {
+					$old_status = 100;
+				} else {
+					$old_status = 0;
+				}
+			}
+			preg_match('/(?P<level>\d+?)\*(?P<time>\d+)/', $decrypted_trame["param"], $param);
 			//on test si le status est trouve
-			if (isset($param[1])) {
-				$status = $param[1];
-				if ($status > 100) {
-					$status = 100;
-				} else if ($status < 0) {
-					$status = 0;
+			if (isset($param['level']) && isset($param['time'])) {
+				$timer = $this->calc_iobl_to_time($param['time']);
+				$next_status = $param['level'];
+				if ($next_status > 100) {
+					$next_status = 100;
+				} else if ($next_status < 0) {
+					$next_status = 0;
+				}
+				if ($old_status < $next_status) {
+					$status = 'DIM_UP_'.$old_status.'_TO_'.$next_status.'_IN_'.$timer.'S';
+				} else {
+					$status = 'DIM_DOWN_'.$old_status.'_TO_'.$next_status.'_IN_'.$timer.'S';
+				}
+				if ($next_status == 0) {
+					$next_status = 'OFF';
+				} else if ($next_status == 100) {
+					$next_status = 'ON';
 				}
 			} else {
 				$status = NULL;
 			}
-			//Il ne s'agit pas d'une mise Ã  jour
+			//Il ne s'agit pas d'une mise à jour
 		} else {
 			return;
 		}
+		
 		//on n'a pas trouve le nouveau status, erreur dans la trame ?
-		if ($status === NULL) {
+		if ($status == NULL) {
 			return;
 		}
 		//Mise à jour de la touche de l'equipement (s'il ne s'agit pas du unit_status)
 		if ($unit != $unit_status) {
 			$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
 			$this->mysqli->query($query);
+		}
+		//On annule les éventuels action en cours
+		if (isset($this->waitingStatus[$id.$unit_status])) {
+			unset($this->waitingStatus[$id.$unit_status]);
+		}
+		//Dans le cas d'une commande temporelle on met le status en attente de mise a jour sauf si la commande est inférieur à 1s
+		if (($decrypted_trame["dimension"] == 'GO_TO_LEVEL_TIME' || $decrypted_trame["dimension"] == 'DIM_STEP' || $decrypted_trame["value"] == 'ACTION_FOR_TIME') 
+			&& $timer>1) {
+			$this->waitingStatus[$id.$unit_status]['date'] = $date+$timer;
+			$this->waitingStatus[$id.$unit_status]['status'] = $next_status;
+		}
+		//La commande n'est pas temporisé on indique la bonne valeur (au cas ou cela na pas ete fait)
+		else {
+			$status = $next_status;
 		}
 		//Mise à jour interne du status de l'equipement
 		$query = "UPDATE `equipements_status` SET status='$status' WHERE id_legrand='$id' AND unit='$unit_status'";
@@ -472,7 +633,71 @@ class legrand_server {
 	}
 
 	/*
-	 // FONCTION : MISE A JOUR DU STATUS DES VOLETS
+	// FONCTION : MISE A JOUR DU STATUS DES THERMOREGULATION
+	// PARAMS : $decrypted_trame = array(
+					"trame" => string,
+					"format" => 'string',
+					"type" => 'string',
+					"value" => string,
+					"dimension" => string,
+					"param" => string,
+					"id" => string,
+					"unit" => string,)
+			$scenarios => boolean (true si l'on doit recherche des scenarios associés)
+	*/
+	private function updateStatusConfort($decrypted_trame, $scenarios=false) {
+		//Creation des variables utiles
+		$id = $decrypted_trame["id"];
+		$unit = $decrypted_trame["unit"];
+		//On recupere la date de l'action
+		$date = strtotime($decrypted_trame["date"]);
+		//recuperation du unit principale de sauvegarde des status
+		$query = "SELECT unit_status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
+		$res = $this->mysqli->query($query)->fetch_assoc();
+		$unit_status = $res["unit_status"];
+		$status = NULL;
+		
+		//LOW FAN SPEED
+		if ($decrypted_trame["value"] == 'LOW_FAN_SPEED') {
+			$value = 'LOW_FAN_SPEED';
+			$status = 'LOW_FAN_SPEED';
+		}
+		//LOW FAN SPEED
+		else if ($decrypted_trame["value"] == 'HIGH_FAN_SPEED') {
+			$value = 'HIGH_FAN_SPEED';
+			$status = 'HIGH_FAN_SPEED';
+		//ACTION INCONNU
+		} else {
+			return;
+		}
+		
+		//on n'a pas trouve le nouveau status
+		if ($status == NULL) {
+			return;
+		}
+		//Mise à jour de la touche de l'equipement (s'il ne s'agit pas du unit_status)
+		if ($unit != $unit_status) {
+			$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
+			$this->mysqli->query($query);
+		}
+		//Mise à jour interne du status de l'equipement
+		$query = "UPDATE `equipements_status` SET status='$status' WHERE id_legrand='$id' AND unit='$unit_status'";
+		$this->mysqli->query($query);
+		//Mise à jour des scenarios si necessaire
+		if ($scenarios === true) {
+			$scenarios_decrypted_trame = $decrypted_trame;
+			$query = "SELECT id_legrand,unit FROM scenarios WHERE id_legrand_listen='$id' AND unit_listen='$unit' AND id_legrand<>'$id';";
+			$res = $this->mysqli->query($query);
+			while ($row = $res->fetch_assoc()) {
+				$scenarios_decrypted_trame['id'] = $row['id_legrand'];
+				$scenarios_decrypted_trame['unit'] = $row['unit'];
+				$this->updateStatusConfort($scenarios_decrypted_trame, false);
+			}
+		}
+	}
+	
+	/*
+	// FONCTION : MISE A JOUR DU STATUS DES VOLETS
 	// PARAMS : $decrypted_trame = array(
 			"trame" => string,
 			"format" => 'string',
@@ -484,7 +709,7 @@ class legrand_server {
 			"unit" => string,)
 	$scenarios => boolean (true si l'on doit recherche des scenarios associés)
 	*/
-	private function updateStatusShutter($decrypted_trame, $scenarios) {
+	private function updateStatusShutter($decrypted_trame, $scenarios=false) {
 		//Creation des variables utiles
 		$id = $decrypted_trame["id"];
 		$unit = $decrypted_trame["unit"];
@@ -501,7 +726,7 @@ class legrand_server {
 				|| $decrypted_trame["value"] == 'MOVE_DOWN'
 				|| $decrypted_trame["value"] == 'MOVE_STOP') {
 			$value = $decrypted_trame["value"];
-			//Il ne s'agit pas d'une mise Ã  jour
+			//Il ne s'agit pas d'une mise à jour
 		} else {
 			return;
 		}
@@ -526,47 +751,53 @@ class legrand_server {
 				if ($last_status == 'UP') {
 					$status = 'UP';
 					//Si le volet est deja en haut
-				} else if ($last_status == 100) {
-					$status = '100';
+				} else if ($last_status == '100' || $last_status == 'OPEN') {
+					$status = 'OPEN';
 					//Si le volet change de sens
 				} else if ($last_status == 'DOWN') {
 					$status = 'UP';
 					$new_pos = ($move_time - ($this->waitingStatus[$id.$unit]['date'] - $date))/$move_time*100;
 					$move_time = round($new_pos/100*$move_time);
 					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = '100';
-					//Si le volet est en position intermediaire
-				} else if (is_numeric($last_status)) {
+					$this->waitingStatus[$id.$unit]['status'] = 'OPEN';
+					//Si le volet est en position intermediaire ou completement ferme
+				} else if (is_numeric($last_status) || $last_status == 'CLOSED') {
+					if ($last_status == 'CLOSED') {
+						$last_status = 0;
+					}
 					$status = 'UP';
 					$this->waitingStatus[$id.$unit] = array();
 					$move_time = $move_time - ($last_status/100*$move_time);
 					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = '100';
+					$this->waitingStatus[$id.$unit]['status'] = 'OPEN';
 				}
 			} else if ($value == 'MOVE_DOWN') {
 				//Si le volet est en train de descendre
 				if ($last_status == 'DOWN') {
 					$status = 'DOWN';
 					//Si le volet est deja en bas
-				} else if ($last_status == 0) {
-					$status = '0';
+				} else if ($last_status == '0' || $last_status == 'CLOSED') {
+					$status = 'CLOSED';
 					//Si le volet change de sens
 				} else if ($last_status == 'UP') {
 					$status = 'DOWN';
 					$new_pos = 100 - (($move_time - ($this->waitingStatus[$id.$unit]['date'] - $date))/$move_time*100);
 					$move_time = round($new_pos/100*$move_time);
 					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = '0';
-					//Si le volet est arrete en position intermediaire
-				} else if (is_numeric($last_status)) {
+					$this->waitingStatus[$id.$unit]['status'] = 'CLOSED';
+					//Si le volet est arrete en position intermediaire ou completement ouvert
+				} else if (is_numeric($last_status) || $last_status == 'OPEN') {
+					if ($last_status == 'OPEN') {
+						$last_status = 100;
+					}
 					$status = 'DOWN';
 					$this->waitingStatus[$id.$unit] = array();
 					$move_time = ($last_status/100*$move_time);
 					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = '0';
+					$this->waitingStatus[$id.$unit]['status'] = 'CLOSED';
 				}
 			} else if ($value == 'MOVE_STOP') {
-				//Par defaut on dit que le volet est arrete et donc Ã  son ancienne position
+				//Par defaut on dit que le volet est arrete et donc à son ancienne position
 				$status = $last_status;
 				//Si le volet est deja en mouvement
 				if (!is_numeric($last_status) && isset($this->waitingStatus[$id.$unit])) {
@@ -577,23 +808,28 @@ class legrand_server {
 					} else if ($last_status == 'DOWN') {
 						$status = round(100 - $new_pos);
 					}
+					if ($status == 0) {
+						$status = 'CLOSED';
+					} else if ($status == 100) {
+						$status = 'OPEN';
+					}
 				}
 			}
 			//mise a jour simple du bouton
 		} else {
 			$status = $value;
 		}
-		//Mise Ã  jour de la touche de l'equipement (s'il ne s'agit pas du unit_status OU de la memoire cas particulier du SOMFY RF)
+		//Mise à jour de la touche de l'equipement (s'il ne s'agit pas du unit_status OU de la memoire cas particulier du SOMFY RF)
 		if ($unit != $unit_status || strpos($possibility, 'MEMORY') === FALSE) {
 			$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";
 			$this->mysqli->query($query);
 		}
-		//Mise Ã  jour interne du status de l'equipement
+		//Mise à jour interne du status de l'equipement
 		if (strpos($possibility, 'MEMORY') !== FALSE) {
 			$query = "UPDATE `equipements_status` SET status='$status' WHERE id_legrand='$id' AND unit='$unit_status'";
 			$this->mysqli->query($query);
 		}
-		//Mise Ã  jour des groupe de volet en parametre (INTERFACE SOMFY)
+		//Mise à jour des groupe de volet en parametre (INTERFACE SOMFY)
 		if (isset($params['grp_opt'])) {
 			$grp_shutter = explode(',', $params['grp_opt']);
 			$grp_decrypted_trame = $decrypted_trame;
@@ -602,7 +838,7 @@ class legrand_server {
 				$this->updateStatusShutter($grp_decrypted_trame, false);
 			}
 		}
-		//Mise Ã  jour des scenarios si necessaire
+		//Mise à jour des scenarios si necessaire
 		if ($scenarios === true) {
 			$scenarios_decrypted_trame = $decrypted_trame;
 			$query = "SELECT id_legrand,unit FROM scenarios WHERE id_legrand_listen='$id' AND unit_listen='$unit';";
@@ -619,15 +855,13 @@ class legrand_server {
 	 // FONCTION : MISE A JOUR DU STATUS DES UNITS EN ATTENTE
 	*/
 	private function updateWaitingStatus() {
-		//Variable qui stocke les eventuelle futur mise Ã  jour
+		//Variable qui stocke les eventuelle futur mise à jour
 		if (!isset($this->waitingStatus)) {
 			$this->waitingStatus = array();
 		}
 		foreach($this->waitingStatus as $idunit => $value) {
 			if (time() >= $this->waitingStatus[$idunit]['date']) {
-				$id = substr($idunit, 0, -1);
-				$unit = substr($idunit, -1);
-				$query = "UPDATE equipements_status SET status='".$this->waitingStatus[$idunit]['status']."' WHERE id_legrand='$id' AND unit='$unit';";
+				$query = "UPDATE equipements_status SET status='".$this->waitingStatus[$idunit]['status']."' WHERE CONCAT(id_legrand,unit) = '$idunit';";
 				$res = $this->mysqli->query($query);
 				if (!$res) {
 					print $this->mysqli->error.", QUERY=".$query."\n";
@@ -650,7 +884,7 @@ class legrand_server {
 			"unit" => string,
 			*/
 	private function updateStatus($decrypted_trame) {
-		//@TODO: Vérifier les status des trames "COMFORT"
+		//@TODO: Vérifier les status des trames "THERMOREGULATION"
 		//CAS DES VOLETS
 		if ($decrypted_trame['type'] == 'SHUTTER') {
 			$this->updateStatusShutter($decrypted_trame, true);
@@ -660,6 +894,9 @@ class legrand_server {
 		//CAS DES SCENARIOS
 		} else if ($decrypted_trame['type'] == 'SCENE') {
 			$this->updateStatusScenario($decrypted_trame);
+		//CAS DE LA THERMOREGULATION
+		} else if ($decrypted_trame['type'] == 'THERMOREGULATION') {
+			$this->updateStatusConfort($decrypted_trame, true);
 		//ON NE S'EST PAS DE QUOI IL S'AGIT, ON QUITTE
 		} else {
 			return;
@@ -680,56 +917,130 @@ class legrand_server {
 			"date" => date
 			*/
 	private function updateRequestStatus($decrypted_trame) {
-		//@TODO: mettre à jour les status en fonction du OWN_STATUS_DEFINITION
 		//ON VERIFIE SI IL S'AGIT D'UNE REQUEST
-		if ($decrypted_trame['type'] == 'CONFIGURATION' && $decrypted_trame['dimension'] == "UNIT_DESCRIPTION_STATUS") {
-			$params = preg_split('/[\*|#]/', $decrypted_trame['param']);
-			$unit_code = $params[0];
-			//ON NE CONNAIT PAS CE STATUS
-			if (!isset($this->def->OWN_STATUS_DEFINITION[$unit_code])) {
-				return;
-			}
-			$type = $this->def->OWN_STATUS_DEFINITION[$unit_code]['DEFINITION'][0];
-			$id = $decrypted_trame['id'];
-			$unit = $decrypted_trame['unit'];
-			//MISE A JOUR DES LIGHTS
-			if ($type == 'variator' || $type == 'inter') {
-				$status = $params[1];
-				//cas des inter non variateur 0=OFF et 128=ON=100
-				if ($status == '128') {
-					$status = '100';
+		if ($decrypted_trame['type'] != 'CONFIGURATION' || $decrypted_trame['dimension'] != "UNIT_DESCRIPTION_STATUS") {
+			return;
+		}
+		$params = preg_split('/[\*|#]/', $decrypted_trame['param']);
+		$unit_code = $params[0];
+		//ON NE CONNAIT PAS CE STATUS
+		if (!isset($this->def->OWN_STATUS_DEFINITION[$unit_code])) {
+			return;
+		}
+		$id = $decrypted_trame['id'];
+		$unit = $decrypted_trame['unit'];
+		//MISE A JOUR DES LIGHTS
+		foreach ($this->def->OWN_STATUS_DEFINITION[$unit_code]['TYPE'] as $type) {
+			$definition = $this->def->OWN_STATUS_DEFINITION[$unit_code]['DEFINITION'];
+			$value = $this->def->OWN_STATUS_DEFINITION[$unit_code]['VALUE'];
+			//GESTION DES LIGNTING
+			if ($type == 'LIGHTING') {
+				//Valeur par defaut
+				$level = $params[array_search("level", $definition)];
+				//On recherche la valeur
+				foreach ($value['level'] as $command => $reg) {
+					if (preg_match($reg, $level)) {
+						$level = $command;
+						break;
+					}
 				}
-				$query = "UPDATE equipements_status SET status='$status' WHERE id_legrand='$id' AND unit='$unit';";
-				$this->mysqli->query($query);
-			}
-			//MISE A JOUR DES THERMOSTATS
-			else if ($type == 'confort' || $type == 'inter_confort') {
-				if ($type == 'confort') {
-					foreach ($this->def->OWN_STATUS_DEFINITION[$unit_code]['VALUE']['mode'] as $command => $reg) {
-						if (preg_match($reg, $params[1])) {
-							$mode = $command;
+				//On recherche si l'action est en cours d'execution sur un variateur
+				$in_progress = false;
+				if (isset($value['action_for_time'])) {
+					$action_in_progress = $params[array_search("action_for_time", $definition)];
+					//On recherche la valeur
+					foreach ($value['action_for_time'] as $command => $reg) {
+						if (preg_match($reg, $action_in_progress)) {
+							$action_in_progress = $command;
+							break;
 						}
 					}
-					$internal_temp = $this->calc_iobl_to_temp($params[2], $params[3]);
-					$wanted_temp = $this->calc_iobl_to_temp($params[4], $params[5]);
-					$status = "mode=$mode;internal_temp=$internal_temp;wanted_temp=$wanted_temp";
-				} else if ($type == 'inter_confort') {
-					if ($params[2] == '100') {
-						$status = 'ON';
-					} else {
-						$status = 'OFF';
+					if ($action_in_progress == 'ACTION_IN_PROGRESS') {
+						$in_progress = true;
 					}
 				}
-				$query = "UPDATE equipements_status SET status='$status' WHERE id_legrand='$id' AND unit='$unit';";
-				$this->mysqli->query($query);
+				if ($level == 'ON_DETECTION') {
+					$in_progress = true;
+				}
+				//On ne met pas à jour si c'est une commande en cours
+				if ($in_progress == false) {
+					$query = "UPDATE equipements_status SET status='$level' WHERE id_legrand='$id' AND unit='$unit';";
+					$this->mysqli->query($query);
+				}
+			//GESTION DES CONFORT
+			} else if ($type == 'CONFORT') {
+				//Valeur par defaut
+				$status = false;
+				if ($definition[0] == 'inter_confort') {
+					//Valeur par defaut
+					$status_confort = $params[array_search("status_confort", $definition)];
+					//On recherche la valeur
+					foreach ($value['status_confort'] as $command => $reg) {
+						if (preg_match($reg, $status_confort)) {
+							$status_confort = $command;
+							break;
+						}
+					}
+					$status = $status_confort;
+				} else if ($definition[0] == 'confort') {
+					//Valeur par defaut
+					$mode = $params[array_search("mode", $definition)];
+					//On recherche la valeur
+					foreach ($value['mode'] as $command => $reg) {
+						if (preg_match($reg, $mode)) {
+							$mode = $command;
+							break;
+						}
+					}
+					$internal_temp = $this->calc_iobl_to_temp($params[array_search("internal_temp_multiplicator", $definition)], $params[array_search("internal_temp", $definition)]);
+					$wanted_temp = $this->calc_iobl_to_temp($params[array_search("wanted_temp_multiplicator", $definition)], $params[array_search("wanted_temp", $definition)]);
+					$status = "mode=$mode;internal_temp=$internal_temp;wanted_temp=$wanted_temp";
+				} else if ($definition[0] == 'fan') {
+					//Valeur par defaut
+					$status = $params[array_search("fan_speed", $definition)];
+				}
+				if ($status !== false) {
+					$query = "UPDATE equipements_status SET status='$status' WHERE id_legrand='$id' AND unit='$unit';";
+					$this->mysqli->query($query);
+				}
+			} else if ($type == 'SHUTTER') {
+				//TODO: GESTION DES SHUTTER
 			}
-			//MISE A JOUR DES VOLETS
-			else if ($type == 'shutter') {
-				;
+		}
+		return;
+	}
+
+	/*
+	 // FONCTION : GESTION DE LA CRONTAB UTILISATEUR
+	*/
+	private function checkTriggers($trame) {
+		//Premiere appel on regarde en base les triggers 
+		if (!isset($this->triggers)) {
+			$this->triggers = new triggers();
+			$this->triggers->triggersAnalyse = time();
+			$res = $this->mysqli->query("SELECT * FROM view_triggers WHERE active=1");
+			while ($triggers_array = $res->fetch_assoc()) {
+				$this->triggers->addTrigger($triggers_array['id'],
+						$triggers_array['nom'],
+						$triggers_array['triggers'],
+						$triggers_array['conditions'],
+						$triggers_array['actions']);
 			}
-			//ON NE S'EST PAS DE QUOI IL S'AGIT, ON QUITTE
+		//On reset la table
+		} else if ($this->triggers->triggersAnalyse+$this->def->DEFAULT_UPDATE_TIME_TRIGGERTAB < time()) {
+			$this->triggers->resetTriggers();
+			$this->triggers->triggersAnalyse = time();
+			$res = $this->mysqli->query("SELECT * FROM view_triggers WHERE active=1");
+			while ($triggers_array = $res->fetch_assoc()) {
+				$this->triggers->addTrigger($triggers_array['id'],
+						$triggers_array['nom'],
+						$triggers_array['triggers'],
+						$triggers_array['conditions'],
+						$triggers_array['actions']);
+			}
+		//On regarde s'il y a une execuction à réaliser
 		} else {
-			return;
+			$this->triggers->check($trame);
 		}
 	}
 
@@ -751,7 +1062,7 @@ class legrand_server {
 						$cron_array['mois']);
 			}
 		//On reset la table
-		} else if ($this->crond->cronAnalyse+600 < time()) {
+		} else if ($this->crond->cronAnalyse+$this->def->DEFAULT_UPDATE_TIME_CRONTAB < time()) {
 			$this->crond->resetCron();
 			$this->crond->cronAnalyse = time();
 			$res = $this->mysqli->query("SELECT * FROM view_cron WHERE active=1");
@@ -843,19 +1154,27 @@ class legrand_server {
 			while (preg_match("/(.*?##)(.*)$/", $trame, $matches)) {
 				//On ne sauvegarde pas les trames ACK et NACK qui ne servent à  rien ! car pas d'identifiant sur qui l'a envoyer !!??
 				if (!preg_match($this->def->OWN_TRAME['ACK'], $matches[1]) && !preg_match($this->def->OWN_TRAME['NACK'], $matches[1])) {
+					//On decrypte la trame
 					$decrypt_trame = $this->decrypt_trame($matches[1]);
+					//On met à jour les status
 					$this->updateStatus($decrypt_trame);
 					$this->updateRequestStatus($decrypt_trame);
+					//on enregistre la trame
 					$this->save_trame($decrypt_trame, 'GET');
+					//Analise des triggers
+					$this->checkTriggers($decrypt_trame);
 				}
 				$trame = $matches[2];
 			}
+			//ETAPE D'ANALISE DES
 			//Analise des mises update en attente
 			$this->updateWaitingStatus();
 			//Analise des crons interne pour les mises à jours
 			$this->cronRequestStatus();
 			//Analise des crons utilisateurs
 			$this->cronTabUser();
+				
+			//ETAPE DE L'ENVOIE
 			//Analise et envoi des trames en attentes dans l'ordre des dates d'insertion
 			$res = $this->mysqli->query("SELECT id, trame FROM trame_standby WHERE date <= NOW() ORDER BY date ASC");
 			$new_trames = array();
@@ -884,8 +1203,8 @@ class legrand_server {
 	 // FONCTION : FUNCTION PRINCIPALE DE LANCEMENT DU SERVEUR
 	*/
 	public function init() {
-		$this->conf = new legrand_conf();
-		$this->def = new legrand_def();
+		$this->conf = new boxio_conf();
+		$this->def = new boxio_def();
 		//Detection de l'OS
 		echo "Serveur de type : ".PHP_OS."\n";
 		if (preg_match("/win/i", PHP_OS)) {
@@ -941,7 +1260,7 @@ class legrand_server {
 }
 
 //CREATION DE LA CLASSE ET LANCEMENT DU SERVEUR
-$lg = new legrand_server();
+$lg = new boxio_server();
 $lg->init();
 
 ?>
