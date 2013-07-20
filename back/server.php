@@ -22,6 +22,8 @@ include("./definitions.php");//LISTE DES DEFINITIONS DU PROTOCOLE IOBL
 include("./crond.php");//GESTION DU CRON
 include("./triggers.php");//GESTION DES TRIGGERS
 
+error_log('INIT DES MESSAGES D\'ERREURS');
+
 /*
  // ClASS : GESTION DU SERVEUR IOBL
 // La classe tourne en boucle inifinie, elle analyse les trames recus sur le CPL puis les transformes et les stocks en DB
@@ -73,6 +75,33 @@ class boxio_server {
 	}
 
 	/*
+	 * FONCTION : DECODE ENTITY HTML
+	 */
+	private function html_entity_decode_numeric($string, $quote_style = ENT_COMPAT, $charset = "utf-8")
+	{
+		$string = html_entity_decode($string, $quote_style, $charset);
+		$string = preg_replace_callback('~&#x([0-9a-fA-F]+);~i', function ($matches) {
+			$num = hexdec($matches[1]);
+			if ($num < 128) return chr($num);
+			if ($num < 2048) return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+			if ($num < 65536) return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+			if ($num < 2097152) return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+			return '';
+		}
+			, $string);
+	
+			$string = preg_replace_callback('~&#([0-9]+);~', function($matches) {
+				$num = $matches[1];
+				if ($num < 128) return chr($num);
+				if ($num < 2048) return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+				if ($num < 65536) return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+				if ($num < 2097152) return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+				return '';
+			}, $string);
+			return $string;
+	}
+	
+	/*
 	 // FONCTION : SAUVEGARDE D'UNE TRAME
 	// PARAMS : $decrypt_trame=array, $direction=string(GET | SET)
 	*/
@@ -87,13 +116,17 @@ class boxio_server {
 		$query = "INSERT INTO `trame` (trame, direction, date) VALUES (".$decrypt_trame["trame"].", '".$direction."', ".$decrypt_trame["date"].")";
 		$res = $this->mysqli->query($query);
 		if (!$res) {
-			print $this->mysqli->error.", QUERY=".$query."\n";
+			if ($this->conf->DEBUG_LEVEL > 0) {
+				print $this->mysqli->error.", QUERY=".$query."\n";
+			}
 		}
 		$id_trame = $this->mysqli->insert_id;
 		$query = "INSERT INTO `trame_decrypted` (id_trame, direction, mode, media, format, type, value, dimension, param, id_legrand, unit, date) VALUES ('".$id_trame."', '".$direction."', ".$decrypt_trame["mode"].", ".$decrypt_trame["media"].", ".$decrypt_trame["format"].", ".$decrypt_trame["type"].", ".$decrypt_trame["value"].", ".$decrypt_trame["dimension"].", ".$decrypt_trame["param"].", ".$decrypt_trame["id"].", ".$decrypt_trame["unit"].", ".$decrypt_trame["date"].")";
 		$res = $this->mysqli->query($query);
 		if (!$res) {
-			print $this->mysqli->error.", QUERY=".$query."\n";
+			if ($this->conf->DEBUG_LEVEL > 0) {
+				print $this->mysqli->error.", QUERY=".$query."\n";
+			}
 		}
 	}
 
@@ -461,13 +494,35 @@ class boxio_server {
 		//On recupere la date de l'action
 		$date = strtotime($decrypted_trame["date"]);
 		//recuperation du unit principale de sauvegarde des status
-		$query = "SELECT unit_status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
+		$query = "SELECT unit_status, unit_code FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
 		$res = $this->mysqli->query($query)->fetch_assoc();
 		$unit_status = $res["unit_status"];
+		if (!isset($this->def->OWN_STATUS_DEFINITION[$res["unit_code"]]['DEFINITION'][0])) {
+			$type = 'other';
+		} else {
+			$type = $this->def->OWN_STATUS_DEFINITION[$res["unit_code"]]['DEFINITION'][0];
+		}
 		$timer = 0;//L'action est par défaut immédiate
 		$status = NULL;
-		
+		//On recupere les server_opt
+		$query = "SELECT server_opt FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit_status';";
+		$res = $this->mysqli->query($query)->fetch_assoc();
+		$server_opt = $res["server_opt"];
+		//s'il y a un timer dans les server_opt on l'inclus tout de suite
+		if (preg_match('/timer=(?P<seconds>\d+)/',$server_opt,$res_timer)) {
+			$timer = $res_timer['seconds'];
+		}
+		//TODO: mettre à jour les modes des inters
+				
+		//Si un variateur essai de mettre à jour un inter on en tient pas compte
+		if ($type != 'variator' && (
+			$decrypted_trame["value"] == 'DIM_STOP'
+			|| $decrypted_trame["dimension"] == 'DIM_STEP'
+			|| $decrypted_trame["dimension"] == 'GO_TO_LEVEL_TIME')) {
+			return;
+		}
 		//Gestion des ACTION
+		//TODO: gérer les ACTION_IN_TIME
 		if ($decrypted_trame["value"] == 'ACTION_FOR_TIME') {
 			$value = 'ACTION_FOR_TIME';
 			preg_match('/(?P<time>\d+)/', $decrypted_trame["param"], $param);
@@ -500,13 +555,23 @@ class boxio_server {
 		else if ($decrypted_trame["value"] == 'ON') {
 			$value = 'ON';
 			$status = 'ON';
-			$next_status = 'ON';
+			//S'il y a un timer dans le server_opt
+			if ($timer != 0) {
+				$next_status = 'OFF';
+			} else {
+				$next_status = 'ON';
+			}
 		}
 		//Extinction 
 		else if ($decrypted_trame["value"] == 'OFF') {
 			$value = 'OFF';
 			$status = 'OFF';
-			$next_status = 'OFF';
+			//S'il y a un timer dans le server_opt
+			if ($timer != 0) {
+				$next_status = 'ON';
+			} else {
+				$next_status = 'OFF';
+			}
 		}
 		//Variation par etape 
 		else if ($decrypted_trame["dimension"] == 'DIM_STEP') {
@@ -607,8 +672,7 @@ class boxio_server {
 			unset($this->waitingStatus[$id.$unit_status]);
 		}
 		//Dans le cas d'une commande temporelle on met le status en attente de mise a jour sauf si la commande est inférieur à 1s
-		if (($decrypted_trame["dimension"] == 'GO_TO_LEVEL_TIME' || $decrypted_trame["dimension"] == 'DIM_STEP' || $decrypted_trame["value"] == 'ACTION_FOR_TIME') 
-			&& $timer>1) {
+		if ($timer>1) {
 			$this->waitingStatus[$id.$unit_status]['date'] = $date+$timer;
 			$this->waitingStatus[$id.$unit_status]['status'] = $next_status;
 		}
@@ -652,9 +716,13 @@ class boxio_server {
 		//On recupere la date de l'action
 		$date = strtotime($decrypted_trame["date"]);
 		//recuperation du unit principale de sauvegarde des status
-		$query = "SELECT unit_status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
+		$query = "SELECT unit_status, server_opt FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
 		$res = $this->mysqli->query($query)->fetch_assoc();
 		$unit_status = $res["unit_status"];
+		//On recupere les server_opt
+		$query = "SELECT server_opt FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit_status';";
+		$res = $this->mysqli->query($query)->fetch_assoc();
+		$server_opt = $res["server_opt"];
 		$status = NULL;
 		
 		//LOW FAN SPEED
@@ -666,6 +734,10 @@ class boxio_server {
 		else if ($decrypted_trame["value"] == 'HIGH_FAN_SPEED') {
 			$value = 'HIGH_FAN_SPEED';
 			$status = 'HIGH_FAN_SPEED';
+			if (preg_match('/timer=(?P<seconds>\d+)/',$server_opt,$timer)) {
+				$this->waitingStatus[$id.$unit_status]['date'] = $date+$timer['seconds'];
+				$this->waitingStatus[$id.$unit_status]['status'] = 'LOW_FAN_SPEED';
+			}
 		//ACTION INCONNU
 		} else {
 			return;
@@ -864,7 +936,9 @@ class boxio_server {
 				$query = "UPDATE equipements_status SET status='".$this->waitingStatus[$idunit]['status']."' WHERE CONCAT(id_legrand,unit) = '$idunit';";
 				$res = $this->mysqli->query($query);
 				if (!$res) {
-					print $this->mysqli->error.", QUERY=".$query."\n";
+					if ($this->conf->DEBUG_LEVEL > 0) {
+						print $this->mysqli->error.", QUERY=".$query."\n";
+					}
 				}
 				unset($this->waitingStatus[$idunit]);
 			}
@@ -884,7 +958,6 @@ class boxio_server {
 			"unit" => string,
 			*/
 	private function updateStatus($decrypted_trame) {
-		//@TODO: Vérifier les status des trames "THERMOREGULATION"
 		//CAS DES VOLETS
 		if ($decrypted_trame['type'] == 'SHUTTER') {
 			$this->updateStatusShutter($decrypted_trame, true);
@@ -1017,14 +1090,16 @@ class boxio_server {
 		//Premiere appel on regarde en base les triggers 
 		if (!isset($this->triggers)) {
 			$this->triggers = new triggers();
+			$this->triggers->init($this->mysqli);
 			$this->triggers->triggersAnalyse = time();
 			$res = $this->mysqli->query("SELECT * FROM view_triggers WHERE active=1");
 			while ($triggers_array = $res->fetch_assoc()) {
 				$this->triggers->addTrigger($triggers_array['id'],
-						$triggers_array['nom'],
-						$triggers_array['triggers'],
-						$triggers_array['conditions'],
-						$triggers_array['actions']);
+						$this->html_entity_decode_numeric($triggers_array['nom']),
+						$this->html_entity_decode_numeric($triggers_array['triggers']),
+						$this->html_entity_decode_numeric($triggers_array['conditions']),
+						$this->html_entity_decode_numeric($triggers_array['actions'])
+				);
 			}
 		//On reset la table
 		} else if ($this->triggers->triggersAnalyse+$this->def->DEFAULT_UPDATE_TIME_TRIGGERTAB < time()) {
@@ -1033,15 +1108,20 @@ class boxio_server {
 			$res = $this->mysqli->query("SELECT * FROM view_triggers WHERE active=1");
 			while ($triggers_array = $res->fetch_assoc()) {
 				$this->triggers->addTrigger($triggers_array['id'],
-						$triggers_array['nom'],
-						$triggers_array['triggers'],
-						$triggers_array['conditions'],
-						$triggers_array['actions']);
+						$this->html_entity_decode_numeric($triggers_array['nom']),
+						$this->html_entity_decode_numeric($triggers_array['triggers']),
+						$this->html_entity_decode_numeric($triggers_array['conditions']),
+						$this->html_entity_decode_numeric($triggers_array['actions'])
+				);
 			}
-		//On regarde s'il y a une execuction à réaliser
-		} else {
-			$this->triggers->check($trame);
 		}
+		//On regarde s'il y a une execuction à réaliser
+		$res = $this->mysqli->query("SELECT id_legrand AS id,unit,status FROM view_equipements_status");
+		$status = array();
+		while ($ln = $res->fetch_assoc()) {
+			array_push($status, $ln);
+		}
+		$this->triggers->check($trame, $status);
 	}
 
 	/*
@@ -1146,23 +1226,46 @@ class boxio_server {
 		$this->mysqli->query("TRUNCATE trame_standby");
 		$trame = '';
 		echo "Connexion a l'interface et a la socket\n";
-		while (!feof($this->fd_socket)) {
+		$this->unlock_socket = false;
+		while (!feof($this->fd_socket) || $this->unlock_socket) {
+			$this->unlock_socket = false;
 			//Boucle infinie sur la socket ouverte
 			//Lecture de la socket
+			if ($this->conf->DEBUG_LEVEL > 4) {
+				print ".";
+			}
 			$trame .= fgets($this->fd_socket);
 			//Analise et sauvegarde de la trame recu
 			while (preg_match("/(.*?##)(.*)$/", $trame, $matches)) {
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print "\n".date("Y-m-d H:i:s")."-New trame => ".$matches[1]."\n";
+				}
 				//On ne sauvegarde pas les trames ACK et NACK qui ne servent à  rien ! car pas d'identifiant sur qui l'a envoyer !!??
 				if (!preg_match($this->def->OWN_TRAME['ACK'], $matches[1]) && !preg_match($this->def->OWN_TRAME['NACK'], $matches[1])) {
 					//On decrypte la trame
 					$decrypt_trame = $this->decrypt_trame($matches[1]);
+					if ($this->conf->DEBUG_LEVEL > 2) {
+						print date("Y-m-d H:i:s")."-Decrypt trame\n";
+					}
 					//On met à jour les status
 					$this->updateStatus($decrypt_trame);
+					if ($this->conf->DEBUG_LEVEL > 2) {
+						print date("Y-m-d H:i:s")."-Update Status\n";
+					}
 					$this->updateRequestStatus($decrypt_trame);
+					if ($this->conf->DEBUG_LEVEL > 2) {
+						print date("Y-m-d H:i:s")."-Update Request Status\n";
+					}
 					//on enregistre la trame
 					$this->save_trame($decrypt_trame, 'GET');
+					if ($this->conf->DEBUG_LEVEL > 2) {
+						print date("Y-m-d H:i:s")."-Update Save Status\n";
+					}
 					//Analise des triggers
 					$this->checkTriggers($decrypt_trame);
+					if ($this->conf->DEBUG_LEVEL > 2) {
+						print date("Y-m-d H:i:s")."-Check Triggers\n";
+					}
 				}
 				$trame = $matches[2];
 			}
@@ -1189,10 +1292,31 @@ class boxio_server {
 				$this->mysqli->query("DELETE FROM trame_standby WHERE ".$del_trames);
 			}
 			foreach($new_trames as $set_trame) {
-				fputs($this->fd_socket, $set_trame);
+				for ($written = 0; $written < strlen($set_trame); $written += $fwrite) {
+					$fwrite = fwrite($this->fd_socket, substr($set_trame, $written));
+					if ($fwrite === false) {
+						if ($this->conf->DEBUG_LEVEL > 0) {
+							print date("Y-m-d H:i:s")."-ERROR Send Trame => ".$set_trame."\n";
+						}
+					}
+				}
+				
+				//fputs($this->fd_socket, $set_trame);
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print date("Y-m-d H:i:s")."-Send Trame => ".$set_trame."\n";
+				}
 				$decrypt_trame = $this->decrypt_trame($set_trame);
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print date("Y-m-d H:i:s")."-Decrypt Trame => ".$set_trame."\n";
+				}
 				$this->updateStatus($decrypt_trame);
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print date("Y-m-d H:i:s")."-Update Status\n";
+				}
 				$this->save_trame($decrypt_trame, 'SET');
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print date("Y-m-d H:i:s")."-Save Trame => ".$set_trame."\n";
+				}
 			}
 		}
 		echo "Interface innaccessible ou socket fermee !\n";

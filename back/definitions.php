@@ -1,5 +1,6 @@
 <?php
 class boxio_def {
+	
 	//temps par default en secondes pour la recherche des mise à jour de la table cron
 	public $DEFAULT_UPDATE_TIME_CRONTAB = 30;
 
@@ -80,7 +81,7 @@ class boxio_def {
 			)
 	);
 
-	//Definition des differentes scenarios type
+	//Definition des differents scenarios type
 	public $OWN_STATUS_DEFINITION = array(
 			"1" => array(
 					"DEFINITION" => array("inter_confort","unknown","status_confort","unknown","unknown","unknown"),
@@ -216,108 +217,108 @@ class boxio_def {
 	//Definition des differents type de contenu d'une trame
 	public $OWN_TRAME_DEFINITION = array(
 			"1" => array(
-					"TYPE" => "LIGHTING",
-					"1" => "ON",
-					"0" => "OFF",
-					"38" => "DIM_STOP",
-					"DIMENSION" => array(
-							"#10_" => "DIM_STEP",
-							"#1_" => "GO_TO_LEVEL_TIME"
-					)
+				"TYPE" => "LIGHTING",
+				"1" => "ON",
+				"0" => "OFF",
+				"38" => "DIM_STOP",
+				"DIMENSION" => array(
+					"#10_" => "DIM_STEP",
+					"#1_" => "GO_TO_LEVEL_TIME"
+				)
 			), //1 Lighting
 			"2" => array(
-					"TYPE" => "SHUTTER",
-					"0" => "MOVE_STOP",
-					"1" => "MOVE_UP",
-					"2" => "MOVE_DOWN"
+				"TYPE" => "SHUTTER",
+				"0" => "MOVE_STOP",
+				"1" => "MOVE_UP",
+				"2" => "MOVE_DOWN"
 			), //2 Automations
 			"4" => array(
-					"TYPE" => "THERMOREGULATION",
-					"50_" => "CONSIGNE",
-					"51_" => "DEROGATION_CONSIGNE",
-					"52" => "FIN_DEROGATION",
-					"53_" => "GO_TO_TEMPERATURE",
-					"54" => "ARRET",
-					"55" => "FIN_ARRET",
-					"56" => "STOP_FAN_SPEED",
-					"57" => "LOW_FAN_SPEED",
-					"58" => "HIGH_FAN_SPEED",
-					"59_" => "CONFORT_JOUR_ROUGE",
-					"DIMENSION" => array(
-							"#40_" => "COMMANDE_ECS",
-							"42_" => "INFORMATION_TARIF",
-							"43" => "QUEL_INDEX",
-							"43*1_" => "INDEX_BASE",
-							"43*2_" => "INDEX_HC",
-							"43*3_" => "INDEX_BLEU",
-							"43*4_" => "INDEX_BLANC",
-							"43*5_" => "INDEX_ROUGE",
-							"#41_" => "SET_TEMP_CONFORT",
-							"41" => "READ_TEMP_CONFORT",
-							"41_" => "INDICATION_TEMP_CONFORT",
-							"#44_" => "SET_TEMP_ECO",
-							"44" => "READ_TEMP_ECO",
-							"44_" => "INDICATION_TEMP_ECO",
-							"#45_" => "SET_V3V_CONSIGNE",
-							"45" => "CONSIGN_V3V_REQUEST"
-									)
+				"TYPE" => "THERMOREGULATION",
+				"50_" => "CONSIGNE",
+				"51_" => "DEROGATION_CONSIGNE",
+				"52" => "FIN_DEROGATION",
+				"53_" => "GO_TO_TEMPERATURE",
+				"54" => "ARRET",
+				"55" => "FIN_ARRET",
+				"56" => "STOP_FAN_SPEED",
+				"57" => "LOW_FAN_SPEED",
+				"58" => "HIGH_FAN_SPEED",
+				"59_" => "CONFORT_JOUR_ROUGE",
+				"DIMENSION" => array(
+					"#40_" => "COMMANDE_ECS",
+					"42_" => "INFORMATION_TARIF",
+					"43" => "QUEL_INDEX",
+					"43*1_" => "INDEX_BASE",
+					"43*2_" => "INDEX_HC",
+					"43*3_" => "INDEX_BLEU",
+					"43*4_" => "INDEX_BLANC",
+					"43*5_" => "INDEX_ROUGE",
+					"#41_" => "SET_TEMP_CONFORT",
+					"41" => "READ_TEMP_CONFORT",
+					"41_" => "INDICATION_TEMP_CONFORT",
+					"#44_" => "SET_TEMP_ECO",
+					"44" => "READ_TEMP_ECO",
+					"44_" => "INDICATION_TEMP_ECO",
+					"#45_" => "SET_V3V_CONSIGNE",
+					"45" => "CONSIGN_V3V_REQUEST"
+				)
 			), //4 Thermoregulation (Heating)
 			"8" => array(
-			"TYPE" => "ALARM",
-			"1" => "CONCIERGE_CALL",
-			"19" => "LOCKER_CONTROL"
-					), //8 Door Entry System
-					"25" => array(
-					"TYPE" => "SCENE",
-					"11" => "ACTION",
-					"16" => "STOP_ACTION",
-					"17_" => "ACTION_FOR_TIME",
-					"18_" => "ACTION_IN_TIME",
-					"19_" => "INFO_SCENE_OFF"
-							), //25 Scenarios
-							"13" => array(
-							"TYPE" => "MANAGEMENT",
-							"23_" => "CLOCK_SYNCHRONISATION",
-							"24_" => "LOW_BATTERY",
-							"DIMENSION" => array(
-							"22" => "READ_CLOCK_TIME_PARAMETER",
-							"22_" => "INDICATION_CLOCK_TIME_PARAMETER",
-							"#22_" => "SET_CLOCK_TIME_PARAMETER"
-									)
-							), //13 Management
-							"14" => array(
-							"TYPE" => "SPECIAL_COMMAND",
-							"0_" => "OVERRIDE_FOR_TIME",
-							"1" => "END_OF_OVERRIDE"
-									), //14 Special commands
-									"1000" => array(
-									"TYPE" => "CONFIGURATION",
-									"61_" => "OPEN_LEARNING",
-									"62" => "CLOSE_LEARNING",
-									"63_" => "ADDRESS_ERASE",
-									"64" => "MEMORY_RESET",
-									"65" => "MEMORY_FULL",
-									"66" => "MEMORY_READ",
-									"72" => "VALID_ACTION",
-									"73" => "INVALID_ACTION",
-									"68" => "CANCEL_ID",
-									"69_" => "MANAGEMENT_CLOCK_SYNCHRONISATION",
-									"70_" => "OCCUPIED",
-									"71_" => "UNOCCUPIED",
-									"DIMENSION" => array(
-									"13" => "ANNOUNCE_ID",
-									"51" => "DEVICE_DESCRIPTION_REQUEST",
-									"51_" => "DEVICE_DESCRIPTION_STATUS",
-									"13_" => "REQUEST_ID",
-									"53_" => "EXTENDED_MEMORY_DATA",
-									"56_" => "MEMORY_DEPTH_INDICATION",
-									"52_" => "MEMORY_DATA",
-									"55" => "UNIT_DESCRIPTION_REQUEST",
-									"55_" => "UNIT_DESCRIPTION_STATUS",
-									"#54_" => "MEMORY_WRITE",
-									"#57_" => "SET_COMMUNICATION_PARAMETER"
-											)
-									)
+				"TYPE" => "ALARM",
+				"1" => "CONCIERGE_CALL",
+				"19" => "LOCKER_CONTROL"
+			), //8 Door Entry System
+			"25" => array(
+				"TYPE" => "SCENE",
+				"11" => "ACTION",
+				"16" => "STOP_ACTION",
+				"17_" => "ACTION_FOR_TIME",
+				"18_" => "ACTION_IN_TIME",
+				"19_" => "INFO_SCENE_OFF"
+			), //25 Scenarios
+			"13" => array(
+				"TYPE" => "MANAGEMENT",
+				"23_" => "CLOCK_SYNCHRONISATION",
+				"24_" => "LOW_BATTERY",
+				"DIMENSION" => array(
+					"22" => "READ_CLOCK_TIME_PARAMETER",
+					"22_" => "INDICATION_CLOCK_TIME_PARAMETER",
+					"#22_" => "SET_CLOCK_TIME_PARAMETER"
+				)
+			), //13 Management
+			"14" => array(
+				"TYPE" => "SPECIAL_COMMAND",
+				"0_" => "OVERRIDE_FOR_TIME",
+				"1" => "END_OF_OVERRIDE"
+			), //14 Special commands
+			"1000" => array(
+				"TYPE" => "CONFIGURATION",
+				"61_" => "OPEN_LEARNING",
+				"62" => "CLOSE_LEARNING",
+				"63_" => "ADDRESS_ERASE",
+				"64" => "MEMORY_RESET",
+				"65" => "MEMORY_FULL",
+				"66" => "MEMORY_READ",
+				"72" => "VALID_ACTION",
+				"73" => "INVALID_ACTION",
+				"68" => "CANCEL_ID",
+				"69_" => "MANAGEMENT_CLOCK_SYNCHRONISATION",
+				"70_" => "OCCUPIED",
+				"71_" => "UNOCCUPIED",
+				"DIMENSION" => array(
+					"13" => "ANNOUNCE_ID",
+					"51" => "DEVICE_DESCRIPTION_REQUEST",
+					"51_" => "DEVICE_DESCRIPTION_STATUS",
+					"13_" => "REQUEST_ID",
+					"53_" => "EXTENDED_MEMORY_DATA",
+					"56_" => "MEMORY_DEPTH_INDICATION",
+					"52_" => "MEMORY_DATA",
+					"55" => "UNIT_DESCRIPTION_REQUEST",
+					"55_" => "UNIT_DESCRIPTION_STATUS",
+					"#54_" => "MEMORY_WRITE",
+					"#57_" => "SET_COMMUNICATION_PARAMETER"
+				)
+			)
 	);
 }
 

@@ -57,6 +57,9 @@ class boxio_client {
 	// PARAMS : $res=object mysqli::result
 	*/
 	private function free_mysqli($res) {
+		if ($res == null || !isset($res)) {
+			return;
+		}
 		$res->free();
 		while($this->mysqli->more_results()){
 			$this->mysqli->next_result();
@@ -66,6 +69,33 @@ class boxio_client {
 		}
 	}
 
+	/*
+	 * FONCTION : DECODE ENTITY HTML
+	*/
+	private function html_entity_decode_numeric($string, $quote_style = ENT_COMPAT, $charset = "utf-8")
+	{
+		$string = html_entity_decode($string, $quote_style, $charset);
+		$string = preg_replace_callback('~&#x([0-9a-fA-F]+);~i', function ($matches) {
+			$num = hexdec($matches[1]);
+			if ($num < 128) return chr($num);
+			if ($num < 2048) return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+			if ($num < 65536) return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+			if ($num < 2097152) return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+			return '';
+		}
+			, $string);
+	
+			$string = preg_replace_callback('~&#([0-9]+);~', function($matches) {
+				$num = $matches[1];
+				if ($num < 128) return chr($num);
+				if ($num < 2048) return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+				if ($num < 65536) return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+				if ($num < 2097152) return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+				return '';
+			}, $string);
+			return $string;
+	}
+	
 	/*
 	 // FONCTION : TRANSFORMATION DES PARAMS GET EN REQUETE MYSQLI POUR WHERE/ORDER/LIMIT
 	  // PARAMS : $limit=boolean $order=boolean
@@ -550,24 +580,27 @@ class boxio_client {
 
 	/*
 	// FONCTION : ENVOIE D'UNE ACTION DIVERSE (TRAME OU FAVORIS OU MACROS) IOBL SUR LE CPL
-	// PARAM : $command=string(trame|favoris|macros), $type=string(trame|favoris|macros)|default(trame), $date=timestamp, $delay=int(secondes)
+	// PARAM : $command=$type=string(trame|favoris|macros)|default(trame), string(trame|favoris|macros), $date=timestamp, $delay=int(secondes)
 	// RETOURNE : UN FICHIER XML
 	*/
-	public function send_command($command, $type, $date=NULL, $delay=NULL) {
+	public function send_command($type, $command, $date=NULL, $delay=NULL) {
 		if ($delay === NULL) {
 			$delay = 'NULL';
+		}
+		if ($date === NULL) {
+			$date = 'NULL';
 		}
 		if ($type == "trame") {
 			$this->send_trame($command, $date);
 			return;
 		} else if ($type == "favoris") {
-			if ($date !== NULL) {
+			if ($date != 'NULL') {
 				$date = "'".$date."'";
 			}
 			$res = $this->mysqli->query("CALL send_favoris('".$command."', ".$date.", ".$delay.")") ;
-			$function = "CALL send_favoris('".$command."')";
+			$function = "CALL send_favoris('".$command."', ".$date.", ".$delay.")";
 		} else if ($type == "macros") {
-			if ($date !== NULL) {
+			if ($date != 'NULL') {
 				$date = "'".$date."'";
 			}
 			$res = $this->mysqli->query("CALL send_macro('".$command."', ".$date.", ".$delay.")") ;
@@ -1305,7 +1338,7 @@ class boxio_client {
 			} else {
 				$delay = urldecode($_GET['delay']);
 			}
-			$this->send_command($_GET['send_command'], $type, $date, $delay);
+			$this->send_command($type, $_GET['send_command'], $date, $delay);
 		}
 		if (isset($_GET['check_memory_db'])) {
 			$this->check_memory_db($_GET['check_memory_db']);

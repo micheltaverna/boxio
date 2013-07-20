@@ -2,11 +2,14 @@
 
 class boxio_conf {
 
+	//DEBUG
+	public $DEBUG_LEVEL = 0; // Active le debugage dans les logs avec 0 => Aucun debug et 5 => le plus haut niveau d'inforamtion
+	
 	//DEFINITION DU PROXY SERVER
 	public $SERVER_HOST = '127.0.0.1';
 	//public $SERVER_DEFAULT_PORTS = 	array('5331', '5332', '5333', '5334');//LISTE DES PORTS A TESTER
 	public $SERVER_PORT = '2000'; //PERMET DE FORCER L'OUVERTURE D'UN PORT
-	public $SOCKET_TIMEOUT = 100000;
+	public $SOCKET_TIMEOUT = 200000;
 
 	//DEFINITION DU SERVEUR MYSQL
 	public $MYSQL_HOST = 'localhost';
