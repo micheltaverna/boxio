@@ -236,7 +236,19 @@ class secure {
 		$this->conf = new boxio_conf();
 		$this->init_mysql();
 		
-		//@TODO: Test si db vide pour supprimmer l'authentification
+		//Test si appel en local pour supprimmer l'authentification
+		if ($_SERVER["REMOTE_ADDR"] == '127.0.0.1' 
+				|| $_SERVER["REMOTE_ADDR"] == 'localhost' 
+				|| $_SERVER["REMOTE_ADDR"] == $_SERVER["SERVER_ADDR"]) {
+			$this->connected = true;
+			$this->login = null;
+			$this->password = null;
+			$this->error = null;
+			$this->timeout = null;
+			return;
+		}
+		
+		//Test si db vide pour supprimmer l'authentification
 		if ($stmt = $this->mysqli->prepare("SELECT login FROM users")) {
 			$stmt->execute(); // Execute the prepared query.
 			$stmt->store_result();
