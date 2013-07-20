@@ -190,12 +190,12 @@ new Ext.toolbar.Toolbar({
 			icon: 'imgs/target_32x32.png',
 			arrowAlign:'bottom',
 			handler: function() {
-				openTrigger();
+				triggers.func.panelList();
 			},
 			menu: [{
-				text: 'Créer un déclencheur',
+				text: 'Créer un Déclencheur',
 				handler: function() {
-					openTrigger();
+					triggers.win.add();
 				}
 			}]
 		}]

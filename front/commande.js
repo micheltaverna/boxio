@@ -204,6 +204,7 @@ var createCommande = function(action) {
 			xtype: 'datefield',
 			flex: 2,
 			name: 'date',
+			format: 'd/m/Y',
 			fieldLabel: 'Date d\'envoie',
 			value: new Date(),
 			msgTarget: 'side',
@@ -262,7 +263,7 @@ var createCommande = function(action) {
 						var params = formValues.param.split(',');
 						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
 						trame = InOne.ownManager_starsharp_to_YZ(trame);
-						var dateFormat=Ext.util.Format.date(formValues.date, 'Y-m-d');
+						var dateFormat=Ext.util.Format.date(Ext.Date.parse(formValues.date, "d/m/Y"), 'Y-m-d');
 						dateFormat=dateFormat+' '+formValues.hours+':'+formValues.minutes+':'+formValues.secondes;
 						sendCommand('trame', trame, dateFormat, 0);
 					}

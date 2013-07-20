@@ -354,4 +354,14 @@ a:hover.buttonTpl{
 	text-indent:20px;
 	display:block;
 }
+.start{
+	background:url(imgs/gears.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
+.stop{
+	background:url(imgs/stop.png) no-repeat 0px;
+	text-indent:20px;
+	display:block;
+}
 

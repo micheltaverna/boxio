@@ -47,14 +47,14 @@ function login() {
 				    }],
 				    buttons: [{
 						text: 'Connexion',
-						id: 'winLoginBtnConnect',
-						handler: function() {
-							login.func.validateLogin(callback);
-						}
+						id: 'winLoginBtnConnect'
 					}]
 				});
 			}
 			winLogin.show();
+			Ext.getCmp('winLoginBtnConnect').setHandler(function() {
+				login.func.validateLogin(callback);
+			});
 			Ext.getCmp('formLogin').getForm().reset();
 		}
 	};
