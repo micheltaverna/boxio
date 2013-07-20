@@ -2,8 +2,18 @@
 <html>
     <head>
         <meta charset="UTF-8">
-
-		<!-- LISTE DES FICHIERS EXTJS -->
+	
+		<!-- FORCE LES GRIDS MULTILINE -->
+		<style type="text/css">
+		    .x-grid-row .x-grid-cell-inner {
+		        white-space: normal;
+		    }
+		    .x-grid-row-over .x-grid-cell-inner {
+		        font-weight: bold;
+		        white-space: normal;
+		    }
+		</style>
+   		<!-- LISTE DES FICHIERS EXTJS -->
         <link rel="stylesheet" type="text/css" href="ext-4.1.1a/resources/css/ext-all.css">
         <script type="text/javascript" src="ext-4.1.1a/ext-all-debug-w-comments.js"></script>
 

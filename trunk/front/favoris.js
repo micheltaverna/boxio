@@ -44,9 +44,11 @@ function favoris() {
 				            if (selections.length) {
 				                Ext.getCmp('favorisToolbarBtnDel').enable();
 				                Ext.getCmp('favorisToolbarBtnMod').enable();
+				                Ext.getCmp('favorisToolbarBtnStart').enable();
 				            } else {
 				                Ext.getCmp('favorisToolbarBtnDel').disable();
 				                Ext.getCmp('favorisToolbarBtnMod').disable();
+				                Ext.getCmp('favorisToolbarBtnStart').disable();
 				            }
 				        }
 					}
@@ -75,6 +77,13 @@ function favoris() {
 					    xtype:'actioncolumn', tooltip:'Opération sur le favoris',
 						text: 'Action', width: 70,
 					    items: [{
+					        icon: 'imgs/gears.png',
+					        tooltip: 'Démarrer',
+					        handler: function(grid, rowIndex, colIndex) {
+					            var rec = grid.getStore().getAt(rowIndex);
+					            favoris.func.start(rec);
+					        }
+					    },{
 					        icon: 'imgs/edit.png',
 					        tooltip: 'Editer',
 					        handler: function(grid, rowIndex, colIndex) {
@@ -94,6 +103,16 @@ function favoris() {
 				dockedItems: [{
 		            xtype: 'toolbar',
 		            items: [{
+		                    	id:'favorisToolbarBtnStart',
+		                    	icon: 'imgs/gears.png',
+		                        text: 'Démarer',
+		                        tooltip:'Démarrer le favoris',
+		                        disabled: true,
+		                        handler: function(widget, event) {
+		                        	var rec = Ext.getCmp('panelFavoris').getSelectionModel().getSelection()[0];
+		                        	favoris.func.start(rec);
+		                        }
+		                    },{
 		                    	id:'favorisToolbarBtnAdd',
 		                    	icon: 'imgs/add.png',
 		                        text: 'Ajouter',
@@ -235,6 +254,7 @@ function favoris() {
 			var form = Ext.getCmp('formAddFavoris').getForm(),
 			encode = Ext.String.htmlEncode;
 			if (form.isValid()) {
+		        Ext.getCmp('favorisFormRefNom').enable(true);
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
 				var trame = encode(formValues.trame);
@@ -286,7 +306,30 @@ function favoris() {
 			    });
 			}
 		},
-	
+
+		start: function(rec) {
+			if (rec) {
+			    var id = rec.get('id');
+			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment démarrer le favoris <b>"'+rec.get('nom')+'"</b> ?', function(btn) {
+			    	if (btn == 'yes') {
+			            requestCall('send_favoris', id+", NULL, NULL", {ok:'favoris démarré !', error:'impossible de démarré le favoris !'}, {
+			            	onsuccess:function(response){
+		    					Ext.data.StoreManager.lookup('DataFavoris').reload();		            			
+		            		},
+			            	onfailure:function(response){
+								Ext.MessageBox.show({
+									title: 'Erreur',
+									msg: 'Le favoris "'+formValues.nom+'" na pas pu être démarré ! Erreur de communication, réessayez plus tard.',
+									buttons: Ext.MessageBox.OK,
+									icon: Ext.MessageBox.ERROR
+								});
+			            	}
+			            });
+			    	}
+			    });
+			}
+		},
+
 		panelList: function() {
 			if (Ext.getCmp('panelFavoris')) {
 				Ext.data.StoreManager.lookup('DataFavoris').reload();

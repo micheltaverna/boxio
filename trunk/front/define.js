@@ -226,6 +226,26 @@ Ext.define('favoris',{
 });
 
 /**
+ * Definition des triggers
+ */
+Ext.define('triggers',{
+	extend: 'Ext.data.Model',
+	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+		{name: 'id', type: 'int'}, 
+		{name: 'nom', type: 'string'}, 
+		{name: 'triggers', type: 'string'}, 
+		{name: 'conditions', type: 'string'},
+		{name: 'actions', type: 'string'}, 
+		{name: 'active', type: 'int'}
+	]
+});
+
+/**
  * Definition des zones
  */
 Ext.define('zones',{
@@ -454,12 +474,15 @@ Ext.define('cron',{
 				if (mois.match(/[-,]/) == -1 || mois.match(/[-,]/) == null) {
 					mois = ' seulement <span class="result_cell_horodatage">en '+mois+'</span>.';
 				} else {
-					mois = mois.replace('-', ' à ');
-					mois = mois.replace(',', ' et de ');
+					mois = mois.replace(/-/g, ' à ');
+					mois = mois.replace(/,/g, ' et de ');
 					mois = ' seulement <span class="result_cell_horodatage">les mois de '+mois+'</span>.';
 				}
+				mois = mois.replace('10', ' octobre');
+				mois = mois.replace('11', ' novembre');
+				mois = mois.replace('12', ' décembre');
 				mois = mois.replace('1', ' janvier');
-				mois = mois.replace('2', ' févreier');
+				mois = mois.replace('2', ' février');
 				mois = mois.replace('3', ' mars');
 				mois = mois.replace('4', ' avril');
 				mois = mois.replace('5', ' mais');
@@ -467,9 +490,6 @@ Ext.define('cron',{
 				mois = mois.replace('7', ' juillet');
 				mois = mois.replace('8', ' août');
 				mois = mois.replace('9', ' septembre');
-				mois = mois.replace('10', ' octobre');
-				mois = mois.replace('11', ' novembre');
-				mois = mois.replace('12', ' décembre');
 			}
             return ('<div style="white-space:normal !important;">'+minutes+heures+jour+jourSemaine+mois+'</div>');
 		}},

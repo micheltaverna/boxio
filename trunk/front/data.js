@@ -300,6 +300,40 @@ new Ext.data.Store({
 });
 
 /**
+ * Gestion des triggers
+ */
+new Ext.data.Store({
+	storeId: 'DataTriggers',
+	model: 'triggers',
+	pageSize: 20,
+	remoteSort: true,
+	autoLoad: false,
+	listeners: {
+		load: function(t, data) {
+			if (data[0] && data[0].get('login_status') === 'false') {
+				callback = {
+					onSucess : function () {
+						t.reload();
+					}
+				};
+				login.win.login(callback);
+			}
+		}
+	},
+	proxy: {
+		type: 'ajax',
+		url: '../back/client.php?view=view_triggers',
+		reader: {
+			type: 'xml',
+			record: 'module',
+			root: 'content',
+			totalRecords: 'total'
+		},
+		simpleSortMode: true
+	}
+});
+
+/**
  * Gestion des equipements inconnu
  */
 new Ext.data.Store({

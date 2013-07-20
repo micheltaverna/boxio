@@ -108,7 +108,7 @@ function status() {
 	};
 	
 	this.win = {
-		upd: function() {
+		upd: function(rec) {
 			var winStatus = Ext.getCmp('winStatus');
 			if (!winStatus) {
 				winStatus = Ext.create('Ext.window.Window', {
@@ -130,14 +130,18 @@ function status() {
 					},{
 						text: 'Enregistrer',
 						id: 'winStatusBtnSave',
-						handler: function() {
-							status.func.validateUpd();
-						}
 					}]
 				});
 			}
 			winStatus.show();
-			Ext.getCmp('formUpdStatus').getForm().reset();
+	        var form = Ext.getCmp('formUpdStatus').getForm();
+			form.reset();
+	        form.setValues({
+	        	server_opt:rec.get('server_opt')
+	        });
+			Ext.getCmp('winStatusBtnSave').setHandler(function() {
+				status.func.validateUpd(rec);
+			});
 		}
 	};
 	
@@ -151,10 +155,22 @@ function status() {
 			},
 			items: [{
 				xtype: 'textfield',
-				name: 'opt',
+				name: 'server_opt',
 				fieldLabel: 'Options',
 				msgTarget: 'side',
-				allowBlank: false
+				allowBlank: true
+			},{
+				xtype: 'panel',
+				html: '<i>Le format d\'un paramêtre est "nom_parametre=valeur1,valeur2,etc"<br>\
+					Les paramêtres doivent être séparés par des ";"</i><br><br>\
+					<u><b>Liste des paramètres possibles :</b></u> <br>\
+					<ul>\
+					<li>Pour les Volets CPL et RF => "move_time=x" ou x respresente le temps en secondes pour l\'ouverture complète d\'un volet</li>\
+					<li>Pour l\'interface SOMFY => "grp_opt=x,x,x" ou x représente la liste des unités regroupés sur l\'unité en cours</li>\
+					<li>Pour toutes les unités CPL avec en possibiliy le mode STATUS => "upd_time=x" ou x représente l\'interval en secondes pour chaque mise à jour</li>\
+					<li>Pour les inters CPL et RF => "mode=x" ou x est un des modes suivants poussoir ou inter</li>\
+					<li>Pour les inters CPL et RF => "timer=x" ou x représente le nombre de secondes pour le changement d\'état du timer</li>\
+					</ul>'
 			}]
 		}	
 	};
@@ -171,6 +187,41 @@ function status() {
 		},
 		
 		validateUpd: function(rec) {
+			var form = Ext.getCmp('formUpdStatus').getForm(),
+			encode = Ext.String.htmlEncode;
+			if (form.isValid()) {
+				var formValues = form.getValues();
+				//Creation de l'envoie
+				var id_legrand = rec.get('id_legrand');
+				var unit = rec.get('unit');
+				var server_opt = 'NULL';
+				if (formValues.server_opt != '') {
+					server_opt = "'"+encode(formValues.server_opt)+"'";
+				}
+				var params = id_legrand+","+unit+","+server_opt+"";
+				requestCall('upd_equipements_status', params, {ok:'équipement modifié !', error:'impossible de modifier l\'équipement !'}, {
+					onsuccess:function(response){
+						Ext.getCmp('formUpdStatus').getForm().reset();
+						Ext.getCmp('winStatus').close();
+						Ext.data.StoreManager.lookup('DataEquipementsStatus').reload();
+	            	},
+	            	onfailure:function(response){
+						Ext.MessageBox.show({
+							title: 'Erreur',
+							msg: 'L\'équipement "'+formValues.nom+'" na pas pu être modifié ! Erreur de communication, réessayez plus tard.',
+							buttons: Ext.MessageBox.OK,
+							icon: Ext.MessageBox.ERROR
+						});
+	            	}
+	            });
+			} else {
+	        	Ext.MessageBox.show({
+					title: 'Erreur',
+					msg: 'Les champs ne sont pas valides !',
+					buttons: Ext.MessageBox.OK,
+					icon: Ext.MessageBox.ERROR
+				});
+			}
 		}
 	};
 };

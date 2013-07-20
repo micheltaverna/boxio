@@ -100,7 +100,8 @@ function macros() {
 				        groupHeaderTpl: [
 				        	'{columnName}: {name} ({rows.length} commande{[values.rows.length > 1 ? "s" : ""]})'+
 			        	    '<span> - <a href="#" class="buttonTpl" onclick="{rows:this.formatClickEdit}"><span class="edit">Editer</span></a></span>\
-				        	&nbsp;&nbsp;<a href="#" class="buttonTpl" onclick="{rows:this.formatClickDelete}"><span class="delete">Effacer</span></a></span>',
+				        	&nbsp;&nbsp;<a href="#" class="buttonTpl" onclick="{rows:this.formatClickDelete}"><span class="delete">Effacer</span></a></span>\
+				        	&nbsp;&nbsp;<a href="#" class="buttonTpl" onclick="{rows:this.formatClickStart}"><span class="start">Démarrer</span></a></span>',
 			        	    {
 				        		formatClickEdit: function (rows) {
 				        			var id_macro = rows[0].data.id_macro;
@@ -114,6 +115,14 @@ function macros() {
 				        			var nom = rows[0].data.nom;
 				        			return "\
 				        			macros.func.delMacro('"+id_macro+"', '"+nom+"');\
+				        			";
+				        			return;
+				        		},
+				        		formatClickStart: function (rows) {
+				        			var id_macro = rows[0].data.id_macro;
+				        			var nom = rows[0].data.nom;
+				        			return "\
+				        			macros.func.startMacro('"+id_macro+"', '"+nom+"');\
 				        			";
 				        			return;
 				        		}
@@ -693,7 +702,29 @@ function macros() {
 			    });
 			}
 		},
-		
+
+		startMacro: function(id_macro, nom) {
+			if (id_macro) {
+			    Ext.MessageBox.confirm('Confirm', 'Voulez vous vraiment démarrer la macro <b>"'+nom+'"</b> ?', function(btn) {
+			    	if (btn == 'yes') {
+			            requestCall('send_macro', id_macro+", NULL, NULL", {ok:'macro démarrée !', error:'impossible de démarrer la macro !'}, {
+			            	onsuccess:function(response){
+		    					Ext.data.StoreManager.lookup('DataMacros').reload();		            			
+		            		},
+			            	onfailure:function(response){
+								Ext.MessageBox.show({
+									title: 'Erreur',
+									msg: 'La macro "'+formValues.nom+'" na pas pu être démarrée ! Erreur de communication, réessayez plus tard.',
+									buttons: Ext.MessageBox.OK,
+									icon: Ext.MessageBox.ERROR
+								});
+			            	}
+			            });
+			    	}
+			    });
+			}
+		},
+
 		delCommand: function(rec) {
 			if (rec) {
 			    var id_command = rec.get('id_command');
