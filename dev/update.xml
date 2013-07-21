@@ -20,7 +20,7 @@
 	</version>
 	<version>
 		<name>Beta 1.3</name>
-		<release>2013-07-21 13:40:24</release>
+		<release>2013-07-21 13:10:24</release>
 		<valide>true</valide>
 		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_3.tgz</path>
 	</version>
