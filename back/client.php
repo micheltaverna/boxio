@@ -681,7 +681,7 @@ class boxio_client {
 				$res_status = 'Boxio est a jour, version : '.$local_version['name'];
 				$new_release = false;
 				foreach ($distant_version as $version) {
-					if (strtotime($version->release) > strtotime($local_version['release'])) {
+					if (strtotime($version->release) > strtotime($local_version['release']) && $version->valide == 'true') {
 						$new_release = true;
 						$res_status = 'Nouvelle mise a jour disponible, version : '.$version->name;
 						$ret_status = false;
