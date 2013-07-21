@@ -3,9 +3,9 @@
 </head>
 
 <body>
-<p><em>Les déclencheurs analyse en continue les trames qui circulent et si une trame conrespond à un <strong>&quot;Déclencheurs&quot;</strong> et que les <strong>&quot;Conditions&quot;</strong> sont valides
-alors les <strong>&quot;Actions</strong>&quot; vont être exécutée. </em></p>
-<p><em>La liste des paramètres possibles sont détaillés ci-dessous. </em></p>
+<p><em>Les déclencheurs analyse en continue les trames qui circulent et si une trame conrespond à un des <strong>&quot;Déclencheurs&quot;</strong> et que les <strong>&quot;Conditions&quot;</strong> sont valides
+alors les <strong>&quot;Actions</strong>&quot; vont être exécutées. </em></p>
+<p><em>La liste des paramètres possibles est détaillée ci-dessous: </em></p>
 <h3><u>Déclencheurs :</u></h3>
 <table width="810" border="1">
   <tr>
