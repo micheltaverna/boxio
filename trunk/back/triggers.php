@@ -89,7 +89,7 @@ class triggers {
 		}
 	}
 	
-	private function checkAction($action) {
+	public function checkAction($action) {
 		//Transformation des OR et AND
 		$andor_pattern = array('/[\s\t\r]+AND[\s\t\r]+/','/[\s\t\r]+OR[\s\t\r]+/i');
 		$andor_replace = array(' && ',' || ');
@@ -136,7 +136,7 @@ class triggers {
 		}
 	}
 	
-	private function checkCondition($condition, $status) {
+	public function checkCondition($condition, $status) {
 		//Si pas de condition c'est bon !
 		if ($condition == '' || $condition == NULL) {
 			return true;
@@ -216,7 +216,10 @@ class triggers {
 					return implode(',',range($matches['start'], $matches['end']));
 				}, $search_status['unit']);
 				$search_unit = explode(',', $search_unit);
-				$search_state = explode(',', $search_status['status']);
+				$search_state = preg_replace_callback('/(?P<start>\d+)-(?P<end>\d+)/', function($matches) {
+					return implode(',',range($matches['start'], $matches['end']));
+				}, $search_status['status']);
+				$search_state = explode(',', $search_state);
 				foreach($status as $elem) {
 					if ((in_array($elem['id'], $search_id) || $search_id=='*')
 						&& (in_array($elem['unit'], $search_unit) || $search_unit=='*')

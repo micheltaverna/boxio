@@ -342,7 +342,7 @@ class boxio_server {
 	// RETOURNE : LA VALEUR EN POURCENTAGE
 	*/
 	private function calc_iobl_to_temp($iobl_value1, $iobl_value2) {
-		//TODO : VERIFIER LE FONCTIONNEMENT DES TEMPERATURE NEGATIVE (SI POSSIBLE) ????
+		//TODO : Corriger pour les valeur negative, algo = 
 		$value = ($iobl_value1*256)+$iobl_value2;
 		return $value;
 	}
@@ -1312,6 +1312,11 @@ class boxio_server {
 				$this->updateStatus($decrypt_trame);
 				if ($this->conf->DEBUG_LEVEL > 2) {
 					print date("Y-m-d H:i:s")."-Update Status\n";
+				}
+				//Analise des triggers
+				$this->checkTriggers($decrypt_trame);
+				if ($this->conf->DEBUG_LEVEL > 2) {
+					print date("Y-m-d H:i:s")."-Check Triggers\n";
 				}
 				$this->save_trame($decrypt_trame, 'SET');
 				if ($this->conf->DEBUG_LEVEL > 2) {
