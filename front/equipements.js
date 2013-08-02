@@ -595,7 +595,9 @@ function equipements() {
 									} else if (val == '5') {
 										ret = 'AUTOMATIQUE';
 									} else if (val == '0') {
-										ret = 'SONDE';
+										ret = 'SONDE_1';
+									} else if (val == '240') {
+										ret = 'SONDE_2';
 									}
 								}
 								return ret+' <span style="font-style:italic;">('+val+')</span>';
