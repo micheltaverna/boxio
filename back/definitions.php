@@ -77,7 +77,8 @@ class boxio_def {
 					"ECO" => "/^7$/",
 					"HORS_GEL" => "/^8$/",
 					"AUTOMATIQUE" => "/^5$/",
-					"SONDE" => "/^0$/"
+					"SONDE1" => "/^0$/",
+					"SONDE2" => "/^240$/",
 			)
 	);
 
