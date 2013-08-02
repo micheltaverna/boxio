@@ -20,6 +20,18 @@ function favoris() {
 				fieldLabel: 'Trame',
 				msgTarget: 'side',
 				allowBlank: false
+			},{
+				xtype: 'textarea',
+				name: 'conditions',
+				fieldLabel: 'Conditions',
+				msgTarget: 'side',
+				allowBlank: true
+			},{
+				xtype: 'textarea',
+				name: 'actions',
+				fieldLabel: 'Actions',
+				msgTarget: 'side',
+				allowBlank: true
 			}]
 		}
 	};
@@ -73,6 +85,8 @@ function favoris() {
 						type: 'string'
 					}, tooltip: 'Nom du Favoris'}, 
 					{text: 'Trame', dataIndex: 'trame', width: 131, tooltip: 'Trame à éxecuter'},
+					{text: 'Conditions', dataIndex: 'conditions', width: 131, tooltip: 'conditions à vérifier'},
+					{text: 'Actions', dataIndex: 'actions', width: 131, tooltip: 'actions à éxecuter'},
 					{
 					    xtype:'actioncolumn', tooltip:'Opération sur le favoris',
 						text: 'Action', width: 70,
@@ -223,7 +237,9 @@ function favoris() {
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
 				var trame = encode(formValues.trame);
-				var params = "'"+nom+"','"+trame+"'";
+				var conditions = encode(formValues.conditions);
+				var actions = encode(formValues.actions);
+				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"'";
 				requestCall('add_favoris', params, {ok:'favoris ajouté !', error:'impossible d\'ajouter le favoris !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddFavoris').getForm().reset();
@@ -258,7 +274,9 @@ function favoris() {
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
 				var trame = encode(formValues.trame);
-				var params = "'"+nom+"','"+trame+"'";
+				var conditions = encode(formValues.conditions);
+				var actions = encode(formValues.actions);
+				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"'";
 				requestCall('add_favoris', params, {ok:'favoris modifié !', error:'impossible de modifier le favoris !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddFavoris').getForm().reset();

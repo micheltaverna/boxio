@@ -221,7 +221,9 @@ Ext.define('favoris',{
 		//Definition
 		{name: 'id', type: 'int'}, 
 		{name: 'nom', type: 'string'}, 
-		{name: 'trame', type: 'string'}
+		{name: 'trame', type: 'string'},
+		{name: 'conditions', type: 'string'},
+		{name: 'actions', type: 'string'}
 	]
 });
 
