@@ -365,7 +365,9 @@ class boxio_client {
 		$tag_request = $this->xml->createElement('request');
 		//Creation de l'elem function
 		$attr_request = $this->xml->createAttribute('function');
-		$attr_request->value = "CALL send_trame('".$trame."', ".$date.", ".$delay.")";
+		//@TODO : Gérer le bug avec les parametres lors du JSONIFY
+		//$attr_request->value = "CALL send_trame('".$trame."', ".$date.", ".$delay.")";
+		$attr_request->value = "CALL send_trame()";
 		$tag_request->appendChild($attr_request);
 		//Creation de l'elem return
 		$attr_return = $this->xml->createAttribute('status');
@@ -939,6 +941,7 @@ class boxio_client {
 					$res = $this->mysqli->query("CALL send_trame('*1000*66*$own_id##', NULL, NULL)");
 					$this->free_mysqli($res);
 					sleep($reponse_time);
+					//$reponse_time += $reponse_time;
 					$res = $this->mysqli->query($query);
 					while ($trames = $res->fetch_assoc()) {
 						$param = $this->get_params($trames['dimension'], $trames['param'], 'array');
@@ -971,20 +974,25 @@ class boxio_client {
 				}
 			}
 			//Requetage et preparation des resultats des scenarios en DB
-			$query = "SELECT equipements.nom As nom, zones.nom AS zone, family AS family FROM equipements
+			$query = "SELECT equipements.nom As nom, zones.nom AS zone, family AS family, boxio.references.function_code AS function_code, boxio.references.unit_code AS unit_code 
+						FROM equipements
 						LEFT JOIN zones ON equipements.id_legrand = zones.id_legrand
 						LEFT JOIN boxio.references ON equipements.ref_legrand = boxio.references.ref_legrand
-						WHERE equipements.id_legrand = '$id' GROUP BY nom;";
+						WHERE equipements.id_legrand = '$id' AND boxio.references.unit = '$unit' GROUP BY nom;";
 			$res = $this->mysqli->query($query);
 			if ($res) {
 				$trame = $res->fetch_assoc();
 				$nom = $trame['nom'];
 				$zone = $trame['zone'];
 				$family = $trame['family'];
+				$unit_code = $trame['unit_code'];
+				$function_code = $trame['function_code'];
 			} else {
 				$nom = 'UNKNOWN';
 				$zone = 'UNKNOWN';
 				$family = 'UNKNOWN';
+				$unit_code = 'UNKNOWN';
+				$function_code = 'UNKNOWN';
 			}
 			$query = "SELECT id_legrand_listen,unit_listen,value_listen,media_listen FROM boxio.scenarios WHERE id_legrand='$id' AND unit='$unit';";
 			$res = $this->mysqli->query($query);
@@ -1005,6 +1013,8 @@ class boxio_client {
 							$memory[$key]['nom'] = $nom;
 							$memory[$key]['zone'] = $zone;
 							$memory[$key]['family'] = $family;
+							$memory[$key]['function_code'] = $function_code;
+							$memory[$key]['unit_code'] = $unit_code;
 							break;
 						}
 					}
@@ -1021,6 +1031,8 @@ class boxio_client {
 						$memory['db_'.$i]['nom'] = $nom;
 						$memory['db_'.$i]['zone'] = $zone;
 						$memory['db_'.$i]['family'] = $family;
+						$memory['db_'.$i]['function_code'] = $function_code;
+						$memory['db_'.$i]['unit_code'] = $unit_code;
 						$i++;
 					}
 				}
@@ -1277,19 +1289,19 @@ class boxio_client {
 		if (isset($_GET['user']) && isset($_GET['action'])) {
 			$action = $_GET['action'];
 			if ($action == 'add') {
-				$params = [
+				$params = array(
 					'login' => $_GET['new_login'],
 					'pHash512' => $_GET['new_password']
-				];
+				);
 			} else if ($action == 'upd') {
-				$params = [
+				$params = array(
 					'login' => $_GET['old_login'],
 					'pHash512' => $_GET['new_password']
-				];
+				);
 			} else if ($action == 'del') {
-				$params = [
+				$params = array(
 					'login' => $_GET['old_login']
-				];
+				);
 			}
 			$this->manage_user($action, $params);
 		}

@@ -247,6 +247,16 @@ class secure {
 			$this->timeout = null;
 			return;
 		}
+
+		//Test si IP valide pour supprimmer l'authentification
+		if (preg_match("/192\.168\.[\d]{1,3}\.[\d]{1,3}/", $_SERVER["REMOTE_ADDR"])) {
+			$this->connected = true;
+			$this->login = null;
+			$this->password = null;
+			$this->error = null;
+			$this->timeout = null;
+			return;
+		}
 		
 		//Test si db vide pour supprimmer l'authentification
 		if ($stmt = $this->mysqli->prepare("SELECT login FROM users")) {
@@ -261,7 +271,7 @@ class secure {
 				return;
 			}
 		}
-		
+				
 		//Init des sessions
 		$this->sec_session_start();
 
