@@ -471,8 +471,6 @@ function equipements() {
 		
 		equipementScenars: function(rec) {
 			var winEquipementScenars = Ext.getCmp('winEquipementScenars');
-			Ext.data.StoreManager.lookup('AllDataEquipements').load();
-			Ext.data.StoreManager.lookup('AllDataEquipementsStatus').load();
 			if (!winEquipementScenars) {
 				winEquipementScenars = Ext.create('Ext.window.Window', {
 					id: 'winEquipementScenars',
@@ -561,44 +559,16 @@ function equipements() {
 								return defineMedia[val]+' <span style="font-style:italic;">('+val+')</span>';
 							}},
 							{text: "Fonction", dataIndex: 'value_listen', tooltip:'Type d\'action programmé', width: 100, renderer: function(val, style, record) {
-								var ret = 'UNKNOWN';
-								var family = record.get('family');
-								if (family == 'LIGHTING') {
-									if (val == '101') {
-										ret = 'ON';
-									} else if (val == '102') {
-										ret = 'OFF';
-									} else if (val == '103') {
-										ret = 'ON_FORCED';
-									} else if (val == '104') {
-										ret = 'OFF_FORCED';
-									} else if (val == '105') {
-										ret = 'AUTO';
-									} else {
-										ret = 'DIM '+val+'%';
-									}
-								} else if (family == 'SHUTTER') {
-									if (val == '102') {
-										ret = 'MOVE_UP';
-									} else if (val == '103') {
-										ret = 'MOVE_DOWN';
-									} else if (val == '101') {
-										ret = 'STOP';
-									}
-								} else if (family == 'COMFORT') {
-									if (val == '6') {
-										ret = 'PRESENCE';
-									} else if (val == '7') {
-										ret = 'ECO';
-									} else if (val == '8') {
-										ret = 'HORS_GEL';
-									} else if (val == '5') {
-										ret = 'AUTOMATIQUE';
-									} else if (val == '0') {
-										ret = 'SONDE_1';
-									} else if (val == '240') {
-										ret = 'SONDE_2';
-									}
+								var DataReferencesMemory = Ext.getStore('DataReferencesMemory').getRange();
+								var ret = 'Inconnue';
+								if (record.data.unit_code != 'UNKNOWN') {
+									for (var num in DataReferencesMemory) {
+										if (DataReferencesMemory[num].data.value == parseInt(val)
+											&& DataReferencesMemory[num].data.unit_code == record.data.unit_code) {
+											ret = DataReferencesMemory[num].data.nom;
+											break;
+										}
+									}									
 								}
 								return ret+' <span style="font-style:italic;">('+val+')</span>';
 							}},
@@ -1070,37 +1040,47 @@ function equipements() {
 		},
 
 		updScenar: function(rec) {
+			Ext.data.StoreManager.lookup('AllDataEquipements').load();
+			Ext.data.StoreManager.lookup('AllDataEquipementsStatus').load();
 			if (rec) {
 			    var id = rec.get('id_legrand');
 			    equipements.win.equipementScenars(rec);
 				Ext.getCmp('gridScenario').setTitle(rec.get('nom') + ' - ' + rec.get('zone') + ' ('+rec.get('id_legrand')+')');
-			    var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
-			    ScenarStore.getProxy().url = '../back/client.php?check_memory_db='+id;
-			    ScenarStore.load({
-			    	callback: function (records, operation, success) {
-						var reg_erreur = /<erreur>(.*)<\/erreur>/i;
-						var erreur = reg_erreur.exec(operation.response.responseText);
-						var reg_info = /<information>(.*)<\/information>/i;
-						var info = reg_info.exec(operation.response.responseText);								
-						Ext.getCmp('winEquipementScenarsBtnAdd').enable();
-						if (erreur) {
-							Ext.getCmp('winEquipementScenarsBtnAdd').disable();
-							Ext.MessageBox.show({
-								title: 'Erreur',
-								msg: erreur[1],
-								buttons: Ext.MessageBox.OK,
-								icon: Ext.MessageBox.ERROR
-							});
-						} else if (info) {
-							Ext.MessageBox.show({
-								title: 'Information',
-								msg: info[1],
-								buttons: Ext.MessageBox.OK,
-								icon: Ext.MessageBox.INFO
-							});
-						}
-			        }
-                });
+				var winEquipementScenars = Ext.getCmp('winEquipementScenars');
+				var waiting = new Ext.LoadMask(winEquipementScenars, {msg:"Chargement..."});
+				waiting.show();
+				Ext.data.StoreManager.lookup('DataReferencesMemory').load({
+					callback: function(records, operation, success) {
+						waiting.hide();
+					    var ScenarStore = Ext.data.StoreManager.lookup('DataCheckScenarios');
+					    ScenarStore.getProxy().url = '../back/client.php?check_memory_db='+id;
+					    ScenarStore.load({
+					    	callback: function (records, operation, success) {
+								var reg_erreur = /<erreur>(.*)<\/erreur>/i;
+								var erreur = reg_erreur.exec(operation.response.responseText);
+								var reg_info = /<information>(.*)<\/information>/i;
+								var info = reg_info.exec(operation.response.responseText);								
+								Ext.getCmp('winEquipementScenarsBtnAdd').enable();
+								if (erreur) {
+									Ext.getCmp('winEquipementScenarsBtnAdd').disable();
+									Ext.MessageBox.show({
+										title: 'Erreur',
+										msg: erreur[1],
+										buttons: Ext.MessageBox.OK,
+										icon: Ext.MessageBox.ERROR
+									});
+								} else if (info) {
+									Ext.MessageBox.show({
+										title: 'Information',
+										msg: info[1],
+										buttons: Ext.MessageBox.OK,
+										icon: Ext.MessageBox.INFO
+									});
+								}
+					        }
+		                });
+					}
+				});
 			}
 		},
 
