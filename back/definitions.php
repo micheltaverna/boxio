@@ -94,6 +94,19 @@ class boxio_def {
 							)
 					)
 			),
+			"6" => array(
+					"DEFINITION" => array("consigne_confort","mode"),
+					"TYPE" => array ("CONFORT"),
+					"VALUE" => array (
+							"mode" => array(
+								"CONFORT" => "/^8$/",
+								"CONFORT-1" => "/^9$/",
+								"CONFORT-2" => "/^10$/",
+								"ECO" => "/^3$/",
+								"HORS_GEL" => "/^12$/"
+							)
+					)
+			),
 			"129" => array(
 					"DEFINITION" => array("inter","level"),
 					"TYPE" => array ("LIGHTING"),
@@ -150,6 +163,18 @@ class boxio_def {
 								"HORS_GEL" => "/^4$/",
 								"REDUIT" => "/^3$/",
 								"MANUEL" => "/^38$/"
+							)
+					)
+			),
+			"150" => array(
+					"DEFINITION" => array("consigne_confort","mode","unknown","unknown","unknown","unknown"),
+					"TYPE" => array ("CONFORT"),
+					"VALUE" => array (
+							"mode" => array(
+								"CONFORT_PRESENCE" => "/^2$/",
+								"AUTO" => "/^0$/",
+								"ECO_ABSENSE" => "/^16$/",
+								"HORS_GEL" => "/^17$/"
 							)
 					)
 			),

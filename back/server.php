@@ -342,7 +342,7 @@ class boxio_server {
 	// RETOURNE : LA VALEUR EN POURCENTAGE
 	*/
 	private function calc_iobl_to_temp($iobl_value1, $iobl_value2) {
-		//TODO : Corriger pour les valeur negative, algo = 
+		//TODO : Corriger pour les valeur negative 
 		$value = ($iobl_value1*256)+$iobl_value2;
 		return $value;
 	}
@@ -738,6 +738,26 @@ class boxio_server {
 				$this->waitingStatus[$id.$unit_status]['date'] = $date+$timer['seconds'];
 				$this->waitingStatus[$id.$unit_status]['status'] = 'LOW_FAN_SPEED';
 			}
+		//THERMOSTAT D'AMBIANCE EN DEROGATION_CONSIGNE
+		} else if ($decrypted_trame["value"] == 'DEROGATION_CONSIGNE' || $decrypted_trame["value"] == 'CONSIGNE') {
+			$value = $decrypted_trame["value"];
+			preg_match('/(?P<consigne>\d+)/', $decrypted_trame["param"], $param);
+			//on test si le status est trouve
+			if (isset($param['consigne'])) {
+				if ($param['consigne'] == '0') {
+					$status = 'CONFORT';
+				} else if ($param['consigne'] == '1') {
+					$status = 'CONFORT-1';
+				} else if ($param['consigne'] == '2') {
+					$status = 'CONFORT-2';
+				} else if ($param['consigne'] == '3') {
+					$status = 'ECO';
+				} else if ($param['consigne'] == '4') {
+					$status = 'HORS_GEL';
+				}
+			} else {
+				$status = 'CONFORT';
+			}
 		//ACTION INCONNU
 		} else {
 			return;
@@ -1055,6 +1075,17 @@ class boxio_server {
 						}
 					}
 					$status = $status_confort;
+				} else if ($definition[0] == 'consigne_confort') {
+					//Valeur par defaut
+					$mode = $params[array_search("mode", $definition)];
+					//On recherche la valeur
+					foreach ($value['mode'] as $command => $reg) {
+						if (preg_match($reg, $mode)) {
+							$mode = $command;
+							break;
+						}
+					}
+					$status = $mode;
 				} else if ($definition[0] == 'confort') {
 					//Valeur par defaut
 					$mode = $params[array_search("mode", $definition)];
@@ -1084,7 +1115,7 @@ class boxio_server {
 	}
 
 	/*
-	 // FONCTION : GESTION DE LA CRONTAB UTILISATEUR
+	 // FONCTION : GESTION DES TRIGGERS
 	*/
 	private function checkTriggers($trame) {
 		//Premiere appel on regarde en base les triggers 
@@ -1124,6 +1155,43 @@ class boxio_server {
 		$this->triggers->check($trame, $status);
 	}
 
+	/*
+	 // FONCTION : GESTION DES FAVORIS ET MACROS
+	 // TODO: Ajouter la gestion des macros
+	*/
+	private function checkConditionsActions() {
+		//Premiere appel on regarde en base les triggers 
+		if (!isset($this->triggers)) {
+			$this->triggers = new triggers();
+			$this->triggers->init($this->mysqli);
+		}
+		//On récupere les status en cours
+		$res = $this->mysqli->query("SELECT id_legrand AS id,unit,status FROM view_equipements_status");
+		$status = array();
+		while ($ln = $res->fetch_assoc()) {
+			array_push($status, $ln);
+		}
+		$res = $this->mysqli->query("SELECT ts.id AS id, ts.trame as trame, ts.id_favoris AS id_favoris, f.conditions AS conditions, f.actions AS actions 
+				FROM trame_standby AS ts 
+				LEFT JOIN favoris AS f ON ts.id_favoris=f.id 
+				WHERE ts.date <= NOW() AND ts.id_favoris IS NOT NULL ORDER BY ts.date ASC");
+		while ($conditionsActions_array = $res->fetch_assoc()) {
+			$conditions = $this->html_entity_decode_numeric($conditionsActions_array['conditions']);
+			$actions = $this->html_entity_decode_numeric($conditionsActions_array['actions']);
+			if ($this->triggers->checkCondition($conditions, $status) === false) {
+				continue;
+			}
+			if ($this->conf->DEBUG_LEVEL > 4) {
+				print("Tested Condition=>".$conditions."\n");
+			}
+				
+			$this->triggers->checkAction($actions);
+			if ($this->conf->DEBUG_LEVEL > 2) {
+				print("Tested Action=>".$actions."\n");
+			}
+		}
+	}
+	
 	/*
 	 // FONCTION : GESTION DE LA CRONTAB UTILISATEUR
 	*/
@@ -1278,13 +1346,18 @@ class boxio_server {
 			$this->cronTabUser();
 				
 			//ETAPE DE L'ENVOIE
+			//Analise des favoris et des macros
+			$this->checkConditionsActions();
 			//Analise et envoi des trames en attentes dans l'ordre des dates d'insertion
 			$res = $this->mysqli->query("SELECT id, trame FROM trame_standby WHERE date <= NOW() ORDER BY date ASC");
+			
 			$new_trames = array();
 			$del_trames = "";
 			$coma = "";
 			while ($trame_array = $res->fetch_assoc()) {
-				$new_trames[] = $trame_array['trame'];
+				if ($trame_array['trame'] != NULL) {
+					$new_trames[] = $trame_array['trame'];
+				}
 				$del_trames .= $coma." id='".$trame_array['id']."'";
 				$coma = " OR ";
 			}
@@ -1300,7 +1373,7 @@ class boxio_server {
 						}
 					}
 				}
-				
+								
 				//fputs($this->fd_socket, $set_trame);
 				if ($this->conf->DEBUG_LEVEL > 2) {
 					print date("Y-m-d H:i:s")."-Send Trame => ".$set_trame."\n";
