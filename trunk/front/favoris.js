@@ -19,7 +19,7 @@ function favoris() {
 				name: 'trame',
 				fieldLabel: 'Trame',
 				msgTarget: 'side',
-				allowBlank: false
+				allowBlank: true
 			},{
 				xtype: 'textarea',
 				name: 'conditions',
@@ -224,7 +224,9 @@ function favoris() {
 			});
 	        form.setValues({
 	        	nom:rec.get('nom'),
-	        	trame:rec.get('trame')
+	        	trame:rec.get('trame'),
+	        	conditions:rec.get('conditions'),
+	        	actions:rec.get('actions')
 	        });
 		}
 	};

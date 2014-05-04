@@ -205,7 +205,7 @@ function triggers() {
 					icon: 'imgs/information.png',
 				    closeAction: 'close',
 				    width: 800,
-				    height: 1000,
+				    height: 500,
 				    title:'Aide sur les Déclencheurs',
 				    items: [{
 				    	xtype:'panel',

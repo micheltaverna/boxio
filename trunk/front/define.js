@@ -66,7 +66,9 @@ Ext.define('checkScenarios',{
 		{name: 'in_db', type: 'string'},
 		{name: 'nom', type: 'string'},
 		{name: 'zone', type: 'string'},
-		{name: 'family', type: 'string'}
+		{name: 'family', type: 'string'},
+		{name: 'function_code', type: 'int'},
+		{name: 'unit_code', type: 'int'}
 	]
 });
 
