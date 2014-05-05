@@ -1,0 +1,183 @@
+<!-- 
+LISTE DES VARIABLES UTILISABLES
+#nom# -> Nom donner au produit
+#zone# -> Nom de la zone ou est situé le produit
+#reference# -> Nom de la référnence Legrand (ex:Inter Variateur 300W à voyant)
+#id_legrand# -> id du produit
+#ref_legrand# -> référence legrand
+#media# -> type de media pour le produit (CPL,RF,IR)
+#family# -> famille du produit (LIGHTING,SHUTTER,etc.)
+#unit_code# -> code du unit
+ -->
+
+<!-- Widget Inter Volet -->
+<div class="col-xs-12 col-sm-6 col-md-6 col-lg-4" id="#id_legrand#">
+	<div class="widget-box" id="tools_#id_legrand#">
+		<div class="widget-header">
+			<h5>#nom#</h5>
+
+			<div class="widget-toolbar">
+				<a href="#" data-action="reload">
+					<i class="icon-refresh"></i>
+				</a>
+
+				<a href="#" data-action="collapse">
+					<i class="icon-chevron-up"></i>
+				</a>
+
+				<a href="#" data-action="close">
+					<i class="icon-remove"></i>
+				</a>
+			</div>
+		</div>
+		<div class="widget-body">
+			<div class="widget-main">
+				<div class="row">
+					<div class="col-xs-3 text-right">
+						<a class="btn btn-app btn-light btn-xs" href="#" data-action="#id_legrand#_DOWN">
+							<i class="icon-chevron-down bigger-200"></i>
+							DOWN
+						</a>
+					</div>
+					<div class="col-xs-3 text-center">
+						<a class="btn btn-app btn-light btn-xs" href="#" data-action="#id_legrand#_STOP">
+							<i class="icon-sign-blank bigger-200"></i>
+							STOP
+						</a>
+					</div>
+					<div class="col-xs-3 text-left">
+						<a class="btn btn-app btn-light btn-xs" href="#" data-action="#id_legrand#_UP">
+							<i class="icon-chevron-up bigger-200"></i>
+							UP
+						</a>
+					</div>
+					<div class="col-xs-3 text-right">
+						<div class="easy-pie-chart percentage" data-percent="0" data-color="#D15B47">
+							<span class="percent">...</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//VARIABLE DU WIDGET (SEUL VARIABLE GOLBALE)
+var widget_#id_legrand# = {};
+
+//DEFINITION DES ACTIONS EN FONCTION DES MODULES
+if ('#ref_legrand#' == '67253') {
+	widget_#id_legrand#.type = 'COMMAND';
+	widget_#id_legrand#.trame_up = InOne.ownManager_createFrame('#id_legrand#|1', 'MOVE_UP', 'B', [], 'CPL');
+	widget_#id_legrand#.trame_stop = InOne.ownManager_createFrame('#id_legrand#|1', 'MOVE_STOP', 'B', [], 'CPL');
+	widget_#id_legrand#.trame_down = InOne.ownManager_createFrame('#id_legrand#|1', 'MOVE_DOWN', 'B', [], 'CPL');
+}
+
+//GESTION DU BOUTON UP
+$('[data-action="#id_legrand#_UP"]').click(function() {
+	var trame = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.trame_up);
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=JSON&type=trame&send_command="+trame+"&_dc="+_dc, function( data ) {
+		;
+	});
+	$('##id_legrand# .easy-pie-chart.percentage').data('easyPieChart').update(0);
+	$('##id_legrand# .percent').html('UP');
+});
+
+//GESTION DU BOUTON STOP
+$('[data-action="#id_legrand#_STOP"]').click(function() {
+	var trame = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.trame_stop);
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=XML&type=trame&send_command="+trame+"&_dc="+_dc, function( data ) {
+		;
+	});
+	setTimeout("widget_#id_legrand#.load()",10000);
+	$('##id_legrand# .percent').html('STOP');
+});
+
+//GESTION DU BOUTON DOWN
+$('[data-action="#id_legrand#_DOWN"]').click(function() {
+	var trame = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.trame_down);
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=XML&type=trame&send_command="+trame+"&_dc="+_dc, function( data ) {
+		;
+	});
+	$('##id_legrand# .easy-pie-chart.percentage').data('easyPieChart').update(0);
+	$('##id_legrand# .percent').html('DOWN');
+});
+
+//GESTION HTML DU STATUS
+var oldie = /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase());
+$('##id_legrand# .easy-pie-chart.percentage').each(function(){
+	$(this).easyPieChart({
+		barColor: $(this).data('color'),
+		trackColor: '#EEEEEE',
+		scaleColor: false,
+		lineCap: 'butt',
+		lineWidth: 8,
+		animate: false,
+		size:65
+	}).css('color', $(this).data('color'));
+});
+
+//GESTION DE LA MISE A JOUR
+widget_#id_legrand#.load = function(autoreload) {
+	var param_#id_legrand# = encodeURI('[{"type":"string","value":"'+widget_#id_legrand#.status_id_legrand+'","field":"id_legrand"},{"type":"numeric","comparison":"eq","value":'+widget_#id_legrand#.status_unit+',"field":"unit"},{"type":"list","value":["%STATUS%","%SERVER_STATUS%"],"field":"possibility"}]');
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=JSON&view=view_equipements_status&filter="+param_#id_legrand#+"&limit=16&_dc="+_dc, function( data ) {
+		var status_value = 100-parseInt(data.request.content.module.status);
+		var status_text = data.request.content.module.status;
+		if (data.request.content.module.status == 'CLOSED'
+			|| data.request.content.module.status == 'DOWN'
+			|| data.request.content.module.status == '100') {
+			status_value = 100;
+			status_text = 'CLOSE';
+		} else if (data.request.content.module.status == 'OPEN'
+				|| data.request.content.module.status == 'UP'
+				|| data.request.content.module.status == '0') {
+			status_value = 0;
+			status_text = 'OPEN';
+		} else {
+			status_text = status_value;
+		}
+		$('##id_legrand# .easy-pie-chart.percentage').data('easyPieChart').update(status_value);
+		$('##id_legrand# .percent').html(status_text);
+		$('#tools_#id_legrand#').trigger('reloaded.ace.widget');
+	});
+	if (autoreload === true) {
+		widget_#id_legrand#.timeout = setTimeout("widget_#id_legrand#.load(true)",10000);
+	}
+};
+
+//RECUPERATION DU SCENARIO ASSOCIE DANS LE CAS DES INTERCENTRALISES
+widget_#id_legrand#.status_id_legrand = null;
+widget_#id_legrand#.status_unit = null;
+if (widget_#id_legrand#.type == 'COMMAND') {
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=JSON&view=view_scenarios&filter="+encodeURI('[{"type":"string","value":"#id_legrand#","field":"id_legrand_listen"}]')+"&limit=16&_dc="+_dc, function( data ) {
+		widget_#id_legrand#.status_id_legrand = data.request.content.module.id_legrand;
+		widget_#id_legrand#.status_unit = data.request.content.module.unit;
+		widget_#id_legrand#.load(true);
+	});
+//SINON ON PREND LE STATUS DE L'EQUIPEMENT
+} else {
+	widget_#id_legrand#.status_id_legrand = '#id_legrand#';
+	widget_#id_legrand#.status_unit = '#unit_code#';
+	widget_#id_legrand#.load(true);
+}
+
+//GESTION HTML DU BOUTON RELOAD
+$('#tools_#id_legrand#').on({
+	'reload.ace.widget' : function(e) {
+		//e.preventDefault();//to prevent reloading
+		widget_#id_legrand#.load();
+		e.stopPropagation();//stop propagating to the event defined in ace.min.js which you should remove altogether
+	}
+});
+
+//GESTION DE LA FERMETURE
+close_widgets(function() {
+	clearTimeout(widget_#id_legrand#.timeout);
+});
+</script>
+<!-- /Widget Inter Simple -->

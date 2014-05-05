@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<title>Boxio</title>
+
+		<meta name="description" content="Boxio" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<!-- basic styles -->
+
+		<link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="assets/css/font-awesome.min.css" />
+
+		<!--[if IE 7]>
+		  <link rel="stylesheet" href="assets/css/font-awesome-ie7.min.css" />
+		<![endif]-->
+
+		<!-- page specific plugin styles -->
+		<link rel="stylesheet" href="assets/css/jquery-ui-1.10.3.custom.min.css" />
+
+		<!-- fonts -->
+
+		<link rel="stylesheet" href="assets/css/ace-fonts.css" />
+
+		<!-- ace styles -->
+
+		<link rel="stylesheet" href="assets/css/ace.min.css" />
+		<link rel="stylesheet" href="assets/css/ace-rtl.min.css" />
+		<link rel="stylesheet" href="assets/css/ace-skins.min.css" />
+
+		<!--[if lte IE 8]>
+		  <link rel="stylesheet" href="assets/css/ace-ie.min.css" />
+		<![endif]-->
+
+		<!-- inline styles related to this page -->
+
+		<!-- ace settings handler -->
+
+		<script src="assets/js/ace-extra.min.js"></script>
+
+		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+		<!--[if lt IE 9]>
+		<script src="assets/js/html5shiv.js"></script>
+		<script src="assets/js/respond.min.js"></script>
+		<![endif]-->
+
+		<!-- InOne Generateur -->
+
+		<script src="own_scripts.js"></script>
+	</head>
+
+	<body>
+		<div class="navbar navbar-default" id="navbar">
+			<script type="text/javascript">
+				try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="navbar-container" id="navbar-container">
+				<div class="navbar-header pull-left">
+					<a href="#" class="navbar-brand">
+						<small>
+							<i class="icon-leaf"></i>
+							Boxio
+						</small>
+					</a><!-- /.brand -->
+				</div><!-- /.navbar-header -->
+
+				<div class="navbar-header pull-right" role="navigation">
+					<ul class="nav ace-nav">
+
+						<li class="light-blue">
+							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+								<img class="nav-user-photo" src="assets/avatars/user.jpg" alt="Jason's Photo" />
+								<span class="user-info">
+									<small>Bienvenue sur,</small>
+									Boxio
+								</span>
+
+								<i class="icon-caret-down"></i>
+							</a>
+
+							<ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="../front/" target="_blank">
+										<i class="icon-cog"></i>
+										Administration
+									</a>
+								</li>
+
+								<li class="divider"></li>
+
+								<li>
+									<a href="#">
+										<i class="icon-off"></i>
+										Deconnexion
+									</a>
+								</li>
+							</ul>
+						</li>
+					</ul><!-- /.ace-nav -->
+				</div><!-- /.navbar-header -->
+			</div><!-- /.container -->
+		</div>
+
+		<div class="main-container" id="main-container">
+			<script type="text/javascript">
+				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="main-container-inner">
+				<a class="menu-toggler" id="menu-toggler" href="#">
+					<span class="menu-text"></span>
+				</a>
+
+				<div class="sidebar" id="sidebar">
+					<script type="text/javascript">
+						try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+					</script>
+
+					<ul class="nav nav-list">
+						<li>
+							<a href='#' onclick='javascript:print_zone("home")'>
+								<i class='icon-check-empty active'></i>
+								<span class='menu-text'> Accueil </span>
+							</a>
+						</li>
+					
+					</ul><!-- /.nav-list -->
+
+					<div class="sidebar-collapse" id="sidebar-collapse">
+						<i class="icon-double-angle-left" data-icon1="icon-double-angle-left" data-icon2="icon-double-angle-right"></i>
+					</div>
+
+					<script type="text/javascript">
+						try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+					</script>
+				</div>
+
+				<div class="main-content">
+				
+					<div class="breadcrumbs" id="breadcrumbs">
+						<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+
+						<ul class="breadcrumb">
+							<li>
+								<i class="icon-home home-icon"></i>
+								<a href="#">Zone</a>
+							</li>
+							<li class="active">Accueil</li>
+						</ul><!-- .breadcrumb -->
+
+						<div class="ace-settings-container" id="ace-settings-container" style="top:0px">
+							<div class="btn btn-app btn-xs btn-warning ace-settings-btn" id="ace-settings-btn">
+								<i class="icon-cog bigger-150"></i>
+							</div>
+		
+							<div class="ace-settings-box" id="ace-settings-box">
+								<div>
+									<div class="pull-left">
+										<select id="skin-colorpicker" class="hide">
+											<option data-skin="default" value="#438EB9">#438EB9</option>
+											<option data-skin="skin-1" value="#222A2D">#222A2D</option>
+											<option data-skin="skin-2" value="#C6487E">#C6487E</option>
+											<option data-skin="skin-3" value="#D0D0D0">#D0D0D0</option>
+										</select>
+									</div>
+									<span>&nbsp; Sélection Interface</span>
+								</div>
+		
+								<div>
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-navbar" />
+									<label class="lbl" for="ace-settings-navbar"> Fixer le Titre</label>
+								</div>
+		
+								<div>
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-sidebar" />
+									<label class="lbl" for="ace-settings-sidebar"> Fixer les Zones</label>
+								</div>
+		
+								<div>
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-breadcrumbs" />
+									<label class="lbl" for="ace-settings-breadcrumbs"> Fixer la Navigation</label>
+								</div>
+		
+							</div>
+						</div><!-- /#ace-settings-container -->
+
+					</div>
+
+					<div class="page-content">
+
+						<div class="row">
+							<div class="col-xs-12">
+								<!-- PAGE CONTENT BEGINS -->
+
+								<div class="row" id="widgets">
+
+								</div><!-- /row -->
+
+
+								</div><!-- PAGE CONTENT ENDS -->
+							</div><!-- /.col -->
+						</div><!-- /.row -->
+					</div><!-- /.page-content -->
+				</div><!-- /.main-content -->
+
+			</div><!-- /.main-container-inner -->
+
+			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+				<i class="icon-double-angle-up icon-only bigger-110"></i>
+			</a>
+		</div><!-- /.main-container -->
+
+		<!-- basic scripts -->
+
+		<!--[if !IE]> -->
+
+		<script type="text/javascript">
+			window.jQuery || document.write("<script src='assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+
+		<!-- <![endif]-->
+
+		<!--[if IE]>
+<script type="text/javascript">
+ window.jQuery || document.write("<script src='assets/js/jquery-1.10.2.min.js'>"+"<"+"/script>");
+</script>
+<![endif]-->
+
+		<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+		<script src="assets/js/bootstrap.min.js"></script>
+		<script src="assets/js/typeahead-bs2.min.js"></script>
+
+		<!-- page specific plugin scripts -->
+
+		<script src="assets/js/jquery-ui-1.10.3.custom.min.js"></script>
+		<script src="assets/js/jquery.ui.touch-punch.min.js"></script>
+		<script src="assets/js/jquery.slimscroll.min.js"></script>
+		<script src="assets/js/jquery.easy-pie-chart.min.js"></script>
+
+		<!-- ace scripts -->
+
+		<script src="assets/js/ace-elements.min.js"></script>
+		<script src="assets/js/ace.min.js"></script>
+
+		<!-- inline scripts related to this page -->
+
+		<script type="text/javascript">
+		
+			//GESTION DE L'INTERFACE
+			function init_interface() {
+				//Color Picker
+				$('#simple-colorpicker-1').ace_colorpicker({pull_right:true}).on('change', function(){
+					var color_class = $(this).find('option:selected').data('class');
+					var new_class = 'widget-header';
+					if(color_class != 'default')  new_class += ' header-color-'+color_class;
+					$(this).closest('.widget-header').attr('class', new_class);
+				});
+			
+				// scrollables
+				$('.slim-scroll').each(function () {
+					var $this = $(this);
+					$this.slimScroll({
+						height: $this.data('height') || 100,
+						railVisible:true
+					});
+				});
+			
+				// Portlets (boxes)
+			    $('.widget-container-span').sortable({
+			        connectWith: '.widget-container-span',
+					items:'> .widget-box',
+					opacity:0.8,
+					revert:true,
+					forceHelperSize:true,
+					placeholder: 'widget-placeholder',
+					forcePlaceholderSize:true,
+					tolerance:'pointer'
+			    });
+			}
+			
+			//GESTION DU MENU
+			function init_menu() {
+				//AFFICHAGE DES ZONES
+				var _dc = new Date().getTime();
+				$.getJSON( "../back/client.php?output=JSON&view=view_zones&limit=1000&_dc="+_dc, function( data ) {
+					var items = '';
+					$.each( data.request.content.module, function( key, val ) {
+						items += "<li><a href='#' onclick='javascript:print_zone(\""+val.nom+"\")'><i class='icon-check-empty active'></i><span class='menu-text'> "+val.nom+" </span></a></li>";
+					});
+					$(items).appendTo( ".nav-list" );
+				});
+			}
+
+			//SUPPRESSION DES WIDGETS
+			var callbacks_close_widgets = [];
+			function close_widgets(callback) {
+			    if (callbacks_close_widgets.indexOf(callback) < 0) {
+			        callbacks_close_widgets.push(callback);
+			    }
+			};
+			
+			//GESTION DES ZONES
+			function print_zone(zone) {
+				//SUPPRESSION DU CONTENU
+				$( "#widgets" ).empty();
+				$.each( callbacks_close_widgets, function(key, callback) {
+					callback();
+				});
+				callbacks_close_widgets = [];
+				//RECUPERATION DES ELEMENTS POUR L'ACCUEIL
+				if (zone == 'home') {
+					//ECRITURE DU TITRE
+					$(".breadcrumb li a").html('Bienvenue chez vous');
+					$(".breadcrumb .active").html('');
+					$.each ( lists_accueil, function( widgets_key, widgets_val ) {
+						//AFFICHAGE DES WIDGETS
+						var _dc = new Date().getTime();
+						$.get( "widgets/"+widgets_val.page+"?_dc="+_dc, function( data ) {
+							var widget = data;
+							$(widget).appendTo( "#widgets" );
+						});
+						return;
+					});
+				} else {
+					//ECRITURE DU TITRE
+					$(".breadcrumb li a").html('Zone');
+					$(".breadcrumb .active").html(zone);
+					//RECUPERATION DES ELEMENTS POUR LES ZONES
+					var param = encodeURI('[{"type":"list","value":["'+zone+'"],"field":"zone"}]');
+					var _dc = new Date().getTime();
+					$.getJSON( "../back/client.php?output=JSON&view=view_equipements&filter="+param+"&limit=1000&_dc="+_dc, function( data ) {
+						if (data.request.content.module) {
+							if ($.isArray(data.request.content.module)) {
+								var modules = data.request.content.module;
+							} else {
+								var modules = [];
+								modules[0] = data.request.content.module;
+							}
+							$.each( modules, function( equipements_key, equipements_val ) {
+								var ref_legrand = equipements_val.ref_legrand;
+								$.each ( lists_ref, function( widgets_key, widgets_val ) {
+									//AFFICHAGE DES WIDGETS
+									if (widgets_key == ref_legrand) {
+										var _dc = new Date().getTime();
+										$.get( "widgets/"+widgets_val[0]+"?_dc="+_dc, function( data ) {
+											var widget = data;
+											$.each( equipements_val, function( equipement_key, equipement_val ) {
+												var find = '#'+equipement_key+'#';
+												var reg = new RegExp(find, 'g');
+												widget = widget.replace(reg, equipement_val);
+											});
+											$(widget).appendTo( "#widgets" );
+										});
+										return;
+									}
+								});
+							});						
+						}
+					});
+				}
+			}
+
+			var lists_ref;
+			var lists_accueil;
+			jQuery(function($) {
+				//RECUPERATION DES WIDGETS
+				var _dc = new Date().getTime();
+				$.getJSON( "widgets/lists_ref.json?_dc="+_dc, function( data ) {
+					lists_ref = data;
+				});
+				$.getJSON( "widgets/lists_accueil.json?_dc="+_dc, function( data ) {
+					lists_accueil = data;
+				});
+				
+				init_interface();
+				init_menu();
+			});
+		</script>
+	</body>
+</html>
