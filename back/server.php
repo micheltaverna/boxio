@@ -1195,9 +1195,26 @@ class boxio_server {
 	/*
 	 // FONCTION : GESTION DE LA CRONTAB UTILISATEUR
 	*/
+	private function checkSun() {
+		$res = $this->mysqli->query("SELECT * FROM view_configuration");
+		while ($conf_array = $res->fetch_assoc()) {
+			$lat = $conf_array['GPS_latitude'];
+			$lng = $conf_array['GPS_longitude'];
+		}
+		$sunset_timestamp = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, $lat, $lng);
+		$res = $this->mysqli->query("UPDATE cron SET 
+		minutes=".date('i', $sunset_timestamp).", 
+		heures=".date('H', $sunset_timestamp).", 
+		jour=".date('j', $sunset_timestamp).", 
+		jourSemaine=".date('w', $sunset_timestamp).", 
+		mois=".date('n', $sunset_timestamp)." 
+		WHERE sunset=1");
+	}
+	
 	private function cronTabUser() {
 		//Premiere appel on regarde en base la CRONTAB et on construit la classe crond
 		if (!isset($this->crond)) {
+			$this->checkSun();
 			$this->crond = new crond();
 			$this->crond->cronAnalyse = time();
 			$res = $this->mysqli->query("SELECT * FROM view_cron WHERE active=1");
@@ -1211,6 +1228,7 @@ class boxio_server {
 			}
 		//On reset la table
 		} else if ($this->crond->cronAnalyse+$this->def->DEFAULT_UPDATE_TIME_CRONTAB < time()) {
+			$this->checkSun();
 			$this->crond->resetCron();
 			$this->crond->cronAnalyse = time();
 			$res = $this->mysqli->query("SELECT * FROM view_cron WHERE active=1");
@@ -1407,7 +1425,7 @@ class boxio_server {
 	public function init() {
 		$this->conf = new boxio_conf();
 		$this->def = new boxio_def();
-		//Detection de l'OS
+		//Detection de l'OS et de l'ip locale
 		echo "Serveur de type : ".PHP_OS."\n";
 		if (preg_match("/win/i", PHP_OS)) {
 			$find_IP = exec('ipconfig /all | find "IPv4"');
@@ -1419,13 +1437,25 @@ class boxio_server {
 		} else {
 			$IP = "Inconnue !";
 		}
-		//Affecation de l'IP
+		//Detection de l'ip Internet
+		$IP_NET = exec('wget http://checkip.dyndns.org -O - -o /dev/null | cut -d: -f 2 | cut -d\< -f 1');
+		$IP_NET = trim($IP_NET);
+		//Affecation de l'IP Locale
 		if (isset($this->conf->PHP_HOST)) {
 			$IP = $this->conf->PHP_HOST;
 		} else {
 			$this->conf->PHP_HOST = $IP;
 		}
-		echo "Votre IP d'acces au Serveur est : ".$IP."\n";
+		//Affecation de l'IP Internet
+		if (isset($this->conf->PHP_NET_HOST)) {
+			$IP_NET = $this->conf->PHP_NET_HOST;
+		} else {
+			$this->conf->PHP_NET_HOST = $IP_NET;
+		}
+		//Detection de la geolocalisation
+		
+		echo "Votre IP d'acces Locale au Serveur est : ".$IP."\n";
+		echo "Votre IP d'acces Internet au Serveur est : ".$IP_NET."\n";
 		if (stristr('cli', php_sapi_name()) === FALSE) {
 			echo "Serveur initialiser en ".php_sapi_name()." mode : Erreur, Vous de devez lancer le serveur en ligne de commande !";
 			exit;
