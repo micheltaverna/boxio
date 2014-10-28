@@ -1201,14 +1201,19 @@ class boxio_server {
 			$lat = $conf_array['GPS_latitude'];
 			$lng = $conf_array['GPS_longitude'];
 		}
+		if (!isset($lat, $lng) || $lat == NULL || $lng == NULL) {
+			return;
+		}
 		$sunset_timestamp = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, $lat, $lng);
 		$res = $this->mysqli->query("UPDATE cron SET 
 		minutes=".date('i', $sunset_timestamp).", 
-		heures=".date('H', $sunset_timestamp).", 
-		jour=".date('j', $sunset_timestamp).", 
-		jourSemaine=".date('w', $sunset_timestamp).", 
-		mois=".date('n', $sunset_timestamp)." 
+		heures=".date('H', $sunset_timestamp)."
 		WHERE sunset=1");
+		$sunrise_timestamp = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, $lat, $lng);
+		$res = $this->mysqli->query("UPDATE cron SET 
+		minutes=".date('i', $sunrise_timestamp).", 
+		heures=".date('H', $sunrise_timestamp)."
+		WHERE sunrise=1");
 	}
 	
 	private function cronTabUser() {
