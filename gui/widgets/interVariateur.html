@@ -1,0 +1,205 @@
+<!-- 
+LISTE DES VARIABLES UTILISABLES
+#nom# -> Nom donner au produit
+#zone# -> Nom de la zone ou est situé le produit
+#reference# -> Nom de la référnence Legrand (ex:Inter Variateur 300W à voyant)
+#id_legrand# -> id du produit
+#ref_legrand# -> référence legrand
+#media# -> type de media pour le produit (CPL,RF,IR)
+#family# -> famille du produit (LIGHTING,SHUTTER,etc.)
+#unit_code# -> code du unit
+ -->
+
+<!-- Widget Inter Variateur -->
+<style type="text/css">
+	.interVariateur .ui-slider-horizontal {
+	    height: 35px;
+	}
+	.interVariateur .ui-slider .ui-slider-handle {
+	    height: 40px;
+	    width: 40px;
+	}
+	.interVariateur .ui-slider .ui-slider-handle:before {
+	    font-size: 15px;
+	    top: 10px;
+	}
+	.interVariateur .ui-slider-orange {
+		margin-bottom: 0px;
+		margin-top: 15px;
+		margin-left: 25px;
+		margin-right: 25px;
+	}
+	.interVariateur .ui-slider-horizontal .ui-slider-handle {
+	    top: -4px;
+		margin-left: -20px;
+		border-radius: 20%;
+	}
+</style>
+<div class="interVariateur col-xs-12 col-sm-6 col-md-6 col-lg-4 widget-container-col" id="#id_legrand#">
+	<div class="widget-box" id="tools_#id_legrand#">
+		<div class="widget-header">
+			<h5 class="widget-title">#nom#</h5>
+
+			<div class="widget-toolbar">
+                <a href="#" data-action="reload">
+                    <i class="ace-icon fa fa-refresh"></i>
+                </a>
+    
+                <a href="#" data-action="collapse">
+                    <i class="ace-icon fa fa-chevron-up"></i>
+                </a>
+    
+                <a href="#" data-action="close">
+                    <i class="ace-icon fa fa-times"></i>
+                </a>
+			</div>
+		</div>
+		<div class="widget-body">
+			<div class="widget-main">
+				<div class="row">
+					<div class="col-xs-4 text-right">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_OFF">
+							<div><i class="fa fa-power-off bigger-200"></i></div>
+							<div>OFF</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-left">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ON">
+							<div><i class="fa fa-sun-o bigger-200"></i></div>
+							<div>ON</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-center">
+						<div id="#id_legrand#_STATUS">
+							<img src="widgets/interPoussoir/Lightbulb-unknown.png" height="70px">
+						</div>
+					</div>
+                </div>
+				<div class="row">
+					<div class="col-xs-12 col-sm-12">
+						<div id="#id_legrand#_slider" class="ui-slider-simple ui-slider-orange"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+
+//GESTION DU BOUTON ON
+$('[data-action="#id_legrand#_ON"]').click(function() {
+	$('##id_legrand#_slider').slider('value', 100);
+	changeStatusImg_#id_legrand#(100);
+});
+
+//GESTION DU BOUTON OFF
+$('[data-action="#id_legrand#_OFF"]').click(function() {
+	$('##id_legrand#_slider').slider("value", 0);
+	changeStatusImg_#id_legrand#(0);
+});
+
+//GESTION DE L'IMAGE STATUT
+var changeStatusImg_#id_legrand# = function(status_value) {
+	var status_value = parseInt(status_value);
+	if (status_value < 25) {
+		$('##id_legrand#_STATUS img').attr('src', 'widgets/interPoussoir/Lightbulb-off.png');
+	} else if (status_value < 50) {
+		$('##id_legrand#_STATUS img').attr('src', 'widgets/interPoussoir/Lightbulb-25.png');
+	} else if (status_value < 75) {
+		$('##id_legrand#_STATUS img').attr('src', 'widgets/interPoussoir/Lightbulb-50.png');
+	} else if (status_value < 100) {
+		$('##id_legrand#_STATUS img').attr('src', 'widgets/interPoussoir/Lightbulb-75.png');
+	} else if (status_value == 100) {
+		$('##id_legrand#_STATUS img').attr('src', 'widgets/interPoussoir/Lightbulb-on.png');
+	}
+}
+
+//GESTION DE LA MISE A JOUR
+var load_#id_legrand# = function(autoreload) {
+	var param_#id_legrand# = encodeURI('[{"type":"string","value":"#id_legrand#","field":"id_legrand"},{"type":"list","value":["%STATUS%","%SERVER_STATUS%"],"field":"possibility"}]');
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=JSON&view=view_equipements_status&filter="+param_#id_legrand#+"&limit=16&_dc="+_dc, function( data ) {
+		var status_value = parseInt(data.request.content.module.status);
+		if (data.request.content.module.status == 'OFF'
+			|| data.request.content.module.status == '0') {
+			status_value = 0;
+		} else if (data.request.content.module.status == 'ON'
+				|| data.request.content.module.status == '100') {
+			status_value = 100;
+		} else if (data.request.content.module.status.match(/DIM_(UP|DOWN)_(\d+)_TO_(\d+)_IN_(\d+)S/g)) {
+			var res = data.request.content.module.status.match(/DIM_(UP|DOWN)_(\d+)_TO_(\d+)_IN_(\d+)S/g);
+			status_value = res[3];
+		}
+		changeStatusImg_#id_legrand#(status_value);
+		if (status_#id_legrand#_slider != parseFloat(status_value)) {
+			status_#id_legrand#_slider = parseFloat(status_value);
+			$('##id_legrand#_slider').slider("value", parseInt(status_value));
+		}
+	});
+	if (autoreload === true) {
+		timeout_#id_legrand# = setTimeout("load_#id_legrand#(true)",10000);
+	}
+};
+load_#id_legrand#(true);
+
+//GESTION DU SLIDER
+$('##id_legrand#_slider').slider({
+	value:0,
+	min:0,
+	max:100,
+	step:1,
+	range: 'min',
+	animate: true
+});
+var status_#id_legrand#_slider = parseFloat(0);
+$('##id_legrand#_slider').slider({
+	change: function( event, ui ) {
+		clearTimeout(timeout_#id_legrand#);
+		timeout_#id_legrand# = setTimeout("load_#id_legrand#(true)",10000);
+		// Vitesse par defaut
+		var speed = 5;
+		//Retourne les secondes réelles en secondes iobl
+		var calcIoblTimer = function($times) {
+			$times = parseInt($times);
+			$times = ($times*5)-5;
+			if ($times < 1) {
+				$times = 1;
+			}
+			return $times;
+		};
+
+		var current_power = parseFloat(status_#id_legrand#_slider);
+		var selected_power = parseFloat(ui.value);
+		status_#id_legrand#_slider = selected_power;
+		var timing = parseInt((Math.abs(selected_power-current_power)/100*speed)+speed);
+		//pour forcer un effet de dégradé
+		timing = calcIoblTimer(timing);
+		if (timing < 5) {
+			timing = 5;
+		}
+		var value = [selected_power, timing];
+		changeStatusImg_#id_legrand#(selected_power);
+		//console.log('CurrentPower:'+current_power+' -> NewPower:'+selected_power+' (Speed:'+parseInt((Math.abs(selected_power-current_power)/100*speed)+speed)+')');
+
+		var trame = InOne.ownManager_createFrame('#id_legrand#|4', 'GO_TO_LEVEL_TIME', 'AU', value, 'CPL');
+		var trame = InOne.ownManager_starsharp_to_YZ(trame);
+		var _dc = new Date().getTime();
+		$.getJSON( "../back/client.php?output=JSON&type=trame&send_command="+trame+"&_dc="+_dc, function( data ) {
+			;
+		});
+	}
+});
+	
+//GESTION DU BOUTON RELOAD
+$('#tools_#id_legrand#').on('reload.ace.widget', function(e) {
+	//e.preventDefault();//to prevent reloading
+	load_#id_legrand#();
+	//e.stopPropagation();//stop propagating to the event defined in ace.min.js which you should remove altogether
+});
+
+//GESTION DE LA FERMETURE
+close_widgets(function() {
+	clearTimeout(timeout_#id_legrand#);
+});
+</script>
+<!--/ Widget Inter Variateur -->
