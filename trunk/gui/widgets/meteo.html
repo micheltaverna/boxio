@@ -1,0 +1,107 @@
+<!-- 
+GESTION DE LA METEO
+AVEC http://www.meteocity.com/widget/ (TABLET)
+AVEC http://fr.yowindow.com/weatherwidget.php (PC)
+ -->
+
+<!-- Widget Inter Volet -->
+<div class="col-xs-12 col-sm-12 col-md-8 col-lg-6">
+	<div class="widget-box">
+		<div class="widget-header">
+			<h5 class="widget-title">Météo</h5>
+
+			<div class="widget-toolbar">
+                <a href="#" id="widget_meteo_settings">
+                    <i class="ace-icon fa fa-cog"></i>
+                </a>
+
+                <a href="#" data-action="reload">
+                    <i class="ace-icon fa fa-refresh"></i>
+                </a>
+    
+                <a href="#" data-action="collapse">
+                    <i class="ace-icon fa fa-chevron-up"></i>
+                </a>
+    
+                <a href="#" data-action="close">
+                    <i class="ace-icon fa fa-times"></i>
+                </a>
+			</div>
+		</div>
+		<div class="widget-body">
+			<div class="widget-main">
+				<div class="row">
+					<div class="col-xs-12 text-center" id='id_widget_meteo'>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="assets/js/bootbox.min.js"></script>
+<script src="widgets/meteo/swfobject.js"></script>
+<script type="text/javascript">
+	$('#widget_meteo_settings').click(function() {
+		bootbox.prompt({
+			title : "Votre ville ?", 
+			value: ace.storage.get('widget_meteo_prompt'),
+			buttons: {
+			   confirm: {
+				  label: "Enregistrer",
+				  className: "btn-primary btn-sm",
+			   },
+			   cancel: {
+				  label: "Annuler",
+				  className: "btn-sm",
+			   }
+			},
+			callback : function(result) {
+				if (result !== null) {
+					var ville_prompt = result;
+					ace.storage.set('widget_meteo_prompt', ville_prompt);
+					$.ajax({
+						url: 'http://he3.yowindow.com/cgi-bin/location_suggestion_search/index.pl/autocomplete?lang=fr&term='+ville_prompt,
+						dataType: 'json',
+						success: function(data){	
+							ace.storage.set('widget_meteo_ville', data[0]['name']);
+							ace.storage.set('widget_meteo_idville', data[0]['geoname_id']);
+							load_meteo();
+						}
+					});
+				}
+			}
+		});
+	});
+
+	var load_meteo = function() {
+		var ville = ace.storage.get('widget_meteo_ville');
+		var idville = ace.storage.get('widget_meteo_idville');
+		if (!ville || !idville) {
+			//Paris par defaut
+			var ville = 'Paris';
+			var idville = '2982757';
+		}
+
+		if (swfobject.hasFlashPlayerVersion("9.0.18")) {
+			$('#id_widget_meteo').html('\
+				<object type="application/x-shockwave-flash" data="http://swf.yowindow.com/yowidget3.swf" width="100%" height="350">\
+					<param name="movie" value="http://swf.yowindow.com/yowidget3.swf"/>\
+					<param name="allowfullscreen" value="true"/>\
+					<param name="wmode" value="opaque"/>\
+					<param name="bgcolor" value="#FFFFFF"/>\
+					<param name="flashvars" \
+					value="location_id='+idville+'&amp;location_name='+ville+'&amp;time_format=24&amp;unit_system=metric&amp;lang=fr&amp;background=#FFFFFF&amp;copyright_bar=false"\
+				/>\
+				</object>\
+			');
+		} else {
+			$('#id_widget_meteo').html('\
+				<div style="width:250px;height:220px;color:#000;border:1px solid #F2F2F2;">\
+				<iframe height="190" frameborder="0" width="250" scrolling="no" src="http://www.prevision-meteo.ch/services/html/'+ville+'/square" allowtransparency="true"></iframe>\
+				<a style="text-decoration:none;font-size:0.75em;" title="Météo de '+ville+'" href="http://www.prevision-meteo.ch/meteo/localite/'+ville+'">Météo de '+ville+'</a>\
+				</div>\
+			');
+		}
+	}
+	load_meteo();
+</script>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta charset="utf-8" />
+		<title>Boxio</title>
+
+		<meta name="description" content="Boxio" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+		<!-- bootstrap & fontawesome -->
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="assets/css/font-awesome.min.css" />
+
+		<!-- page specific plugin styles -->
+
+		<!-- text fonts -->
+		<link rel="stylesheet" href="assets/css/ace-fonts.css" />
+
+		<!-- jquery custom styles -->
+		<link rel="stylesheet" href="assets/css/jquery-ui.custom.min.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="assets/css/ace.min.css" id="main-ace-style" />
+
+		<!--[if lte IE 9]>
+			<link rel="stylesheet" href="assets/css/ace-part2.min.css" />
+		<![endif]-->
+		<link rel="stylesheet" href="assets/css/ace-skins.min.css" />
+		<link rel="stylesheet" href="assets/css/ace-rtl.min.css" />
+
+		<!--[if lte IE 9]>
+		  <link rel="stylesheet" href="assets/css/ace-ie.min.css" />
+		<![endif]-->
+
+		<!-- inline styles related to this page -->
+
+		<!-- ace settings handler -->
+		<script src="assets/js/ace-extra.min.js"></script>
+
+		<!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+
+		<!--[if lte IE 8]>
+		<script src="assets/js/html5shiv.min.js"></script>
+		<script src="assets/js/respond.min.js"></script>
+		<![endif]-->
+
+		<!-- InOne Generateur -->
+
+		<script src="own_scripts.js"></script>
+	</head>
+
+	<body class="no-skin">
+    	<style>
+			.navbar-fixed-top + .main-container {
+				padding-top: 45px;
+			}
+			.sidebar.sidebar-fixed:before {
+				top: 0px;
+			}
+		</style>
+		<div class="navbar navbar-default" id="navbar">
+			<script type="text/javascript">
+				try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="navbar-container" id="navbar-container">
+				<!-- #section:basics/sidebar.mobile.toggle -->
+				<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler">
+					<span class="sr-only">Toggle sidebar</span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+				</button>
+
+				<div class="navbar-header pull-left">
+					<a href="#" class="navbar-brand">
+						<small>
+							<i class="fa fa-cogs"></i>
+							Boxio
+						</small>
+					</a><!-- /.brand -->
+				</div><!-- /.navbar-header -->
+
+				<div class="navbar-header pull-right" role="navigation">
+				</div><!-- /.navbar-header -->
+			</div><!-- /.container -->
+		</div>
+
+		<div class="main-container" id="main-container">
+			<script type="text/javascript">
+				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="main-container-inner">
+				<div class="sidebar responsive" id="sidebar">
+					<script type="text/javascript">
+						try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+					</script>
+
+					<ul class="nav nav-list">
+
+						<li>
+							<a href='#' data-zone='home' id="menu_home">
+								<i class='menu-icon fa fa-home'></i>
+								<span class='menu-text'> Accueil </span>
+							</a>
+						</li>
+
+						<li class="">
+                            <a href="#" class="dropdown-toggle">
+                                <i class="menu-icon fa fa-list"></i>
+                                <span class="menu-text"> Zones </span>
+    
+                                <b class="arrow fa fa-angle-down"></b>
+                            </a>
+    
+                            <b class="arrow"></b>
+    
+                            <ul class="submenu" id="submenu_zone">
+                            </ul>
+                        </li>
+					
+						<li>
+							<a href='../front/' target="_blank">
+								<i class='menu-icon fa fa-cog'></i>
+								<span class='menu-text'> Administration </span>
+							</a>
+						</li>
+
+						<li>
+							<a href='#'>
+								<i class='menu-icon fa fa-power-off'></i>
+								<span class='menu-text'> Deconnexion </span>
+							</a>
+						</li>
+					</ul><!-- /.nav-list -->
+
+					<div class="sidebar-collapse" id="sidebar-collapse">
+						<i class="icon-double-angle-left" data-icon1="icon-double-angle-left" data-icon2="icon-double-angle-right"></i>
+					</div>
+
+					<script type="text/javascript">
+						try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+					</script>
+				</div>
+
+				<div class="main-content">
+				
+					<div class="breadcrumbs" id="breadcrumbs">
+						<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+
+						<ul class="breadcrumb">
+							<li>
+								<i class="ace-icon fa fa-home home-icon"></i>
+								<a href="#">Zone</a>
+							</li>
+							<li class="active">Accueil</li>
+						</ul><!-- .breadcrumb -->
+
+						<div class="ace-settings-container" id="ace-settings-container" style="top:0px;">
+							<div class="btn btn-app btn-xs btn-warning ace-settings-btn" id="ace-settings-btn">
+								<i class="fa fa-cog bigger-150"></i>
+							</div>
+		
+							<div class="ace-settings-box clearfix" id="ace-settings-box">
+								<div class="ace-settings-item">
+									<div class="pull-left">
+										<select id="skin-colorpicker" class="hide">
+											<option data-skin="default" value="#438EB9">#438EB9</option>
+											<option data-skin="skin-1" value="#222A2D">#222A2D</option>
+											<option data-skin="skin-2" value="#C6487E">#C6487E</option>
+											<option data-skin="skin-3" value="#D0D0D0">#D0D0D0</option>
+										</select>
+									</div>
+									<span>&nbsp; Sélection Interface</span>
+								</div>
+		
+								<div class="ace-settings-item">
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-navbar" />
+									<label class="lbl" for="ace-settings-navbar"> Fixer le Titre</label>
+								</div>
+		
+								<div class="ace-settings-item">
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-sidebar" />
+									<label class="lbl" for="ace-settings-sidebar"> Fixer le Menu</label>
+								</div>
+		
+								<div class="ace-settings-item">
+									<input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-breadcrumbs" />
+									<label class="lbl" for="ace-settings-breadcrumbs"> Fixer la Navigation</label>
+								</div>
+		
+							</div>
+						</div><!-- /#ace-settings-container -->
+
+					</div>
+
+					<div class="page-content">
+
+
+						<div class="row">
+							<div class="col-xs-12">
+								<!-- PAGE CONTENT BEGINS -->
+
+								<div class="row" id="widgets">
+
+								</div><!-- /row -->
+
+
+								<!-- PAGE CONTENT ENDS -->
+							</div><!-- /.col -->
+						</div><!-- /.row -->
+					</div><!-- /.page-content -->
+				</div><!-- /.main-content -->
+
+			</div><!-- /.main-container-inner -->
+
+			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+				<i class="fa fa-angle-double-up icon-only bigger-110"></i>
+			</a>
+		</div><!-- /.main-container -->
+
+		<!-- basic scripts -->
+
+		<!--[if !IE]> -->
+		<script type="text/javascript">
+			window.jQuery || document.write("<script src='assets/js/jquery.min.js'>"+"<"+"/script>");
+		</script>
+
+		<!-- <![endif]-->
+
+		<!--[if IE]>
+<script type="text/javascript">
+ window.jQuery || document.write("<script src='assets/js/jquery1x.min.js'>"+"<"+"/script>");
+</script>
+<![endif]-->
+		<script type="text/javascript">
+			if('ontouchstart' in document.documentElement) document.write("<script src='assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+		<script src="assets/js/bootstrap.min.js"></script>
+
+		<!-- page specific plugin scripts -->
+
+		<!--[if lte IE 8]>
+		  <script src="assets/js/excanvas.min.js"></script>
+		<![endif]-->
+		<script src="assets/js/jquery-ui.custom.min.js"></script>
+		<script src="assets/js/jquery.ui.touch-punch.min.js"></script>
+		<script src="assets/js/jquery.easypiechart.min.js"></script>
+		<script src="assets/js/jquery.sparkline.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.pie.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.resize.min.js"></script>
+		<script src="assets/js/jquery.slimscroll.min.js"></script>
+
+		<!-- ace scripts -->
+		<script src="assets/js/ace-elements.min.js"></script>
+		<script src="assets/js/ace.min.js"></script>
+
+
+
+		<script type="text/javascript">
+		
+			//GESTION DE L'INTERFACE
+			function init_interface() {
+				//Color Picker
+				$('#simple-colorpicker-1').ace_colorpicker({pull_right:true}).on('change', function(){
+					var color_class = $(this).find('option:selected').data('class');
+					var new_class = 'widget-header';
+					if(color_class != 'default')  new_class += ' header-color-'+color_class;
+					$(this).closest('.widget-header').attr('class', new_class);
+				});
+			
+				// scrollables
+				$('.slim-scroll').each(function () {
+					var $this = $(this);
+					$this.slimScroll({
+						height: $this.data('height') || 100,
+						railVisible:true
+					});
+				});
+			
+				// Portlets (boxes)
+			    $('.widget-container-span').sortable({
+			        connectWith: '.widget-container-span',
+					items:'> .widget-box',
+					opacity:0.8,
+					revert:true,
+					forceHelperSize:true,
+					placeholder: 'widget-placeholder',
+					forcePlaceholderSize:true,
+					tolerance:'pointer'
+			    });
+			}
+			
+			//GESTION DU MENU
+			function init_menu() {
+				//AFFICHAGE DES ZONES
+				var _dc = new Date().getTime();
+				$.getJSON("../back/client.php?output=JSON&view=view_zones&limit=1000&_dc="+_dc, function(data) {
+					var items = '';
+					$.each(data.request.content.module, function(key, val) {
+						if (val.nom.charAt(0) != '_') {
+                            items += '\
+							    <li class="">\
+                                    <a data-zone="'+val.nom+'" href="#'+val.nom+'">\
+                                        <i class="menu-icon fa fa-caret-right"></i>\
+                                        <span class="menu-text"> '+val.nom+' </span>\
+                                    </a>\
+                                    <b class="arrow"></b>\
+                                </li>\
+							';
+						}
+					});
+					$(items).appendTo("#submenu_zone");
+					
+					$(window)
+					.off('hashchange.ajax')
+					.on('hashchange.ajax', function(e, manual_trigger) {
+						var hash = $.trim(window.location.hash);
+						if(!hash || hash.length == 0) {
+							print_zone('home');
+							return;
+						}
+						
+						hash = hash.replace(/^(\#\!)?\#/, '');
+						if (!hash) {
+							hash = 'home';
+						}
+						$('#sidebar').removeClass('display');
+						print_zone(hash);
+					}).trigger('hashchange.ajax', [true]);
+				});
+			}
+
+			//SUPPRESSION DES WIDGETS
+			var callbacks_close_widgets = [];
+			function close_widgets(callback) {
+			    if (callbacks_close_widgets.indexOf(callback) < 0) {
+			        callbacks_close_widgets.push(callback);
+			    }
+			};
+			
+			//AFFICHAGE DES WIDGETS
+			function print_widget(widgetSrc, widgetReplacement) {
+				var _dc = new Date().getTime();
+				$.get( "widgets/"+widgetSrc+"?_dc="+_dc, function( data ) {
+					var widget = data;
+					$.each( widgetReplacement, function( widget_key, widget_val ) {
+						var find = '#'+widget_key+'#';
+						var reg = new RegExp(find, 'g');
+						widget = widget.replace(reg, widget_val);
+					});
+					$(widget).appendTo( "#widgets" );
+				});
+			}
+			
+			//AFFICHAGE DES ZONES
+			function print_zone(zone) {
+				//SUPPRESSION DU CONTENU
+				$( "#widgets" ).empty();
+				$.each(callbacks_close_widgets, function(key, callback) {
+					callback();
+				});
+				callbacks_close_widgets = [];
+				//RECUPERATION DES ELEMENTS POUR L'ACCUEIL
+				if (zone == 'home') {
+					//ECRITURE DU TITRE
+					$(".breadcrumb li a").html('Bienvenue chez vous');
+					$(".breadcrumb .active").html('');
+					$.each ( lists_accueil, function( widgets_key, widgets_val ) {
+						//AFFICHAGE DES WIDGETS
+						var _dc = new Date().getTime();
+						$.get( "widgets/"+widgets_val.page+"?_dc="+_dc, function( data ) {
+							var widget = data;
+							$(widget).appendTo( "#widgets" );
+						});
+						return;
+					});
+				} else {
+					//ECRITURE DU TITRE
+					$(".breadcrumb li a").html('Zone');
+					$(".breadcrumb .active").html(decodeURI(zone));
+					//RECUPERATION DES ELEMENTS POUR LES ZONES
+					var param = encodeURI('[{"type":"list","value":["'+zone+'"],"field":"zone"}]');
+					var _dc = new Date().getTime();
+					$.getJSON( "../back/client.php?output=JSON&view=view_equipements&filter="+param+"&limit=1000&_dc="+_dc, function( data ) {
+						if (data.request.content.module) {
+							if ($.isArray(data.request.content.module)) {
+								var modules = data.request.content.module;
+							} else {
+								var modules = [];
+								modules[0] = data.request.content.module;
+							}
+							$.each( modules, function( equipements_key, equipements_val ) {
+								var id_legrand = equipements_val.id_legrand;
+								var userWidget = false;
+								$.each ( lists_id, function( widgets_key, widgets_val ) {
+									//AFFICHAGE DES WIDGETS
+									if (widgets_key == id_legrand) {
+										if (widgets_val[0] != '') {
+											print_widget(widgets_val[0], equipements_val);
+										}
+										userWidget = true;
+										return;
+									}
+								});
+								if (userWidget === false) {
+									var ref_legrand = equipements_val.ref_legrand;
+									$.each ( lists_ref, function( widgets_key, widgets_val ) {
+										//AFFICHAGE DES WIDGETS
+										if (widgets_key == ref_legrand) {
+											print_widget(widgets_val[0], equipements_val);
+											return;
+										}
+									});
+								}
+							});						
+						}
+					});
+				}
+			}
+
+			var lists_ref;
+			var lists_accueil;
+			jQuery(function($) {
+				//RECUPERATION DES WIDGETS
+				var _dc = new Date().getTime();
+				$.getJSON( "widgets/lists_id.json?_dc="+_dc, function( data ) {
+					lists_id = data;
+				});
+				$.getJSON( "widgets/lists_ref.json?_dc="+_dc, function( data ) {
+					lists_ref = data;
+				});
+				$.getJSON( "widgets/lists_accueil.json?_dc="+_dc, function( data ) {
+					lists_accueil = data;
+				});
+				
+				init_interface();
+				init_menu();
+			});
+			
+			function toggleFullScreen() {
+				var doc = window.document;
+				var docEl = doc.documentElement;
+				
+				var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen;
+				var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen;
+				
+				if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement) {
+					requestFullScreen.call(docEl);
+				}
+				else {
+					cancelFullScreen.call(doc);
+				}
+			}
+			toggleFullScreen();
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,189 @@
+<!-- 
+LISTE DES VARIABLES UTILISABLES
+#nom# -> Nom donner au produit
+#zone# -> Nom de la zone ou est situé le produit
+#reference# -> Nom de la référnence Legrand (ex:Inter Variateur 300W à voyant)
+#id_legrand# -> id du produit
+#ref_legrand# -> référence legrand
+#media# -> type de media pour le produit (CPL,RF,IR)
+#family# -> famille du produit (LIGHTING,SHUTTER,etc.)
+#unit_code# -> code du unit
+ -->
+
+<!-- Widget Inter Simple -->
+<div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 widget-container-col" id="#id_legrand#">
+	<div class="widget-box" id="tools_#id_legrand#">
+		<div class="widget-header">
+			<h5 class="widget-title">#nom#</h5>
+
+			<div class="widget-toolbar">
+                <a href="#" data-action="reload">
+                    <i class="ace-icon fa fa-refresh"></i>
+                </a>
+    
+                <a href="#" data-action="collapse">
+                    <i class="ace-icon fa fa-chevron-up"></i>
+                </a>
+    
+                <a href="#" data-action="close">
+                    <i class="ace-icon fa fa-times"></i>
+                </a>
+			</div>
+		</div>
+		<div class="widget-body">
+			<div class="widget-main">
+				<div class="row" id="#id_legrand#_MODULE_0" style="display:none">
+					<div class="col-xs-4 text-right">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_OFF_0">
+							<div><i class="fa fa-power-off bigger-200"></i></div>
+							<div>OFF</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-left">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ON_0">
+							<div><i class="fa fa-sun-o bigger-200"></i></div>
+							<div>ON</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-center">
+						<div id="#id_legrand#_STATUS_0">
+							<img src="widgets/interPoussoir/Lightbulb-unknown.png" height="70px">
+						</div>
+					</div>
+				</div>
+				<div class="row" id="#id_legrand#_MODULE_1" style="display:none">
+					<div class="col-xs-4 text-right">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_OFF_1">
+							<div><i class="fa fa-power-off bigger-200"></i></div>
+							<div>OFF</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-left">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ON_1">
+							<div><i class="fa fa-sun-o bigger-200"></i></div>
+							<div>ON</div>
+						</a>
+					</div>
+					<div class="col-xs-4 text-center">
+						<div id="#id_legrand#_STATUS_1">
+							<img src="widgets/interPoussoir/Lightbulb-unknown.png" height="70px">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//VARIABLE DU WIDGET (SEUL VARIABLE GOLBALE)
+var widget_#id_legrand# = {};
+widget_#id_legrand#.module = [];
+widget_#id_legrand#.media = '#media#';
+widget_#id_legrand#.reference = '#reference#';
+
+//DEFINITION DES ACTIONS EN FONCTION DES MODULES
+if ('#ref_legrand#' == '67201'
+	|| '#ref_legrand#' == '67203'
+	|| '#ref_legrand#' == '3600'
+	|| '#ref_legrand#' == '88202') {
+	widget_#id_legrand#.module[0] = {};
+	widget_#id_legrand#.module[0].unit_status = 2;
+	widget_#id_legrand#.module[0].trame = [];
+	widget_#id_legrand#.module[0].trame["#id_legrand#_ON_0"] = InOne.ownManager_createFrame('#id_legrand#|2', 'ON', 'AU', [], 'CPL');
+	widget_#id_legrand#.module[0].trame["#id_legrand#_OFF_0"] = InOne.ownManager_createFrame('#id_legrand#|2', 'OFF', 'AU', [], 'CPL');
+}
+if ('#ref_legrand#' == '67202'
+	|| '#ref_legrand#' == '67204') {
+	widget_#id_legrand#.module[0] = {};
+	widget_#id_legrand#.module[0].unit_status = 3;
+	widget_#id_legrand#.module[0].trame = [];
+	widget_#id_legrand#.module[0].trame["#id_legrand#_ON_0"] = InOne.ownManager_createFrame('#id_legrand#|3', 'ON', 'AU', [], 'CPL');
+	widget_#id_legrand#.module[0].trame["#id_legrand#_OFF_0"] = InOne.ownManager_createFrame('#id_legrand#|3', 'OFF', 'AU', [], 'CPL');
+	widget_#id_legrand#.module[1] = {};
+	widget_#id_legrand#.module[1].unit_status = 4;
+	widget_#id_legrand#.module[1].trame = [];
+	widget_#id_legrand#.module[1].trame["#id_legrand#_ON_1"] = InOne.ownManager_createFrame('#id_legrand#|4', 'ON', 'AU', [], 'CPL');
+	widget_#id_legrand#.module[1].trame["#id_legrand#_OFF_1"] = InOne.ownManager_createFrame('#id_legrand#|4', 'OFF', 'AU', [], 'CPL');
+}
+if ('#ref_legrand#' == '67238') {
+	widget_#id_legrand#.module[0] = {};
+	widget_#id_legrand#.module[0].unit_status = 1;
+	widget_#id_legrand#.module[0].trame = [];
+	widget_#id_legrand#.module[0].trame["#id_legrand#_ON_0"] = InOne.ownManager_createFrame('#id_legrand#|1', 'ON', 'B', [], 'RF');
+	widget_#id_legrand#.module[0].trame["#id_legrand#_OFF_0"] = InOne.ownManager_createFrame('#id_legrand#|1', 'OFF', 'B', [], 'RF');
+	widget_#id_legrand#.module[1] = {};
+	widget_#id_legrand#.module[1].unit_status = 2;
+	widget_#id_legrand#.module[1].trame = [];
+	widget_#id_legrand#.module[1].trame["#id_legrand#_ON_1"] = InOne.ownManager_createFrame('#id_legrand#|2', 'ON', 'B', [], 'RF');
+	widget_#id_legrand#.module[1].trame["#id_legrand#_OFF_1"] = InOne.ownManager_createFrame('#id_legrand#|2', 'OFF', 'B', [], 'RF');
+}
+
+//GESTION DES BOUTONS
+$.each(widget_#id_legrand#.module, function(module_key) {
+	$('##id_legrand#_MODULE_'+module_key).show();
+	$('##id_legrand#_MODULE_'+module_key+' .btn').each(function() {
+		var btn = $(this);
+		var action = btn.attr('data-action');
+		$('[data-action="'+action+'"]').click(function() {
+			var trame = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.module[module_key].trame[action]);
+			var _dc = new Date().getTime();
+			$.getJSON( "../back/client.php?output=JSON&type=trame&send_command="+trame+"&_dc="+_dc, function( data ) {
+				;
+			});
+			if (action.match(/ON/)) {
+				$('##id_legrand#_STATUS_'+module_key+' img').attr('src', 'widgets/interPoussoir/Lightbulb-on.png');
+			} else if (action.match(/OFF/)) {
+				$('##id_legrand#_STATUS_'+module_key+' img').attr('src', 'widgets/interPoussoir/Lightbulb-off.png');
+			}
+		});
+	});
+});
+
+
+//GESTION DE LA MISE A JOUR
+widget_#id_legrand#.load = function(autoreload) {
+	var param_#id_legrand# = encodeURI('[{"type":"string","value":"#id_legrand#","field":"id_legrand"}]');
+	var _dc = new Date().getTime();
+	$.getJSON( "../back/client.php?output=JSON&view=view_equipements_status&filter="+param_#id_legrand#+"&limit=16&_dc="+_dc, function( data ) {
+		if ($.isArray(data.request.content.module)) {
+			var modules = data.request.content.module;
+		} else {
+			var modules = [];
+			modules[0] = data.request.content.module;
+		}
+		$.each(modules, function(module_key, module_val) {
+			var module = module_val;
+			$.each(widget_#id_legrand#.module, function(widgetStatus_key) {
+				if (module.unit_status == widget_#id_legrand#.module[widgetStatus_key].unit_status) {
+					var status_value = 0;
+					var status_text = module.status;
+					if (module.status == 'OFF'
+						|| module.status == '0') {
+						status_value = 0;
+						$('##id_legrand#_STATUS_'+widgetStatus_key+' img').attr('src', 'widgets/interPoussoir/Lightbulb-off.png');
+					} else if (module.status == 'ON'
+							|| module.status == '100') {
+						status_value = 100;
+						$('##id_legrand#_STATUS_'+widgetStatus_key+' img').attr('src', 'widgets/interPoussoir/Lightbulb-on.png');
+					}
+				}
+			});
+		});
+	});
+	if (autoreload === true) {
+		widget_#id_legrand#.timeout = setTimeout("widget_#id_legrand#.load(true)",10000);
+	}
+};
+widget_#id_legrand#.load(true);
+
+//GESTION DU BOUTON RELOAD
+$('#tools_#id_legrand#').on('reload.ace.widget', function(e) {
+	widget_#id_legrand#.load();
+});
+
+//GESTION DE LA FERMETURE
+close_widgets(function() {
+	clearTimeout(widget_#id_legrand#.timeout);
+});
+</script>
+<!-- /Widget Inter Simple -->
