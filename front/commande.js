@@ -213,7 +213,7 @@ var createCommande = function(action) {
 	});
 
 	var formResultTrame = Ext.create('Ext.grid.Panel', {
-		title : 'Trames générées', 
+		title : 'Trames Enregistrées', 
 		store: Ext.data.StoreManager.lookup('savedTrame'),
         viewConfig: {
             stripeRows: true,
@@ -222,14 +222,49 @@ var createCommande = function(action) {
 		height:200,
 		disableSelection: false,
 		columns: [
-			{text: "Trame", dataIndex: 'trame', sortable: false, width: 272},
-			{text: "id Legrand", dataIndex: 'id_legrand', sortable: false, width: 95},
-			{text: "Unite", dataIndex: 'unit', sortable: false, width: 58},
-			{text: "Action", dataIndex: 'action', sortable: false, width: 198},
-			{text: "Param", dataIndex: 'param', sortable: false, width: 143},
-			{text: "Media", dataIndex: 'media', sortable: false, width: 84},
-			{text: "Mode", dataIndex: 'mode', sortable: false, width: 83}
-		]
+			{text: "Trame", dataIndex: 'trame', sortable: false, width: 250},
+			{text: "id Legrand", dataIndex: 'id_legrand', sortable: false, width: 80},
+			{text: "Unite", dataIndex: 'unit', sortable: false, width: 50},
+			{text: "Action", dataIndex: 'action', sortable: false, width: 150},
+			{text: "Param", dataIndex: 'param', sortable: false, width: 130},
+			{text: "Media", dataIndex: 'media', sortable: false, width: 60},
+			{text: "Mode", dataIndex: 'mode', sortable: false, width: 60},
+			{
+				xtype:'actioncolumn', tooltip:'Opération sur l\'équipement',
+				text: 'Action', width: 70,
+				items: [{
+					icon: 'imgs/gears.png',
+					tooltip: 'Lancer la commande',
+					handler: function(grid, rowIndex, colIndex) {
+						var rec = grid.getStore().getAt(rowIndex);
+						rec.get();
+						console.log(rec);
+					}
+				},{
+					icon: 'imgs/delete.png',
+					tooltip: 'Effacer la commande',
+					handler: function(grid, rowIndex, colIndex) {
+						var rec = grid.getStore().getAt(rowIndex);
+						console.log(rec);
+					}
+				}]
+			}
+		],
+		//Creation des boutons
+		dockedItems: [{
+			xtype: 'toolbar',
+			items: [{
+				id:'commandeToolbarBtnDeleteAll',
+				icon: 'imgs/delete.png',
+				text: 'Tout effacer',
+				tooltip:'Effacer toutes les commandes Enregistrées !',
+				disabled: false,
+				handler: function(widget, event) {
+					equipements.win.add();
+				}
+			}]
+		}]
+
 	});
 
 	if (action == 'send') {
@@ -294,7 +329,7 @@ var createCommande = function(action) {
 			items: [{
 				xtype: 'form',
 				id: 'formGenerateCommande',
-				items: [formRef, formAction, formMedia, formResultTrame]
+				items: [formRef, formAction, formMedia, formDiffere, formResultTrame]
 			}],
 			textarea: {
 				name: 'result',
