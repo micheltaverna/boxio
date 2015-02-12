@@ -225,7 +225,8 @@ Ext.define('favoris',{
 		{name: 'nom', type: 'string'}, 
 		{name: 'trame', type: 'string'},
 		{name: 'conditions', type: 'string'},
-		{name: 'actions', type: 'string'}
+		{name: 'actions', type: 'string'},
+		{name: 'commentaires', type: 'string'}
 	]
 });
 
@@ -245,7 +246,8 @@ Ext.define('triggers',{
 		{name: 'triggers', type: 'string'}, 
 		{name: 'conditions', type: 'string'},
 		{name: 'actions', type: 'string'}, 
-		{name: 'active', type: 'int'}
+		{name: 'active', type: 'int'},
+		{name: 'commentaires', type: 'string'}
 	]
 });
 
@@ -404,6 +406,15 @@ Ext.define('cron',{
 		{name: 'id_cron', mapping: 'id', type: 'int'}, 
 		{name: 'nom', type: 'string'}, 
 		{name: 'readCron', convert:function(value, record) {
+			var sunset = record.get('sunset');
+			if (sunset == true) {
+	            return ('<div style="white-space:normal !important;">Au <span class="result_cell_horodatage">Coucher du Soleil</span> à <span class="result_cell_horodatage">'+record.get('heures')+' heures '+record.get('minutes')+'</span> (Mise à jour de l\'heure toutes les 5 minutes)</div>');
+			}
+			var sunrise = record.get('sunrise');
+			if (sunrise == true) {
+	            return ('<div style="white-space:normal !important;">Au <span class="result_cell_horodatage">Lever du Soleil</span> à <span class="result_cell_horodatage">'+record.get('heures')+' heures '+record.get('minutes')+'</span> (Mise à jour de l\'heure toutes les 5 minutes)</div>');
+			}
+
 			var minutes = record.get('minutes');
 			if (minutes == '*') {
 				minutes = '<span class="result_cell_horodatage">Toutes</span> les minutes';
@@ -494,7 +505,7 @@ Ext.define('cron',{
 				mois = mois.replace('7', ' juillet');
 				mois = mois.replace('8', ' août');
 				mois = mois.replace('9', ' septembre');
-			}
+			}			
             return ('<div style="white-space:normal !important;">'+minutes+heures+jour+jourSemaine+mois+'</div>');
 		}},
 		{name: 'minutes', type: 'string'}, 
@@ -507,7 +518,10 @@ Ext.define('cron',{
 		{name: 'id_macro', type: 'int'}, 
 		{name: 'nom_macro', type: 'string'}, 
 		{name: 'trame', type: 'string'}, 
-		{name: 'active', type: 'int'}
+		{name: 'active', type: 'int'},
+		{name: 'sunset', type: 'int'},
+		{name: 'sunrise', type: 'int'},
+		{name: 'commentaires', type: 'string'}
 	]
 });
 

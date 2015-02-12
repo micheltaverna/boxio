@@ -908,6 +908,7 @@ function cron() {
 					xtype: 'textfield',
 					flex: 4,
 					name: 'minutes',
+					id: 'minutes',
 					fieldLabel: 'Minutes',
 					msgTarget: 'side',
 					labelWidth: 120,
@@ -929,6 +930,7 @@ function cron() {
 					xtype: 'textfield',
 					flex: 4,
 					name: 'heures',
+					id: 'heures',
 					fieldLabel: 'Heures',
 					msgTarget: 'side',
 					labelWidth: 120,
@@ -950,6 +952,7 @@ function cron() {
 					xtype: 'textfield',
 					flex: 4,
 					name: 'jour',
+					id: 'jour',
 					fieldLabel: 'Jours du mois',
 					msgTarget: 'side',
 					labelWidth: 120,
@@ -971,6 +974,7 @@ function cron() {
 					xtype: 'textfield',
 					flex: 4,
 					name: 'jourSemaine',
+					id: 'jourSemaine',
 					fieldLabel: 'Jours de la semaine',
 					labelWidth: 120,
 					msgTarget: 'side',
@@ -992,6 +996,7 @@ function cron() {
 					xtype: 'textfield',
 					flex: 4,
 					name: 'mois',
+					id: 'mois',
 					fieldLabel: 'Mois',
 					msgTarget: 'side',
 					labelWidth: 120,
@@ -1006,6 +1011,83 @@ function cron() {
 					handler: function() {
 						cron.win.month();
 				    }
+				}]
+			},{
+				xtype: 'radiogroup',
+				fieldLabel: 'Soleil',
+				items: [{
+					xtype: 'radiofield',
+					name: 'sun',
+					inputValue: 'none',
+					checked: true,
+					boxLabel: 'Non',
+					listeners: {
+                		change: function (cb, nv, ov) {
+                    		if (nv) {
+								Ext.getCmp('minutes').enable();
+								Ext.getCmp('heures').enable();
+								Ext.getCmp('jour').enable();
+								Ext.getCmp('jourSemaine').enable();
+								Ext.getCmp('mois').enable();
+								var form = Ext.getCmp('formAddCron').getForm();
+								form.setValues({
+									minutes:'',
+									heures:'',
+									jour:'',
+									jourSemaine:'',
+									mois:'',
+								});
+							}
+                		}
+            		}
+				},{
+					xtype: 'radiofield',
+					name: 'sun',
+					inputValue: 'sunset',
+					boxLabel: 'Coucher',
+					listeners: {
+                		change: function (cb, nv, ov) {
+                    		if (nv) {
+								Ext.getCmp('minutes').disable();
+								Ext.getCmp('heures').disable();
+								Ext.getCmp('jour').disable();
+								Ext.getCmp('jourSemaine').disable();
+								Ext.getCmp('mois').disable();
+								var form = Ext.getCmp('formAddCron').getForm();
+								form.setValues({
+									minutes:'0',
+									heures:'*',
+									jour:'*',
+									jourSemaine:'*',
+									mois:'*',
+								});
+							}
+                		}
+            		}
+				},{
+					xtype: 'radiofield',
+					name: 'sun',
+					inputValue: 'sunrise',
+					boxLabel: 'Lever',
+					listeners: {
+                		change: function (cb, nv, ov) {
+                    		if (nv) {
+								Ext.getCmp('minutes').disable();
+								Ext.getCmp('heures').disable();
+								Ext.getCmp('jour').disable();
+								Ext.getCmp('jourSemaine').disable();
+								Ext.getCmp('mois').disable();
+								var form = Ext.getCmp('formAddCron').getForm();
+								form.setValues({
+									minutes:'0',
+									heures:'*',
+									jour:'*',
+									jourSemaine:'*',
+									mois:'*',
+								});
+							}
+                		}
+            		}
 				}]
 			}]
 		},
@@ -1184,6 +1266,11 @@ function cron() {
 			encode = Ext.String.htmlEncode;
 			var error = false;
 			if (form.isValid()) {
+				Ext.getCmp('minutes').enable();
+				Ext.getCmp('heures').enable();
+				Ext.getCmp('jour').enable();
+				Ext.getCmp('jourSemaine').enable();
+				Ext.getCmp('mois').enable();
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
 				var minutes = encode(formValues.minutes);
@@ -1195,10 +1282,13 @@ function cron() {
 				var macros = formValues.macros||'null';
 				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
 				var active = formValues.active=='oui'?'true':'false';
+				var sunset = formValues.sunset=='sun'?'true':'false';
+				var sunrise = formValues.sunrise=='sun'?'true':'false';
+				var commentaires = '';
 				if (favoris == 'null' && macros == 'null' && trame == 'null') {
 					error = true;
 				} else {
-					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
+					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active+","+sunset+","+sunrise+",'"+commentaires+"'";
 					requestCall('add_cron', params, {ok:'jalon ajouté !', error:'impossible d\'ajouter le jalon !'}, {
 						onsuccess:function(response){
 							Ext.getCmp('formAddCron').getForm().reset();
@@ -1233,6 +1323,11 @@ function cron() {
 			encode = Ext.String.htmlEncode;
 			var error = false;
 			if (form.isValid()) {
+				Ext.getCmp('minutes').enable();
+				Ext.getCmp('heures').enable();
+				Ext.getCmp('jour').enable();
+				Ext.getCmp('jourSemaine').enable();
+				Ext.getCmp('mois').enable();
 		        Ext.getCmp('formRefNomaddCron').enable(true);
 				var formValues = form.getValues();
 				var nom = encode(formValues.nom);
@@ -1244,11 +1339,14 @@ function cron() {
 				var favoris = formValues.favoris||'null';
 				var macros = formValues.macros||'null';
 				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
+				var sunset = formValues.sun=='sunset'?'true':'false';
+				var sunrise = formValues.sun=='sunrise'?'true':'false';
 				var active = formValues.active=='oui'?'true':'false';
+				var commentaires = '';
 				if (favoris == 'null' && macros == 'null' && trame == 'null') {
 					error = true;
 				} else {
-					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active;
+					var params = "'"+nom+"','"+minutes+"','"+heures+"','"+jour+"','"+jourSemaine+"','"+mois+"',"+favoris+","+macros+","+trame+","+active+","+sunset+","+sunrise+",'"+commentaires+"'";
 					requestCall('add_cron', params, {ok:'jalon modifié !', error:'impossible de modifier le jalon !'}, {
 						onsuccess:function(response){
 							Ext.getCmp('formAddCron').getForm().reset();
