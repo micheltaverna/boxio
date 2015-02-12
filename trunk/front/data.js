@@ -308,6 +308,7 @@ new Ext.data.Store({
 	pageSize: 20,
 	remoteSort: true,
 	autoLoad: false,
+	groupField: 'active',
 	listeners: {
 		load: function(t, data) {
 			if (data[0] && data[0].get('login_status') === 'false') {
