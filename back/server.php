@@ -77,8 +77,7 @@ class boxio_server {
 	/*
 	 * FONCTION : DECODE ENTITY HTML
 	 */
-	private function html_entity_decode_numeric($string, $quote_style = ENT_COMPAT, $charset = "utf-8")
-	{
+	private function html_entity_decode_numeric($string, $quote_style = ENT_COMPAT, $charset = "utf-8") {
 		$string = html_entity_decode($string, $quote_style, $charset);
 		$string = preg_replace_callback('~&#x([0-9a-fA-F]+);~i', function ($matches) {
 			$num = hexdec($matches[1]);
@@ -337,7 +336,7 @@ class boxio_server {
 	}
 
 	/*
-	// FONCTION : CALCUL UNE VALEUR IOBL DECOMPOSE DE TEMPERATTURE EN UNE VALEUR ENTIERE
+	// FONCTION : CALCUL UNE VALEUR IOBL DECOMPOSE DE TEMPERATURE EN UNE VALEUR ENTIERE
 	// PARAMS : $iobl_value1 => string, $iobl_value2 => string
 	// RETOURNE : LA VALEUR EN POURCENTAGE
 	*/
@@ -758,6 +757,9 @@ class boxio_server {
 			} else {
 				$status = 'CONFORT';
 			}
+		//ARRET DE LA DEROGATION
+		} else if ($decrypted_trame["value"] == 'FIN_DEROGATION') {
+				$status = 'CONFORT';
 		//ACTION INCONNU
 		} else {
 			return;
@@ -1061,7 +1063,8 @@ class boxio_server {
 					$this->mysqli->query($query);
 				}
 			//GESTION DES CONFORT
-			} else if ($type == 'CONFORT') {
+			} 
+			else if ($type == 'CONFORT') {
 				//Valeur par defaut
 				$status = false;
 				if ($definition[0] == 'inter_confort') {
@@ -1319,6 +1322,11 @@ class boxio_server {
 		echo "Connexion a l'interface et a la socket\n";
 		$this->unlock_socket = false;
 		while (!feof($this->fd_socket) || $this->unlock_socket) {
+			//Si la socket crash !!
+			if ($this->fd_socket === FALSE || $this->fd_socket === NULL) {
+				print "\n".date("Y-m-d H:i:s")."-La socket est corompue => ".$this->fd_socket."\n";
+				break;
+			}
 			$this->unlock_socket = false;
 			//Boucle infinie sur la socket ouverte
 			//Lecture de la socket
@@ -1329,7 +1337,7 @@ class boxio_server {
 			//Analise et sauvegarde de la trame recu
 			while (preg_match("/(.*?##)(.*)$/", $trame, $matches)) {
 				if ($this->conf->DEBUG_LEVEL > 2) {
-					print "\n".date("Y-m-d H:i:s")."-New trame => ".$matches[1]."\n";
+					print "\n".date("Y-m-d H:i:s")."-New trame => ".$matches[1]."\n"; 
 				}
 				//On ne sauvegarde pas les trames ACK et NACK qui ne servent ра rien ! car pas d'identifiant sur qui l'a envoyer !!??
 				if (!preg_match($this->def->OWN_TRAME['ACK'], $matches[1]) && !preg_match($this->def->OWN_TRAME['NACK'], $matches[1])) {
