@@ -3,6 +3,13 @@
 */
 
 var sendCommand = function(type, trame, dateFormat, delay) {
+	var params = { type: type, send_command: trame };
+	if (dateFormat !== undefined) {
+		params.date = dateFormat;
+	}
+	if (delay != undefined) {
+		params.delay = delay;
+	}
 	Ext.Ajax.request({
 		url: '../back/client.php',
 		method: 'GET',
@@ -12,7 +19,7 @@ var sendCommand = function(type, trame, dateFormat, delay) {
 		failure: function(response) {
 			Ext.myMsg.msg('Information', 'Erreur : La trame n\'a pas été envoyé !');
 		},
-		params: { type: type, send_command: trame, date: dateFormat, delay: delay }
+		params: params
 	});
 };
 

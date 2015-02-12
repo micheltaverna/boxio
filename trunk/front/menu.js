@@ -11,7 +11,7 @@ new Ext.toolbar.Toolbar({
     },
     items: [{
 		xtype: 'buttongroup',
-		title: 'Utilisateur',
+		title: 'Programmation',
 		defaults: {
 			scale: 'large',
 			iconAlign:'top'
@@ -39,39 +39,6 @@ new Ext.toolbar.Toolbar({
 				clickEvent: 'mousedown',
 				handler: function() {
 					equipements.win.add();
-				}
-			}]
-		},{
-			xtype:'splitbutton',
-			text: 'Commande',
-			icon: 'imgs/bolt_32x32.png',
-			arrowAlign:'bottom',
-			clickEvent: 'mousedown',
-			handler: function() {
-				createCommande('send');
-			},
-			menu: [{
-				text: 'Exécuter une commande',
-				clickEvent: 'mousedown',
-				handler: function() {
-					createCommande('send');
-				}
-			}]
-		},{
-			xtype:'splitbutton',
-			text: 'Statut',
-			icon: 'imgs/magnifying_glass_32x32.png',
-			arrowAlign:'bottom',
-			clickEvent: 'mousedown',
-			handler: function() {
-				status.func.panelList();
-			},
-			menu: [{
-				text: 'Vérifier le statut',
-				icon: 'imgs/magnifying_glass_32x32.png',
-				clickEvent: 'mousedown',
-				handler: function() {
-					status.func.panelList();
 				}
 			}]
 		},{
@@ -144,28 +111,51 @@ new Ext.toolbar.Toolbar({
 					cron.win.add();
 				}
 			}]
+		},{
+			xtype:'splitbutton',
+			text: 'Déclencheurs',
+			icon: 'imgs/target_32x32.png',
+			arrowAlign:'bottom',
+			handler: function() {
+				triggers.func.panelList();
+			},
+			menu: [{
+				text: 'Voir les déclencheurs',
+				icon: 'imgs/target_32x32.png',
+				handler: function() {
+					triggers.func.panelList();
+				}
+			},{
+				text: 'Ajouter un déclencheur',
+				icon: 'imgs/target_32x32.png',
+				clickEvent: 'mousedown',
+				handler: function() {
+					triggers.win.add();
+				}
+			}]
 		}]
 	},{
 		xtype: 'buttongroup',
-		title: 'Programmation',
+		title: 'Information',
 		defaults: {
 			scale: 'large',
 			iconAlign:'top'
 		},
 		items: [{
 			xtype:'splitbutton',
-			text: 'Références',
-			icon: 'imgs/plus_alt_32x32.png',
+			text: 'Statut',
+			icon: 'imgs/magnifying_glass_32x32.png',
 			arrowAlign:'bottom',
 			clickEvent: 'mousedown',
 			handler: function() {
-				openReferences();
+				status.func.panelList();
 			},
 			menu: [{
-				text: 'Ajouter une référence',
+				text: 'Vérifier le statut',
+				icon: 'imgs/magnifying_glass_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
-					openReferences();
+					status.func.panelList();
 				}
 			}]
 		},{
@@ -178,7 +168,8 @@ new Ext.toolbar.Toolbar({
 				openScenarios();
 			},
 			menu: [{
-				text: 'Gérer les scénarios',
+				text: 'Voir les scénarios',
+				icon: 'imgs/movie_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
 					openScenarios();
@@ -186,16 +177,19 @@ new Ext.toolbar.Toolbar({
 			}]
 		},{
 			xtype:'splitbutton',
-			text: 'Déclencheurs',
-			icon: 'imgs/target_32x32.png',
+			text: 'Références',
+			icon: 'imgs/plus_alt_32x32.png',
 			arrowAlign:'bottom',
+			clickEvent: 'mousedown',
 			handler: function() {
-				triggers.func.panelList();
+				openReferences();
 			},
 			menu: [{
-				text: 'Créer un Déclencheur',
+				text: 'Références Gérées',
+				icon: 'imgs/plus_alt_32x32.png',
+				clickEvent: 'mousedown',
 				handler: function() {
-					triggers.win.add();
+					openReferences();
 				}
 			}]
 		}]
@@ -215,7 +209,8 @@ new Ext.toolbar.Toolbar({
 				users.func.panelList();
 			},
 			menu: [{
-				text: 'Modifier l\'utilisateur',
+				text: 'Liste des utilisateurs',
+				icon: 'imgs/user_24x32.png',
 				handler: function() {
 					users.func.panelList();
 				}
@@ -245,7 +240,7 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'Vérifier les mises à jours',
-				icon: 'imgs/box_32x32.png',
+				icon: 'imgs/cloud_download_32x32.png',
 				handler: function() {
 					update.func.panelList();
 				}
@@ -270,13 +265,14 @@ new Ext.toolbar.Toolbar({
 			menu: [{
 				text: 'Lecture du Bus',
 				clickEvent: 'mousedown',
+				icon: 'imgs/eye_32x24.png',
 				handler: function() {
 					openTrame();
 				}
 			}]
 		},{
 			xtype:'splitbutton',
-			text: 'Générateur de Commande',
+			text: 'Commandes',
 			icon: 'imgs/cog_32x32.png',
 			arrowAlign:'bottom',
 			handler: function() {
@@ -284,6 +280,7 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'Générer une commande',
+				icon: 'imgs/cog_32x32.png',
 				clickEvent: 'mousedown',
 				handler: function() {
 					createCommande('generate');
@@ -300,6 +297,7 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'Boxio',
+				icon: 'imgs/book_alt2_32x28.png',
 				handler: function() {
 					openDoc();
 				}
@@ -338,6 +336,7 @@ new Ext.toolbar.Toolbar({
 			},
 			menu: [{
 				text: 'L\'Auteur',
+				icon: 'imgs/question_mark_16x32.png',
 				handler: function() {
 					openAuthor();
 				}
@@ -351,7 +350,7 @@ new Ext.toolbar.Toolbar({
 			iconAlign:'top'
 		},
 		items: [{
-			xtype:'splitbutton',
+			xtype:'button',
 			text: 'Déconnecter',
 			icon: 'imgs/lock_stroke_24x32.png',
 			arrowAlign:'bottom',

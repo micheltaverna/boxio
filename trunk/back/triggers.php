@@ -347,6 +347,9 @@ class triggers {
 			if ($trigger_status == true) {
 				print "\nTrigger Valide ! (".$trigger.")\n";
 			}
+			else if ($trigger_status == false) {
+				print "\nTrigger Invalide ! (".$trigger.")\n";
+			}
 		}
 		return $trigger_status;
 	}

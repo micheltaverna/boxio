@@ -32,6 +32,12 @@ function favoris() {
 				fieldLabel: 'Actions',
 				msgTarget: 'side',
 				allowBlank: true
+			},{
+				xtype: 'textarea',
+				name: 'commentaires',
+				fieldLabel: 'Commentaires',
+				msgTarget: 'side',
+				allowBlank: true
 			}]
 		}
 	};
@@ -50,6 +56,9 @@ function favoris() {
 				height: 500,
 				autoScroll: true,
 				closable: true,
+				viewConfig: {
+		            enableTextSelection: true
+		        },
 				selModel: {
 					listeners: {
 				        selectionchange: function(sm, selections) {
@@ -76,17 +85,16 @@ function favoris() {
 			        }]
 			    }],
 				columns: [
-					{text: 'Id', dataIndex: 'id', width: 131,
+					{text: 'Id', dataIndex: 'id', width: 40,
 						filter: {
 							type: 'string'
-						}, hidden: true, tooltip: 'Identifiant du Favoris'
+						}, hidden: false, tooltip: 'Identifiant du Favoris'
 					},
-					{text: 'Nom', dataIndex: 'nom', width: 131, filter: {
+					{text: 'Nom', dataIndex: 'nom', width: 250, filter: {
 						type: 'string'
 					}, tooltip: 'Nom du Favoris'}, 
-					{text: 'Trame', dataIndex: 'trame', width: 131, tooltip: 'Trame à éxecuter'},
-					{text: 'Conditions', dataIndex: 'conditions', width: 131, tooltip: 'conditions à vérifier'},
-					{text: 'Actions', dataIndex: 'actions', width: 131, tooltip: 'actions à éxecuter'},
+					{text: 'Commentaires', dataIndex: 'commentaires', width: 500, tooltip: 'Commentaires'},
+					{text: 'Conditions', dataIndex: 'conditions', hidden: true, width: 500, tooltip: 'Conditions du Favoris'},
 					{
 					    xtype:'actioncolumn', tooltip:'Opération sur le favoris',
 						text: 'Action', width: 70,
@@ -226,7 +234,8 @@ function favoris() {
 	        	nom:rec.get('nom'),
 	        	trame:rec.get('trame'),
 	        	conditions:rec.get('conditions'),
-	        	actions:rec.get('actions')
+	        	actions:rec.get('actions'),
+	        	commentaires:rec.get('commentaires')
 	        });
 		}
 	};
@@ -241,7 +250,8 @@ function favoris() {
 				var trame = encode(formValues.trame);
 				var conditions = encode(formValues.conditions);
 				var actions = encode(formValues.actions);
-				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"'";
+				var commentaires = encode(formValues.commentaires);
+				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"','"+commentaires+"'";
 				requestCall('add_favoris', params, {ok:'favoris ajouté !', error:'impossible d\'ajouter le favoris !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddFavoris').getForm().reset();
@@ -278,7 +288,8 @@ function favoris() {
 				var trame = encode(formValues.trame);
 				var conditions = encode(formValues.conditions);
 				var actions = encode(formValues.actions);
-				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"'";
+				var commentaires = encode(formValues.commentaires);
+				var params = "'"+nom+"','"+trame+"','"+conditions+"','"+actions+"','"+commentaires+"'";
 				requestCall('add_favoris', params, {ok:'favoris modifié !', error:'impossible de modifier le favoris !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddFavoris').getForm().reset();

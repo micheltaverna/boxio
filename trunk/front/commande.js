@@ -73,23 +73,34 @@ var createCommande = function(action) {
 		title: 'Action à envoyer',
 		collapsible: true,
 		defaults: {
-			width: 500
 		},
-		items: [{
-			xtype: 'combobox',
-			fieldLabel:'Action',
-			name:'action',
-			displayField: 'name',
-			store: Ext.data.StoreManager.lookup('DataTrameAction'),
-			msgTarget: 'side',
-			queryMode: 'local',
-			allowBlank: false
-		},{
-			xtype     : 'textfield',
-			name      : 'param',
-			fieldLabel: 'Paramètres',
-			msgTarget: 'side',
-			allowBlank: true
+		items: [
+		{
+			xtype: 'fieldcontainer',
+			fieldLabel: 'Action',
+			combineErrors: true,
+			msgTarget : 'side',
+			layout: 'hbox',
+			defaults: {
+			},
+			items: [
+				{
+					xtype: 'combobox',
+					name:'action',
+					width: 250,
+					displayField: 'name',
+					store: Ext.data.StoreManager.lookup('DataTrameAction'),
+					msgTarget: 'side',
+					queryMode: 'local',
+					allowBlank: false
+				},
+				{xtype: 'displayfield', value: 'Paramètres :'},
+				{
+					xtype     : 'textfield',
+					name      : 'param',
+					msgTarget: 'side',
+					allowBlank: true
+				}]
 		}]
 	});
 	
@@ -101,7 +112,8 @@ var createCommande = function(action) {
 			width:500,
 			columns : 4
 		},
-		items: [{
+		items: [
+		{
 			xtype: 'radiogroup',
 			fieldLabel: 'Média',
 			items: [{
@@ -149,7 +161,7 @@ var createCommande = function(action) {
 		}]
 	});
 
-	//creation du fieldset pour les Actions
+	//creation du fieldset pour l'envoie diféré
 	var formDiffere = Ext.create('Ext.form.FieldSet', {
 		title: 'Action à envoyer',
 		collapsible: true,
@@ -212,6 +224,59 @@ var createCommande = function(action) {
 		}]
 	});
 
+	//creation du fieldset pour les Boutons
+	var formBtns = Ext.create('Ext.form.FieldSet', {
+		title: 'Action',
+		collapsible: true,
+		defaults: {
+			layout: {
+				type: 'hbox',
+				defaultMargins: {top: 0, right: 5, bottom: 0, left: 0}
+			}
+		},
+		items: [{
+			xtype: 'fieldcontainer',
+			combineErrors: true,
+			msgTarget : 'side',
+			layout: 'hbox',
+			defaults: {
+			},
+			items: [
+				{
+					xtype: 'button',
+					text: 'Envoyer',
+					handler: function() {
+						var form = Ext.getCmp('formGenerateCommande').getForm();
+						if (form.isValid()) {
+							var formValues = form.getValues();
+							var params = formValues.param.split(',');
+							var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
+							Ext.myMsg.msg('Information', 'Ok : Trame générée !<br />'+trame);
+							sendCommand('trame', trame);
+						}
+					}
+				},{
+					xtype: 'button',
+					text: 'Enregistrer',
+					handler: function() {
+						var form = Ext.getCmp('formGenerateCommande').getForm();
+						if (form.isValid()) {
+							var formValues = form.getValues();
+							var params = formValues.param.split(',');
+							var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
+							Ext.myMsg.msg('Information', 'Ok : Trame enregistrée !<br />'+trame);
+							var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
+							currentTrame.insert(0, {
+								trame:trame, id_legrand:formValues.id, unit:formValues.unit, 
+								action:formValues.action, param:formValues.param, media:formValues.media, mode:formValues.mode
+							});
+							currentTrame.sync();
+						}
+					}
+				}]
+		}]
+	});
+
 	var formResultTrame = Ext.create('Ext.grid.Panel', {
 		title : 'Trames Enregistrées', 
 		store: Ext.data.StoreManager.lookup('savedTrame'),
@@ -237,15 +302,15 @@ var createCommande = function(action) {
 					tooltip: 'Lancer la commande',
 					handler: function(grid, rowIndex, colIndex) {
 						var rec = grid.getStore().getAt(rowIndex);
-						rec.get();
-						console.log(rec);
+						sendCommand('trame', rec.get('trame'));
 					}
 				},{
 					icon: 'imgs/delete.png',
 					tooltip: 'Effacer la commande',
 					handler: function(grid, rowIndex, colIndex) {
 						var rec = grid.getStore().getAt(rowIndex);
-						console.log(rec);
+						var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
+						currentTrame.remove(rec);
 					}
 				}]
 			}
@@ -260,7 +325,11 @@ var createCommande = function(action) {
 				tooltip:'Effacer toutes les commandes Enregistrées !',
 				disabled: false,
 				handler: function(widget, event) {
-					equipements.win.add();
+					Ext.getCmp('formGenerateCommande').getForm().reset();
+					var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
+					currentTrame.removeAll();
+					currentTrame.getProxy().clear();
+					currentTrame.sync();
 				}
 			}]
 		}]
@@ -329,7 +398,7 @@ var createCommande = function(action) {
 			items: [{
 				xtype: 'form',
 				id: 'formGenerateCommande',
-				items: [formRef, formAction, formMedia, formDiffere, formResultTrame]
+				items: [formRef, formAction, formMedia, formBtns, formResultTrame]
 			}],
 			textarea: {
 				name: 'result',
@@ -337,30 +406,9 @@ var createCommande = function(action) {
 				value: 'Trame'
 			},
 			buttons: [{
-				text: 'Effacer',
+				text: 'Fermer',
 				handler: function() {
-					Ext.getCmp('formGenerateCommande').getForm().reset();
-					var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
-					currentTrame.removeAll();
-					currentTrame.getProxy().clear();
-					currentTrame.sync();
-				}
-			},{
-				text: 'Générer',
-				handler: function() {
-					var form = Ext.getCmp('formGenerateCommande').getForm();
-					if (form.isValid()) {
-						var formValues = form.getValues();
-						var params = formValues.param.split(',');
-						var trame = InOne.ownManager_createFrame(formValues.id+'|'+formValues.unit, formValues.action, formValues.mode, params, formValues.media);
-						Ext.myMsg.msg('Information', 'Ok : Trame enregistrée !<br />'+trame);
-						var currentTrame = Ext.data.StoreManager.lookup('savedTrame');
-						currentTrame.add({
-							trame:trame, id_legrand:formValues.id, unit:formValues.unit, 
-							action:formValues.action, param:formValues.param, media:formValues.media, mode:formValues.mode
-						});
-						currentTrame.sync();
-					}
+					Ext.getCmp('winGenerateCommande').close();
 				}
 			}]
 		});
