@@ -280,7 +280,13 @@ class crond {
 	*/
 	private function findNextDay($id) {
 		$valeurs = $this->parseFormat(1, 31, $this->crontab[$id]['jour']);
-		$valeurSemaine = $this->parseFormat(0, 6, $this->crontab[$id]['jourSemaine']);
+		$valeurSemaine = $this->parseFormat(1, 7, $this->crontab[$id]['jourSemaine']);
+		
+		//transformation du Dimanche 7 en 0
+		if (isset($valeurSemaine[7])) {
+			unset($valeurSemaine[7]);
+			$valeurSemaine[0] = TRUE;
+		}
 
 		do {
 			$this->nextCron['day']++;
