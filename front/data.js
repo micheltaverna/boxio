@@ -200,7 +200,7 @@ new Ext.data.Store({
  */
 new Ext.data.Store({
 	storeId: 'DataMacrosCommands',
-	model: 'macros',
+	model: 'macrosCommands',
 	pageSize: 20,
 	remoteSort: true,
 	remoteGroup: true,

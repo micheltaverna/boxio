@@ -167,6 +167,23 @@ Ext.define('macros',{
 		{name: 'timing', type: 'int'} 
 	]
 });
+Ext.define('macrosCommands',{
+	extend: 'Ext.data.Model',
+	fields: [
+  		//Pour vérifier la connexion
+ 		{name: 'login_status', type: 'string'},
+		{name: 'login_user', type: 'string'},
+		{name: 'login_error', type: 'string'},
+		//Definition
+		{name: 'id_command', type: 'int'}, 
+		{name: 'id_macro', type: 'int'}, 
+		{name: 'nom', type: 'string'}, 
+		{name: 'id_favoris', type: 'int'}, 
+		{name: 'nom_command', type: 'string'},
+		{name: 'trame', type: 'string'},
+		{name: 'timing', type: 'int'} 
+	]
+});
 
 /**
  * Definition des references
