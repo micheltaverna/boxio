@@ -323,8 +323,12 @@ function macros() {
 		        form.setValues({nom:nom, id_macro:id_macro});
 		        var store = Ext.data.StoreManager.lookup('DataMacrosCommands');
 				store.clearFilter(true);
-				store.load();
 				store.filter([{ property: "id_macro", value: id_macro }]);
+				store.load(function() {
+					var ResultSetStore = Ext.ComponentQuery.query("#panelCommand")[0].getStore();
+					ResultSetStore.totalCount=ResultSetStore.getCount();
+					ResultSetStore.load();
+				});
 			},
 			
 			addCommand: function() {
