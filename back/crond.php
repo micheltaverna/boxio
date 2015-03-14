@@ -283,10 +283,8 @@ class crond {
 		$valeurSemaine = $this->parseFormat(1, 7, $this->crontab[$id]['jourSemaine']);
 		
 		//transformation du Dimanche 7 en 0
-		if (isset($valeurSemaine[7])) {
-			unset($valeurSemaine[7]);
-			$valeurSemaine[0] = TRUE;
-		}
+		array_unshift($valeurSemaine, $valeurSemaine[7]);
+		unset($valeurSemaine[7]);
 
 		do {
 			$this->nextCron['day']++;
