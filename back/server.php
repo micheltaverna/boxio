@@ -545,10 +545,6 @@ class boxio_server {
 			$ownid = $this->ioblId_to_ownId($id, $unit);
 			$res = $this->mysqli->query("CALL send_trame('*#1000*$ownid*55##', NULL, NULL)");
 			$this->free_mysqli($res);
-			//on supprimme les actions en cours
-			if (isset($this->waitingStatus[$id.$unit_status])) {
-				unset($this->waitingStatus[$id.$unit_status]);
-			}
 		} 
 		//Allumage
 		else if ($decrypted_trame["value"] == 'ON') {
@@ -809,12 +805,19 @@ class boxio_server {
 		$unit = $decrypted_trame["unit"];
 		//On recupere la date de l'action et on ajoute le temps du relais interne
 		$date = strtotime($decrypted_trame["date"]) + $this->def->SHUTTER_RELAY_TIME;
-		//recuperation du derniere etat connu ET des possibilites
-		$query = "SELECT unit_status, possibility, server_opt, status AS 'last_status' FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
+
+
+		//recuperation du unit principale de sauvegarde des status
+		$query = "SELECT unit_status FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit';";
 		$res = $this->mysqli->query($query)->fetch_assoc();
 		$unit_status = $res["unit_status"];
+		//On recupere les server_opt et le derniere etat connu
+		$query = "SELECT server_opt, possibility, status AS 'last_status' FROM view_equipements_status WHERE id_legrand='$id' AND unit='$unit_status';";
+		$res = $this->mysqli->query($query)->fetch_assoc();
 		$possibility = $res["possibility"];
 		$last_status = $res["last_status"];
+		//Action immédiate par défaut
+		$timer = 0;
 		//on test s'il faut faire un update des status
 		if ($decrypted_trame["value"] == 'MOVE_UP'
 				|| $decrypted_trame["value"] == 'MOVE_DOWN'
@@ -844,59 +847,59 @@ class boxio_server {
 				//Si le volet est en train de monter
 				if ($last_status == 'UP') {
 					$status = 'UP';
-					//Si le volet est deja en haut
+				//Si le volet est deja en haut
 				} else if ($last_status == '100' || $last_status == 'OPEN') {
 					$status = 'OPEN';
-					//Si le volet change de sens
+				//Si le volet change de sens
 				} else if ($last_status == 'DOWN') {
 					$status = 'UP';
-					$new_pos = ($move_time - ($this->waitingStatus[$id.$unit]['date'] - $date))/$move_time*100;
-					$move_time = round($new_pos/100*$move_time);
-					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = 'OPEN';
-					//Si le volet est en position intermediaire ou completement ferme
+					if (!isset($this->waitingStatus[$id.$unit_status])) {
+						$timer = $move_time;
+					} else {
+						$new_pos = ($move_time - ($this->waitingStatus[$id.$unit_status]['date'] - $date))/$move_time*100;
+						$timer = round($new_pos/100*$move_time);
+					}
+				//Si le volet est en position intermediaire ou completement ferme
 				} else if (is_numeric($last_status) || $last_status == 'CLOSED') {
 					if ($last_status == 'CLOSED') {
 						$last_status = 0;
 					}
 					$status = 'UP';
-					$this->waitingStatus[$id.$unit] = array();
-					$move_time = $move_time - ($last_status/100*$move_time);
-					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = 'OPEN';
+					$timer = $move_time - ($last_status/100*$move_time);
 				}
+				$next_status = 'OPEN';
 			} else if ($value == 'MOVE_DOWN') {
 				//Si le volet est en train de descendre
 				if ($last_status == 'DOWN') {
 					$status = 'DOWN';
-					//Si le volet est deja en bas
+				//Si le volet est deja en bas
 				} else if ($last_status == '0' || $last_status == 'CLOSED') {
 					$status = 'CLOSED';
-					//Si le volet change de sens
+				//Si le volet change de sens
 				} else if ($last_status == 'UP') {
 					$status = 'DOWN';
-					$new_pos = 100 - (($move_time - ($this->waitingStatus[$id.$unit]['date'] - $date))/$move_time*100);
-					$move_time = round($new_pos/100*$move_time);
-					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = 'CLOSED';
-					//Si le volet est arrete en position intermediaire ou completement ouvert
+					if (!isset($this->waitingStatus[$id.$unit_status])) {
+						$timer = $move_time;
+					} else {
+						$new_pos = 100 - (($move_time - ($this->waitingStatus[$id.$unit_status]['date'] - $date))/$move_time*100);
+						$timer = round($new_pos/100*$move_time);
+					}
+				//Si le volet est arrete en position intermediaire ou completement ouvert
 				} else if (is_numeric($last_status) || $last_status == 'OPEN') {
 					if ($last_status == 'OPEN') {
 						$last_status = 100;
 					}
 					$status = 'DOWN';
-					$this->waitingStatus[$id.$unit] = array();
-					$move_time = ($last_status/100*$move_time);
-					$this->waitingStatus[$id.$unit]['date'] = $date+$move_time;
-					$this->waitingStatus[$id.$unit]['status'] = 'CLOSED';
+					$timer = ($last_status/100*$move_time);
 				}
+				$next_status = 'CLOSED';
 			} else if ($value == 'MOVE_STOP') {
 				//Par defaut on dit que le volet est arrete et donc à son ancienne position
 				$status = $last_status;
 				//Si le volet est deja en mouvement
-				if (!is_numeric($last_status) && isset($this->waitingStatus[$id.$unit])) {
-					$new_pos = ($move_time - ($this->waitingStatus[$id.$unit]['date'] - $date))/$move_time*100;
-					unset($this->waitingStatus[$id.$unit]);
+				if (!is_numeric($last_status) && isset($this->waitingStatus[$id.$unit_status])) {
+					$new_pos = ($move_time - ($this->waitingStatus[$id.$unit_status]['date'] - $date))/$move_time*100;
+					unset($this->waitingStatus[$id.$unit_status]);
 					if ($last_status == 'UP') {
 						$status = round($new_pos);
 					} else if ($last_status == 'DOWN') {
@@ -913,6 +916,13 @@ class boxio_server {
 		} else {
 			$status = $value;
 		}
+		
+		//Dans le cas d'une commande temporelle on met le status en attente de mise a jour sauf si la commande est inférieur à 1s
+		if ($timer>1) {
+			$this->waitingStatus[$id.$unit_status]['date'] = $date+$timer;
+			$this->waitingStatus[$id.$unit_status]['status'] = $next_status;
+		}
+
 		//Mise à jour de la touche de l'equipement (s'il ne s'agit pas du unit_status OU de la memoire cas particulier du SOMFY RF)
 		if ($unit != $unit_status || strpos($possibility, 'MEMORY') === FALSE) {
 			$query = "UPDATE `equipements_status` SET status='$value' WHERE id_legrand='$id' AND unit='$unit'";

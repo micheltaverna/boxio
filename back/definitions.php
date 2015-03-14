@@ -68,9 +68,9 @@ class boxio_def {
 					"LEVEL" => "/^(\d{1,2})$/"
 			),
 			"SHUTTER" => array(
-					"MOVE_UP" => "/^102$/",
-					"MOVE_DOWN" => "/^103$/",
-					"STOP" => "/^101$/"
+					"MOVE_UP" => "/^110$/",
+					"MOVE_DOWN" => "/^111$/",
+					"STOP" => "/^112$/"
 			),
 			"CONFORT" => array(
 					"PRESENCE" => "/^6$/",
