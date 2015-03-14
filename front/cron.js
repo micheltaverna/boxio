@@ -1282,8 +1282,8 @@ function cron() {
 				var macros = formValues.macros||'null';
 				var trame = formValues.trame!=''?"'"+encode(formValues.trame)+"'":'null';
 				var active = formValues.active=='oui'?'true':'false';
-				var sunset = formValues.sunset=='sun'?'true':'false';
-				var sunrise = formValues.sunrise=='sun'?'true':'false';
+				var sunset = formValues.sun=='sunset'?'true':'false';
+				var sunrise = formValues.sun=='sunrise'?'true':'false';
 				var commentaires = '';
 				if (favoris == 'null' && macros == 'null' && trame == 'null') {
 					error = true;
