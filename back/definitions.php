@@ -237,12 +237,18 @@ class boxio_def {
 							)
 					)
 			),
-			"SHUTTER" => array(
-					"UP" => "/^100$/",
-					"MOVE_UP" => "/^102$/",
-					"MOVE_DOWN" => "/^103$/",
-					"DOWN" => "/^0$/",
-					"STOP" => "/^101$/"
+			"139" => array(
+					"DEFINITION" => array("shutter","mode","unknown","unknown","unknown","unknown"),
+					"TYPE" => array ("SHUTTER"),
+					"VALUE" => array (
+							"mode" => array(
+								"OPEN" => "/^100$/",
+								"UP" => "/^102$/",
+								"DOWN" => "/^103$/",
+								"CLOSED" => "/^0$/",
+								"50" => "/^101$/"
+							)
+					)
 			)
 	);
 

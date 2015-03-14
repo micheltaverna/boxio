@@ -1120,8 +1120,26 @@ class boxio_server {
 					$query = "UPDATE equipements_status SET status='$status' WHERE id_legrand='$id' AND unit='$unit';";
 					$this->mysqli->query($query);
 				}
-			} else if ($type == 'SHUTTER') {
-				//TODO: GESTION DES SHUTTER
+			} 
+			else if ($type == 'SHUTTER') {
+				//Valeur par defaut
+				$status = false;
+				if ($definition[0] == 'shutter') {
+					//Valeur par defaut
+					$mode = $params[array_search("mode", $definition)];
+					//On recherche la valeur
+					foreach ($value['mode'] as $command => $reg) {
+						if (preg_match($reg, $mode)) {
+							$mode = $command;
+							break;
+						}
+					}
+					$status = $mode;
+				}
+				if ($status !== false) {
+					$query = "UPDATE equipements_status SET status='$status' WHERE id_legrand='$id' AND unit='$unit';";
+					$this->mysqli->query($query);
+				}
 			}
 		}
 		return;
