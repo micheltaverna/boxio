@@ -57,6 +57,12 @@ function triggers() {
 				fieldLabel: 'Actions',
 				msgTarget: 'side',
 				allowBlank: false
+			},{
+				xtype: 'textarea',
+				name: 'commentaires',
+				fieldLabel: 'Commentaires',
+				msgTarget: 'side',
+				allowBlank: true
 			}]
 		}
 	};
@@ -100,6 +106,11 @@ function triggers() {
 			            type: 'boolean',
 			            dataIndex: 'visible'
 			        }]
+			    },{
+			        ftype: 'groupingsummary',
+			        groupHeaderTpl: '{columnName}: {name} ({rows.length} déclencheur{[values.rows.length > 1 ? "s" : ""]})',
+			        hideGroupedHeader: false,
+			        enableGroupingMenu: true
 			    }],
 				columns: [
 					{text: 'Id', dataIndex: 'id', width: 131,
@@ -107,21 +118,23 @@ function triggers() {
 							type: 'string'
 						}, hidden: true, tooltip: 'Identifiant du Déclencheur'
 					},
-					{text: 'Nom', dataIndex: 'nom', width: 131, filter: {
+					{text: 'Nom', dataIndex: 'nom', width: 200, filter: {
 						type: 'string'
 					}, tooltip: 'Nom du Déclencheur'}, 
-					{text: 'Déclencheurs', dataIndex: 'triggers', width: 300, filter: {
+					{text: 'Commentaires', dataIndex: 'commentaires', width: 300, filter: {
 						type: 'string'
-					}, tooltip: 'Liste des Déclencheurs'},
-					{text: 'Conditions', dataIndex: 'conditions', width: 300, filter: {
-						type: 'string'
-					}, tooltip: 'Liste des Conditions'},
-					{text: 'Actions', dataIndex: 'actions', width: 300, filter: {
-						type: 'string'
-					}, tooltip: 'Actions sur le Déclencheur'},
-					{text: 'Actif', dataIndex: 'active', width: 131, filter: {
-						type: 'string'
-					}, tooltip: 'Actions sur le Déclencheur'},
+					}, 
+						renderer: function(val) {
+							return val.replace(/\ntt/g,'<br>');
+						}, tooltip: 'Commentaires sur le Déclencheur'},
+					{text: 'Actif', dataIndex: 'active', width: 50, filter: {type: 'boolean'}, 
+						renderer: function(val) {
+							if (val == 1) {
+								return '<span style="color:green;"><b>OUI</b></span>';
+							} else {
+								return '<span style="color:red;"><b>NON</b></span>';					
+							}
+						}, tooltip: 'Si le déclencheur est actif ou non'},
 					{
 					    xtype:'actioncolumn', tooltip:'Opération sur le Déclencheur',
 						text: 'Action', width: 70,
@@ -291,7 +304,8 @@ function triggers() {
 	        	triggers:rec.get('triggers'),
 	        	conditions:rec.get('conditions'),
 	        	actions:rec.get('actions'),
-	        	active:active
+	        	active:active,
+	        	commentaires:rec.get('commentaires')
 	        });
 		}
 	};
@@ -306,8 +320,9 @@ function triggers() {
 				var triggers = encode(formValues.triggers);
 				var conditions = encode(formValues.conditions);
 				var actions = encode(formValues.actions);
+				var commentaires = encode(formValues.commentaires);
 				var active = formValues.active=='oui'?'true':'false';
-				var params = "'"+nom+"','"+triggers+"','"+conditions+"','"+actions+"',"+active;
+				var params = "'"+nom+"','"+triggers+"','"+conditions+"','"+actions+"',"+active+",'"+commentaires+"'";
 				requestCall('add_trigger', params, {ok:'Déclencheur ajouté !', error:'impossible d\'ajouter le Déclencheur !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddTriggers').getForm().reset();
@@ -344,8 +359,9 @@ function triggers() {
 				var triggers = encode(formValues.triggers);
 				var conditions = encode(formValues.conditions);
 				var actions = encode(formValues.actions);
+				var commentaires = encode(formValues.commentaires);
 				var active = formValues.active=='oui'?'true':'false';
-				var params = "'"+nom+"','"+triggers+"','"+conditions+"','"+actions+"',"+active;
+				var params = "'"+nom+"','"+triggers+"','"+conditions+"','"+actions+"',"+active+",'"+commentaires+"'";
 				requestCall('add_trigger', params, {ok:'Déclencheur modifié !', error:'impossible de modifier le Déclencheur !'}, {
 					onsuccess:function(response){
 						Ext.getCmp('formAddTriggers').getForm().reset();

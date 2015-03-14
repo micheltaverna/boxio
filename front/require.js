@@ -35,4 +35,3 @@ Ext.require([
 			'Ext.window.*',
 			'Ext.window.MessageBox'
 ]);
-
