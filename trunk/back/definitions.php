@@ -1,8 +1,8 @@
 <?php
 class boxio_def {
-	//Position GPS par defaut
-	public $DEFAULT_LAT = '';
-	public $DEFAULT_LNG = '';
+	//Position GPS par defaut Centre de la France
+	public $DEFAULT_LAT = '46.76306';
+	public $DEFAULT_LNG = '2.42472';
 	
 	//temps par default en secondes pour la recherche des mise à jour de la table cron
 	public $DEFAULT_UPDATE_TIME_CRONTAB = 30;

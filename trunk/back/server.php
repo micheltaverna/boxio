@@ -1233,7 +1233,8 @@ class boxio_server {
 			$lng = $conf_array['GPS_longitude'];
 		}
 		if (!isset($lat, $lng) || $lat == NULL || $lng == NULL) {
-			return;
+			$lat = $this->def->DEFAULT_LAT;
+			$lng = $this->def->DEFAULT_LNG;
 		}
 		$sunset_timestamp = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, $lat, $lng);
 		$res = $this->mysqli->query("UPDATE cron SET 
