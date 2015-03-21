@@ -1,5 +1,8 @@
 <?php
 class boxio_def {
+	//Position GPS par defaut
+	public $DEFAULT_LAT = '';
+	public $DEFAULT_LNG = '';
 	
 	//temps par default en secondes pour la recherche des mise à jour de la table cron
 	public $DEFAULT_UPDATE_TIME_CRONTAB = 30;
