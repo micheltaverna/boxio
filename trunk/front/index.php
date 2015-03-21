@@ -63,7 +63,7 @@
         <script type="text/javascript" src="update.js"></script>
         <script type="text/javascript" src="login.js"></script>
         <script type="text/javascript">
-			var version = "Beta 1.3";
+			var version = "Beta 1.5";
 			var auteur = "Michel Taverna";
 			layout.func.init();
 			login.func.checkLogin(function(status) {
