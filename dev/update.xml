@@ -32,7 +32,7 @@
 	</version>
 	<version>
 		<name>Beta 1.5</name>
-		<release>2015-03-21 17:30:14</release>
+		<release>2015-03-20 17:30:14</release>
 		<valide>true</valide>
 		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_5.tgz</path>
 	</version>
