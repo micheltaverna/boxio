@@ -26,8 +26,14 @@
 	</version>
 	<version>
 		<name>Beta 1.4</name>
-		<release>2014-10-24 14:10:24</release>
+		<release>2014-10-26 13:10:24</release>
 		<valide>true</valide>
 		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_4.tgz</path>
+	</version>
+	<version>
+		<name>Beta 1.5</name>
+		<release>2015-03-21 17:30:14</release>
+		<valide>true</valide>
+		<path>http://boxio.googlecode.com/svn/trunk/dev/update/beta1_5.tgz</path>
 	</version>
 </root>
