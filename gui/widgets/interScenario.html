@@ -1,0 +1,92 @@
+<!-- 
+LISTE DES VARIABLES UTILISABLES
+#nom# -> Nom donner au produit
+#zone# -> Nom de la zone ou est situé le produit
+#reference# -> Nom de la référnence Legrand (ex:Inter Variateur 300W à voyant)
+#id_legrand# -> id du produit
+#ref_legrand# -> référence legrand
+#media# -> type de media pour le produit (CPL,RF,IR)
+#family# -> famille du produit (LIGHTING,SHUTTER,etc.)
+#unit_code# -> code du unit
+ -->
+
+<!-- Widget Inter Scenario -->
+<div class="col-xs-12 col-sm-6 col-md-6 col-lg-4" id="#id_legrand#">
+	<div class="widget-box" id="tools_#id_legrand#">
+		<div class="widget-header">
+			<h5 class="widget-title">#nom#</h5>
+
+			<div class="widget-toolbar">
+                <a href="#" data-action="collapse">
+                    <i class="ace-icon fa fa-chevron-up"></i>
+                </a>
+    
+                <a href="#" data-action="close">
+                    <i class="ace-icon fa fa-times"></i>
+                </a>
+			</div>
+		</div>
+		<div class="widget-body">
+			<div class="widget-main">
+				<div class="row">
+					<div class="col-xs-3 text-center">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ACTION_1">
+							<div style="font-size:xx-large">I</div>
+						</a>
+					</div>
+					<div class="col-xs-3 text-center">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ACTION_2">
+							<div style="font-size:xx-large">II</div>
+						</a>
+					</div>
+					<div class="col-xs-3 text-center">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ACTION_3">
+							<div style="font-size:xx-large">III</div>
+						</a>
+					</div>
+					<div class="col-xs-3 text-center">
+						<a class="btn btn-app btn-light btn-xs" data-action="#id_legrand#_ACTION_4">
+							<div style="font-size:xx-large">IIII</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//VARIABLE DU WIDGET (SEUL VARIABLE GOLBALE)
+var widget_#id_legrand# = {};
+widget_#id_legrand#.module = [];
+
+//DEFINITION DES ACTIONS EN FONCTION DES MODULES
+if ('#ref_legrand#' == '67280') {
+	widget_#id_legrand#.btns = 4;
+	for (var i = 1; i <= widget_#id_legrand#.btns; i++) {
+		widget_#id_legrand#.module[i] = {};
+		widget_#id_legrand#.module[i].trame = [];
+		widget_#id_legrand#.module[i].trame["#id_legrand#_ACTION_"+i] = InOne.ownManager_createFrame('#id_legrand#|'+i, 'ACTION', 'B', [], 'CPL');
+		widget_#id_legrand#.module[i].trame["#id_legrand#_STOP_ACTION_"+i] = InOne.ownManager_createFrame('#id_legrand#|'+i, 'STOP_ACTION', 'B', [], 'CPL');
+	}
+}
+
+//GESTION DES BOUTONS
+$.each(widget_#id_legrand#.module, function(key) {
+	$('[data-action="#id_legrand#_ACTION_'+key+'"]').click(function() {
+		console.log(key);
+		var _dc = new Date().getTime();
+		var trame_action = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.module[key].trame["#id_legrand#_ACTION_"+key]);
+		var trame_stop_action = InOne.ownManager_starsharp_to_YZ(widget_#id_legrand#.module[key].trame["#id_legrand#_STOP_ACTION_"+key]);
+		$.getJSON( "../back/client.php?output=JSON&type=trame&send_command="+trame_action+"&_dc="+_dc, function( data ) {
+			$.getJSON( "../back/client.php?output=JSON&type=trame&send_command="+trame_stop_action+"&_dc="+_dc, function( data ) {
+				;
+			});
+		});
+	});
+});
+
+//GESTION DE LA FERMETURE
+close_widgets(function() {
+});
+</script>
+<!-- /Widget Inter Volet -->
